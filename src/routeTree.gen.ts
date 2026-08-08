@@ -22,6 +22,7 @@ import { Route as TrackMilestonesRouteImport } from './routes/track/milestones'
 import { Route as TrackMilkRouteImport } from './routes/track/milk'
 import { Route as TrackPottyRouteImport } from './routes/track/potty'
 import { Route as TrackSleepRouteImport } from './routes/track/sleep'
+import { Route as TrackVaccinesRouteImport } from './routes/track/vaccines'
 import { Route as TrackWeightRouteImport } from './routes/track/weight'
 
 const IndexRoute = IndexRouteImport.update({
@@ -89,6 +90,11 @@ const TrackSleepRoute = TrackSleepRouteImport.update({
   path: '/track/sleep',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TrackVaccinesRoute = TrackVaccinesRouteImport.update({
+  id: '/track/vaccines',
+  path: '/track/vaccines',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TrackWeightRoute = TrackWeightRouteImport.update({
   id: '/track/weight',
   path: '/track/weight',
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/track/milk': typeof TrackMilkRoute
   '/track/potty': typeof TrackPottyRoute
   '/track/sleep': typeof TrackSleepRoute
+  '/track/vaccines': typeof TrackVaccinesRoute
   '/track/weight': typeof TrackWeightRoute
 }
 export interface FileRoutesByTo {
@@ -125,6 +132,7 @@ export interface FileRoutesByTo {
   '/track/milk': typeof TrackMilkRoute
   '/track/potty': typeof TrackPottyRoute
   '/track/sleep': typeof TrackSleepRoute
+  '/track/vaccines': typeof TrackVaccinesRoute
   '/track/weight': typeof TrackWeightRoute
 }
 export interface FileRoutesById {
@@ -142,6 +150,7 @@ export interface FileRoutesById {
   '/track/milk': typeof TrackMilkRoute
   '/track/potty': typeof TrackPottyRoute
   '/track/sleep': typeof TrackSleepRoute
+  '/track/vaccines': typeof TrackVaccinesRoute
   '/track/weight': typeof TrackWeightRoute
 }
 export interface FileRouteTypes {
@@ -160,6 +169,7 @@ export interface FileRouteTypes {
     | '/track/milk'
     | '/track/potty'
     | '/track/sleep'
+    | '/track/vaccines'
     | '/track/weight'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -176,6 +186,7 @@ export interface FileRouteTypes {
     | '/track/milk'
     | '/track/potty'
     | '/track/sleep'
+    | '/track/vaccines'
     | '/track/weight'
   id:
     | '__root__'
@@ -192,6 +203,7 @@ export interface FileRouteTypes {
     | '/track/milk'
     | '/track/potty'
     | '/track/sleep'
+    | '/track/vaccines'
     | '/track/weight'
   fileRoutesById: FileRoutesById
 }
@@ -209,6 +221,7 @@ export interface RootRouteChildren {
   TrackMilkRoute: typeof TrackMilkRoute
   TrackPottyRoute: typeof TrackPottyRoute
   TrackSleepRoute: typeof TrackSleepRoute
+  TrackVaccinesRoute: typeof TrackVaccinesRoute
   TrackWeightRoute: typeof TrackWeightRoute
 }
 
@@ -305,6 +318,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TrackSleepRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/track/vaccines': {
+      id: '/track/vaccines'
+      path: '/track/vaccines'
+      fullPath: '/track/vaccines'
+      preLoaderRoute: typeof TrackVaccinesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/track/weight': {
       id: '/track/weight'
       path: '/track/weight'
@@ -329,6 +349,7 @@ const rootRouteChildren: RootRouteChildren = {
   TrackMilkRoute: TrackMilkRoute,
   TrackPottyRoute: TrackPottyRoute,
   TrackSleepRoute: TrackSleepRoute,
+  TrackVaccinesRoute: TrackVaccinesRoute,
   TrackWeightRoute: TrackWeightRoute,
 }
 export const routeTree = rootRouteImport

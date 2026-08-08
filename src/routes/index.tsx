@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Droplets, Baby as BabyIcon, Moon, Scale, Activity, Pill, Stethoscope, Images, Sparkles, ChevronRight } from "lucide-react";
+import { Droplets, Baby as BabyIcon, Moon, Scale, Activity, Pill, Syringe, Stethoscope, Images, Sparkles, ChevronRight } from "lucide-react";
 import babyPhoto from "@/assets/baby.jpg";
 import { AppShell, SoftCard, StatTile, ThemeToggle } from "@/components/babybond/shell";
 import { useBabyBond, useTodayStats } from "@/lib/babybond-store";
@@ -31,6 +31,7 @@ const TRACKERS = [
   { to: "/track/weight", label: "Weight", emoji: "⚖️", icon: Scale },
   { to: "/track/bilirubin", label: "Bilirubin", emoji: "🩸", icon: Activity },
   { to: "/track/medicines", label: "Medicines", emoji: "💊", icon: Pill },
+  { to: "/track/vaccines", label: "Vaccines", emoji: "🛡️", icon: Syringe },
   { to: "/track/doctor", label: "Doctor", emoji: "🩺", icon: Stethoscope },
   { to: "/track/album", label: "Album", emoji: "📸", icon: Images },
   { to: "/track/milestones", label: "Milestones", emoji: "✨", icon: Sparkles },

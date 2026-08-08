@@ -3,6 +3,8 @@ import { Home, CalendarClock, FileBarChart2, User, Moon, Sun, ArrowLeft } from "
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { useBabyBond } from "@/lib/babybond-store";
+import { QuickAdd } from "./quick-add";
+import { MedicineReminders } from "./reminders";
 
 const NAV = [
   { to: "/", label: "Home", icon: Home },
@@ -64,6 +66,8 @@ export function AppShell({ children, nav = true }: { children: ReactNode; nav?: 
   return (
     <div className="mx-auto min-h-screen w-full max-w-md bg-background pb-28">
       {children}
+      <MedicineReminders />
+      {nav ? <QuickAdd /> : null}
       {nav ? <BottomNav /> : null}
     </div>
   );
