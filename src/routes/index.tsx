@@ -1,24 +1,194 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { toast } from "sonner";
+import { Droplets, Baby as BabyIcon, Moon, Scale, Activity, Pill, Stethoscope, Images, Sparkles, ChevronRight } from "lucide-react";
+import babyPhoto from "@/assets/baby.jpg";
+import { AppShell, SoftCard, StatTile, ThemeToggle } from "@/components/babybond/shell";
+import { useBabyBond, useTodayStats } from "@/lib/babybond-store";
+import { durationLabel, formatTime, timeAgo } from "@/lib/babybond-data";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "BabyBond — Today with your little one" },
+      {
+        name: "description",
+        content:
+          "See today's feeds, nappies, sleep and health for your newborn at a glance, shared live between mother and father.",
+      },
+      { property: "og:title", content: "BabyBond — Today with your little one" },
+      {
+        property: "og:description",
+        content: "Feeds, nappies, sleep and health for your newborn, shared live between both parents.",
+      },
+    ],
+  }),
+  component: Dashboard,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+const TRACKERS = [
+  { to: "/track/milk", label: "Milk", emoji: "🍼", icon: Droplets },
+  { to: "/track/sleep", label: "Sleep", emoji: "🌙", icon: Moon },
+  { to: "/track/weight", label: "Weight", emoji: "⚖️", icon: Scale },
+  { to: "/track/bilirubin", label: "Bilirubin", emoji: "🩸", icon: Activity },
+  { to: "/track/medicines", label: "Medicines", emoji: "💊", icon: Pill },
+  { to: "/track/doctor", label: "Doctor", emoji: "🩺", icon: Stethoscope },
+  { to: "/track/album", label: "Album", emoji: "📸", icon: Images },
+  { to: "/track/milestones", label: "Milestones", emoji: "✨", icon: Sparkles },
+] as const;
+
+function Countdown({ target, now }: { target: number; now: number }) {
+  const diff = target - now;
+  const overdue = diff <= 0;
+  const abs = Math.abs(diff);
+  const h = Math.floor(abs / 3600000);
+  const m = Math.floor((abs % 3600000) / 60000);
+  const s = Math.floor((abs % 60000) / 1000);
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <span className="font-display text-2xl font-bold tabular-nums">
+      {overdue ? "+" : ""}
+      {h}h {String(m).padStart(2, "0")}m {String(s).padStart(2, "0")}s
+    </span>
+  );
+}
+
+function Dashboard() {
+  const { baby, parents, me, addEntry, now } = useBabyBond();
+  const s = useTodayStats();
+
+  return (
+    <AppShell>
+      <div className="bb-hero rounded-b-[2.5rem] px-5 pb-8 pt-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground/60">BabyBond</p>
+            <p className="text-sm text-foreground/70">Hi {me.name}, here's today 💗</p>
+          </div>
+          <ThemeToggle />
+        </div>
+
+        <div className="mt-5 flex items-center gap-4">
+          <img
+            src={babyPhoto}
+            alt={`${baby.name} sleeping in a soft blanket`}
+            width={768}
+            height={768}
+            className="size-20 rounded-3xl object-cover ring-4 ring-card/70 bb-shadow-float"
+          />
+          <div className="min-w-0">
+            <h1 className="truncate font-display text-2xl font-bold">{baby.name}</h1>
+            <p className="text-sm text-foreground/70">
+              {s.ageDays} days old · {baby.gender === "girl" ? "Girl" : "Boy"} · {baby.bloodGroup}
+            </p>
+            <div className="mt-1 flex gap-1">
+              {parents.map((p) => (
+                <span
+                  key={p.id}
+                  className="rounded-full bg-card/70 px-2 py-0.5 text-[11px] font-semibold"
+                >
+                  {p.emoji} {p.role} {p.online ? "· live" : ""}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <SoftCard className="mt-5 flex items-center justify-between bg-card/85">
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Next feed in
+            </p>
+            <Countdown target={s.nextFeedAt} now={now} />
+            <p className="text-[11px] text-muted-foreground">
+              Last feed{" "}
+              {s.lastFeed
+                ? `${formatTime(s.lastFeed.at)} · ${timeAgo(s.lastFeed.at, now)} by ${s.lastFeed.by}`
+                : "—"}
+            </p>
+          </div>
+          <span className="text-3xl">🍼</span>
+        </SoftCard>
+      </div>
+
+      <section className="px-5 py-5">
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              addEntry({ type: "pee" } as never);
+              toast.success("Pee logged 💛", { description: formatTime(Date.now()) });
+            }}
+            className="rounded-3xl bg-pee p-5 text-left text-pee-foreground bb-shadow transition-transform active:scale-95"
+          >
+            <span className="text-3xl">💛</span>
+            <p className="mt-2 font-display text-xl font-bold">+ Pee</p>
+            <p className="text-xs opacity-70">{s.peeCount} today · one tap</p>
+          </button>
+          <Link
+            to="/track/potty"
+            className="rounded-3xl bg-potty p-5 text-left text-potty-foreground bb-shadow transition-transform active:scale-95"
+          >
+            <span className="text-3xl">💩</span>
+            <p className="mt-2 font-display text-xl font-bold">+ Potty</p>
+            <p className="text-xs opacity-70">{s.pottyCount} today · with type</p>
+          </Link>
+        </div>
+
+        <h2 className="mt-6 mb-3 font-display text-base font-bold">Today</h2>
+        <div className="grid grid-cols-2 gap-3">
+          <StatTile tone="milk" emoji="🥛" label="Today's milk" value={`${s.milkMl} ml`} hint="breast + formula" />
+          <StatTile tone="formula" emoji="🍼" label="Formula" value={`${s.formulaMl} ml`} hint="bottle feeds" />
+          <StatTile
+            tone="milk"
+            emoji="🤱"
+            label="Breastfeeds"
+            value={`${s.breastCount}`}
+            hint={durationLabel(s.breastMinutes)}
+          />
+          <StatTile tone="sleep" emoji="🌙" label="Sleep" value={durationLabel(s.sleepMinutes)} hint="total today" />
+          <StatTile
+            tone="health"
+            emoji="⚖️"
+            label="Weight"
+            value={s.weight ? `${(s.weight.grams / 1000).toFixed(2)} kg` : "—"}
+            hint={
+              s.weight && s.prevWeight
+                ? `${s.weight.grams - s.prevWeight.grams > 0 ? "+" : ""}${s.weight.grams - s.prevWeight.grams} g`
+                : "no history"
+            }
+          />
+          <StatTile
+            tone="health"
+            emoji="🩸"
+            label="Bilirubin"
+            value={s.bilirubin ? `${s.bilirubin.value}` : "—"}
+            hint={s.bilirubin ? `${s.bilirubin.method} test` : "not measured"}
+          />
+        </div>
+
+        <h2 className="mt-6 mb-3 font-display text-base font-bold">Trackers</h2>
+        <div className="grid grid-cols-2 gap-3">
+          {TRACKERS.map((t) => (
+            <Link
+              key={t.to}
+              to={t.to}
+              className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow transition-transform active:scale-95"
+            >
+              <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">{t.emoji}</span>
+              <span className="flex-1 text-sm font-semibold">{t.label}</span>
+              <ChevronRight className="size-4 text-muted-foreground" />
+            </Link>
+          ))}
+        </div>
+
+        <Link
+          to="/timeline"
+          className="mt-4 flex items-center gap-3 rounded-3xl bg-secondary p-4 text-secondary-foreground bb-shadow"
+        >
+          <BabyIcon className="size-5" />
+          <span className="flex-1 text-sm font-semibold">See the full day timeline</span>
+          <ChevronRight className="size-4" />
+        </Link>
+      </section>
+    </AppShell>
   );
 }
