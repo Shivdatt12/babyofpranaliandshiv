@@ -14,8 +14,11 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as TimelineRouteImport } from './routes/timeline'
+import { Route as TrackAlbumRouteImport } from './routes/track/album'
 import { Route as TrackBilirubinRouteImport } from './routes/track/bilirubin'
+import { Route as TrackDoctorRouteImport } from './routes/track/doctor'
 import { Route as TrackMedicinesRouteImport } from './routes/track/medicines'
+import { Route as TrackMilestonesRouteImport } from './routes/track/milestones'
 import { Route as TrackMilkRouteImport } from './routes/track/milk'
 import { Route as TrackPottyRouteImport } from './routes/track/potty'
 import { Route as TrackSleepRouteImport } from './routes/track/sleep'
@@ -46,14 +49,29 @@ const TimelineRoute = TimelineRouteImport.update({
   path: '/timeline',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TrackAlbumRoute = TrackAlbumRouteImport.update({
+  id: '/track/album',
+  path: '/track/album',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TrackBilirubinRoute = TrackBilirubinRouteImport.update({
   id: '/track/bilirubin',
   path: '/track/bilirubin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TrackDoctorRoute = TrackDoctorRouteImport.update({
+  id: '/track/doctor',
+  path: '/track/doctor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TrackMedicinesRoute = TrackMedicinesRouteImport.update({
   id: '/track/medicines',
   path: '/track/medicines',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrackMilestonesRoute = TrackMilestonesRouteImport.update({
+  id: '/track/milestones',
+  path: '/track/milestones',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TrackMilkRoute = TrackMilkRouteImport.update({
@@ -83,8 +101,11 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/timeline': typeof TimelineRoute
+  '/track/album': typeof TrackAlbumRoute
   '/track/bilirubin': typeof TrackBilirubinRoute
+  '/track/doctor': typeof TrackDoctorRoute
   '/track/medicines': typeof TrackMedicinesRoute
+  '/track/milestones': typeof TrackMilestonesRoute
   '/track/milk': typeof TrackMilkRoute
   '/track/potty': typeof TrackPottyRoute
   '/track/sleep': typeof TrackSleepRoute
@@ -96,8 +117,11 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/timeline': typeof TimelineRoute
+  '/track/album': typeof TrackAlbumRoute
   '/track/bilirubin': typeof TrackBilirubinRoute
+  '/track/doctor': typeof TrackDoctorRoute
   '/track/medicines': typeof TrackMedicinesRoute
+  '/track/milestones': typeof TrackMilestonesRoute
   '/track/milk': typeof TrackMilkRoute
   '/track/potty': typeof TrackPottyRoute
   '/track/sleep': typeof TrackSleepRoute
@@ -110,8 +134,11 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/timeline': typeof TimelineRoute
+  '/track/album': typeof TrackAlbumRoute
   '/track/bilirubin': typeof TrackBilirubinRoute
+  '/track/doctor': typeof TrackDoctorRoute
   '/track/medicines': typeof TrackMedicinesRoute
+  '/track/milestones': typeof TrackMilestonesRoute
   '/track/milk': typeof TrackMilkRoute
   '/track/potty': typeof TrackPottyRoute
   '/track/sleep': typeof TrackSleepRoute
@@ -125,8 +152,11 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reports'
     | '/timeline'
+    | '/track/album'
     | '/track/bilirubin'
+    | '/track/doctor'
     | '/track/medicines'
+    | '/track/milestones'
     | '/track/milk'
     | '/track/potty'
     | '/track/sleep'
@@ -138,8 +168,11 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reports'
     | '/timeline'
+    | '/track/album'
     | '/track/bilirubin'
+    | '/track/doctor'
     | '/track/medicines'
+    | '/track/milestones'
     | '/track/milk'
     | '/track/potty'
     | '/track/sleep'
@@ -151,8 +184,11 @@ export interface FileRouteTypes {
     | '/profile'
     | '/reports'
     | '/timeline'
+    | '/track/album'
     | '/track/bilirubin'
+    | '/track/doctor'
     | '/track/medicines'
+    | '/track/milestones'
     | '/track/milk'
     | '/track/potty'
     | '/track/sleep'
@@ -165,8 +201,11 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   ReportsRoute: typeof ReportsRoute
   TimelineRoute: typeof TimelineRoute
+  TrackAlbumRoute: typeof TrackAlbumRoute
   TrackBilirubinRoute: typeof TrackBilirubinRoute
+  TrackDoctorRoute: typeof TrackDoctorRoute
   TrackMedicinesRoute: typeof TrackMedicinesRoute
+  TrackMilestonesRoute: typeof TrackMilestonesRoute
   TrackMilkRoute: typeof TrackMilkRoute
   TrackPottyRoute: typeof TrackPottyRoute
   TrackSleepRoute: typeof TrackSleepRoute
@@ -210,6 +249,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TimelineRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/track/album': {
+      id: '/track/album'
+      path: '/track/album'
+      fullPath: '/track/album'
+      preLoaderRoute: typeof TrackAlbumRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/track/bilirubin': {
       id: '/track/bilirubin'
       path: '/track/bilirubin'
@@ -217,11 +263,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TrackBilirubinRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/track/doctor': {
+      id: '/track/doctor'
+      path: '/track/doctor'
+      fullPath: '/track/doctor'
+      preLoaderRoute: typeof TrackDoctorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/track/medicines': {
       id: '/track/medicines'
       path: '/track/medicines'
       fullPath: '/track/medicines'
       preLoaderRoute: typeof TrackMedicinesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/track/milestones': {
+      id: '/track/milestones'
+      path: '/track/milestones'
+      fullPath: '/track/milestones'
+      preLoaderRoute: typeof TrackMilestonesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/track/milk': {
@@ -261,8 +321,11 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   ReportsRoute: ReportsRoute,
   TimelineRoute: TimelineRoute,
+  TrackAlbumRoute: TrackAlbumRoute,
   TrackBilirubinRoute: TrackBilirubinRoute,
+  TrackDoctorRoute: TrackDoctorRoute,
   TrackMedicinesRoute: TrackMedicinesRoute,
+  TrackMilestonesRoute: TrackMilestonesRoute,
   TrackMilkRoute: TrackMilkRoute,
   TrackPottyRoute: TrackPottyRoute,
   TrackSleepRoute: TrackSleepRoute,
@@ -271,3 +334,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
