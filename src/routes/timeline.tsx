@@ -35,8 +35,11 @@ export function describe(e: Entry): { emoji: string; title: string; detail: stri
       return { emoji: "💊", title: e.name, detail: e.dose };
     case "visit":
       return { emoji: "🩺", title: e.doctor, detail: `${e.hospital}${e.note ? ` · ${e.note}` : ""}` };
+    case "vaccine":
+      return { emoji: "🛡️", title: e.name, detail: e.note ? `vaccine · ${e.note}` : "vaccine given" };
   }
 }
+
 
 function Timeline() {
   const { entries } = useBabyBond();
