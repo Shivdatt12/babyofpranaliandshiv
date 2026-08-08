@@ -1,15 +1,27 @@
 export type FeedSide = "left" | "right" | "both";
 
+export type MedicineStatus = "given" | "skipped";
+
 export type Entry =
   | { id: string; type: "breast"; at: number; side: FeedSide; minutes: number; note?: string; by: string }
   | { id: string; type: "formula"; at: number; ml: number; note?: string; by: string }
   | { id: string; type: "pee"; at: number; by: string }
   | { id: string; type: "potty"; at: number; kind: PottyKind; note?: string; by: string }
   | { id: string; type: "sleep"; at: number; minutes: number; by: string }
-  | { id: string; type: "weight"; at: number; grams: number; by: string }
-  | { id: string; type: "bilirubin"; at: number; value: number; method: "skin" | "blood"; by: string }
-  | { id: string; type: "medicine"; at: number; name: string; dose: string; by: string }
-  | { id: string; type: "visit"; at: number; doctor: string; hospital: string; note?: string; by: string };
+  | { id: string; type: "weight"; at: number; grams: number; note?: string; by: string }
+  | { id: string; type: "bilirubin"; at: number; value: number; method: "skin" | "blood"; note?: string; by: string }
+  | {
+      id: string;
+      type: "medicine";
+      at: number;
+      name: string;
+      dose: string;
+      medicineId?: string;
+      status?: MedicineStatus;
+      by: string;
+    }
+  | { id: string; type: "visit"; at: number; doctor: string; hospital: string; note?: string; by: string }
+  | { id: string; type: "vaccine"; at: number; name: string; note?: string; by: string };
 
 export type PottyKind = "normal" | "loose" | "green" | "yellow" | "black";
 
@@ -21,11 +33,25 @@ export const POTTY_KINDS: { key: PottyKind; label: string }[] = [
   { key: "black", label: "Black" },
 ];
 
+export const MEDICINE_TYPES = ["Drops", "Syrup", "Tablet", "Injection", "Ointment", "Other"] as const;
+export type MedicineType = (typeof MEDICINE_TYPES)[number];
+
+export const MEDICINE_FREQUENCIES = ["Once daily", "Twice daily", "Thrice daily", "Every 6 hours", "As needed"] as const;
+export type MedicineFrequency = (typeof MEDICINE_FREQUENCIES)[number];
+
 export type Medicine = {
   id: string;
   name: string;
+  /** kept for backwards compatibility with older entries */
   dose: string;
+  /** first reminder time — mirrors times[0] */
   time: string;
+  type: MedicineType;
+  frequency: MedicineFrequency;
+  times: string[];
+  startAt: number;
+  endAt: number | null;
+  notes?: string;
   active: boolean;
 };
 
@@ -34,7 +60,19 @@ export type Appointment = {
   doctor: string;
   hospital: string;
   at: number;
+  reason?: string;
   note?: string;
+  prescription?: string | null;
+  nextVisitAt?: number | null;
+  reminder: boolean;
+};
+
+export type Vaccine = {
+  id: string;
+  name: string;
+  dueAt: number;
+  doneAt: number | null;
+  doctorNote?: string;
   reminder: boolean;
 };
 
@@ -60,8 +98,6 @@ const HOUR = 3600_000;
 const DAY = 24 * HOUR;
 
 export function makeSeed(now: number) {
-  const startOfDay = new Date(now);
-  startOfDay.setHours(0, 0, 0, 0);
   const t = (hoursAgo: number) => Math.round(now - hoursAgo * HOUR);
 
   const entries: Entry[] = [
@@ -73,11 +109,11 @@ export function makeSeed(now: number) {
     { id: uid(), type: "breast", at: t(5), side: "both", minutes: 22, by: "Mother" },
     { id: uid(), type: "pee", at: t(5.8), by: "Mother" },
     { id: uid(), type: "formula", at: t(7), ml: 30, by: "Father" },
-    { id: uid(), type: "medicine", at: t(8), name: "Vitamin D", dose: "400 IU", by: "Father" },
+    { id: uid(), type: "medicine", at: t(8), name: "Vitamin D", dose: "400 IU", status: "given", by: "Father" },
     { id: uid(), type: "sleep", at: t(9.5), minutes: 140, by: "Father" },
     { id: uid(), type: "pee", at: t(10.5), by: "Mother" },
     { id: uid(), type: "breast", at: t(11), side: "right", minutes: 18, by: "Mother" },
-    { id: uid(), type: "weight", at: now - 2 * DAY, grams: 3480, by: "Mother" },
+    { id: uid(), type: "weight", at: now - 2 * DAY, grams: 3480, note: "Morning, before feed", by: "Mother" },
     { id: uid(), type: "weight", at: now - 9 * DAY, grams: 3220, by: "Mother" },
     { id: uid(), type: "weight", at: now - 16 * DAY, grams: 3050, by: "Father" },
     { id: uid(), type: "bilirubin", at: now - 1 * DAY, value: 8.4, method: "skin", by: "Father" },
@@ -87,14 +123,76 @@ export function makeSeed(now: number) {
   ];
 
   const medicines: Medicine[] = [
-    { id: uid(), name: "Vitamin D drops", dose: "400 IU · 1 drop", time: "09:00", active: true },
-    { id: uid(), name: "Iron supplement", dose: "0.6 ml", time: "18:00", active: true },
-    { id: uid(), name: "Colic drops", dose: "as needed", time: "21:30", active: false },
+    {
+      id: uid(),
+      name: "Vitamin D drops",
+      dose: "400 IU · 1 drop",
+      time: "09:00",
+      type: "Drops",
+      frequency: "Once daily",
+      times: ["09:00"],
+      startAt: now - 20 * DAY,
+      endAt: null,
+      notes: "After the morning feed",
+      active: true,
+    },
+    {
+      id: uid(),
+      name: "Iron supplement",
+      dose: "0.6 ml",
+      time: "18:00",
+      type: "Syrup",
+      frequency: "Twice daily",
+      times: ["09:30", "18:00"],
+      startAt: now - 10 * DAY,
+      endAt: now + 20 * DAY,
+      active: true,
+    },
+    {
+      id: uid(),
+      name: "Colic drops",
+      dose: "as needed",
+      time: "21:30",
+      type: "Drops",
+      frequency: "As needed",
+      times: ["21:30"],
+      startAt: now - 5 * DAY,
+      endAt: null,
+      active: false,
+    },
   ];
 
   const appointments: Appointment[] = [
-    { id: uid(), doctor: "Dr. Ananya Rao", hospital: "Rainbow Children's", at: now + 2 * DAY + 3 * HOUR, note: "6 week check-up", reminder: true },
-    { id: uid(), doctor: "Dr. Vikram Shah", hospital: "City Clinic", at: now + 12 * DAY, note: "Vaccination — 6 in 1", reminder: true },
+    {
+      id: uid(),
+      doctor: "Dr. Ananya Rao",
+      hospital: "Rainbow Children's",
+      at: now + 2 * DAY + 3 * HOUR,
+      reason: "6 week check-up",
+      note: "Carry the growth booklet",
+      prescription: null,
+      nextVisitAt: null,
+      reminder: true,
+    },
+    {
+      id: uid(),
+      doctor: "Dr. Vikram Shah",
+      hospital: "City Clinic",
+      at: now + 12 * DAY,
+      reason: "Vaccination — 6 in 1",
+      prescription: null,
+      nextVisitAt: null,
+      reminder: true,
+    },
+  ];
+
+  const vaccines: Vaccine[] = [
+    { id: uid(), name: "BCG", dueAt: now - 26 * DAY, doneAt: now - 26 * DAY, doctorNote: "Given at birth", reminder: false },
+    { id: uid(), name: "Hepatitis B — birth dose", dueAt: now - 25 * DAY, doneAt: now - 25 * DAY, reminder: false },
+    { id: uid(), name: "OPV — 0 dose", dueAt: now - 18 * DAY, doneAt: null, doctorNote: "Missed, reschedule", reminder: true },
+    { id: uid(), name: "6 in 1 — 1st dose", dueAt: now + 12 * DAY, doneAt: null, reminder: true },
+    { id: uid(), name: "Rotavirus — 1st dose", dueAt: now + 12 * DAY, doneAt: null, reminder: true },
+    { id: uid(), name: "PCV — 1st dose", dueAt: now + 40 * DAY, doneAt: null, reminder: true },
   ];
 
   const milestones: Milestone[] = [
@@ -118,7 +216,7 @@ export function makeSeed(now: number) {
     { id: "f", name: "Rohit", role: "Father", emoji: "👨", online: true },
   ];
 
-  return { entries, medicines, appointments, milestones, baby, parents };
+  return { entries, medicines, appointments, vaccines, milestones, baby, parents };
 }
 
 export function newId() {
@@ -153,4 +251,47 @@ export function durationLabel(minutes: number) {
   const h = Math.floor(minutes / 60);
   const m = Math.round(minutes % 60);
   return h ? `${h}h ${m}m` : `${m}m`;
+}
+
+export function countdownLabel(ms: number) {
+  const abs = Math.abs(ms);
+  const h = Math.floor(abs / HOUR);
+  const m = Math.floor((abs % HOUR) / 60000);
+  if (h >= 24) return `${Math.floor(h / 24)}d ${h % 24}h`;
+  return h ? `${h}h ${m}m` : `${m}m`;
+}
+
+/** next occurrence (timestamp) of a HH:mm reminder relative to `from` */
+export function nextTimeOccurrence(hhmm: string, from: number) {
+  const [h = 0, m = 0] = hhmm.split(":").map(Number);
+  const d = new Date(from);
+  d.setHours(h, m, 0, 0);
+  if (d.getTime() <= from) d.setDate(d.getDate() + 1);
+  return d.getTime();
+}
+
+export function todayOccurrence(hhmm: string, from: number) {
+  const [h = 0, m = 0] = hhmm.split(":").map(Number);
+  const d = new Date(from);
+  d.setHours(h, m, 0, 0);
+  return d.getTime();
+}
+
+export function isMedicineActiveOn(m: Medicine, ts: number) {
+  if (!m.active) return false;
+  if (m.startAt > ts) return false;
+  if (m.endAt && m.endAt < startOfToday(ts)) return false;
+  return true;
+}
+
+export function toDateInput(ts: number) {
+  const d = new Date(ts);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+export function toDateTimeInput(ts: number) {
+  const d = new Date(ts);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${toDateInput(ts)}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
