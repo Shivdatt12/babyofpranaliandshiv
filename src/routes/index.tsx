@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { Droplets, Baby as BabyIcon, Moon, Scale, Activity, Pill, Syringe, Stethoscope, Images, Sparkles, ChevronRight } from "lucide-react";
 import babyPhoto from "@/assets/baby.jpg";
 import { AppShell, SoftCard, StatTile, ThemeToggle } from "@/components/babybond/shell";
-import { useBabyBond, useTodayStats } from "@/lib/babybond-store";
+import { useBabyBond, useTodayDoses, useTodayStats } from "@/lib/babybond-store";
 import { durationLabel, formatTime, timeAgo } from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/")({
@@ -55,6 +55,11 @@ function Countdown({ target, now }: { target: number; now: number }) {
 function Dashboard() {
   const { baby, parents, me, addEntry, now } = useBabyBond();
   const s = useTodayStats();
+  const { vaccines, appointments } = useBabyBond();
+  const doses = useTodayDoses();
+  const nextDose = doses.find((d) => d.status === "upcoming" || d.status === "due");
+  const nextVaccine = vaccines.find((v) => !v.doneAt);
+  const nextVisit = appointments.find((a) => a.at >= now);
 
   return (
     <AppShell>
@@ -164,6 +169,46 @@ function Dashboard() {
             value={s.bilirubin ? `${s.bilirubin.value}` : "—"}
             hint={s.bilirubin ? `${s.bilirubin.method} test` : "not measured"}
           />
+        </div>
+
+        <h2 className="mt-6 mb-3 font-display text-base font-bold">Care</h2>
+        <div className="space-y-2">
+          <Link to="/track/medicines" className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow">
+            <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">💊</span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold">
+                {nextDose ? nextDose.medicine.name : "No medicine left today"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {nextDose
+                  ? `${nextDose.medicine.dose} · ${formatTime(nextDose.at)} · in ${Math.max(0, Math.round((nextDose.at - now) / 60000))} min`
+                  : `${doses.length} scheduled today`}
+              </p>
+            </div>
+            <ChevronRight className="size-4 text-muted-foreground" />
+          </Link>
+          <Link to="/track/vaccines" className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow">
+            <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">🛡️</span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold">{nextVaccine ? nextVaccine.name : "All vaccines done"}</p>
+              <p className="text-xs text-muted-foreground">
+                {nextVaccine ? `Due ${new Date(nextVaccine.dueAt).toLocaleDateString([], { day: "numeric", month: "short" })}` : "Nothing pending"}
+              </p>
+            </div>
+            <ChevronRight className="size-4 text-muted-foreground" />
+          </Link>
+          <Link to="/track/doctor" className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow">
+            <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">🩺</span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold">{nextVisit ? nextVisit.doctor : "No upcoming visit"}</p>
+              <p className="text-xs text-muted-foreground">
+                {nextVisit
+                  ? `${nextVisit.hospital} · ${new Date(nextVisit.at).toLocaleDateString([], { day: "numeric", month: "short" })} ${formatTime(nextVisit.at)}`
+                  : "Book one from the doctor page"}
+              </p>
+            </div>
+            <ChevronRight className="size-4 text-muted-foreground" />
+          </Link>
         </div>
 
         <h2 className="mt-6 mb-3 font-display text-base font-bold">Trackers</h2>
