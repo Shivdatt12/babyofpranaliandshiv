@@ -10,33 +10,167 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as TimelineRouteImport } from './routes/timeline'
+import { Route as TrackBilirubinRouteImport } from './routes/track/bilirubin'
+import { Route as TrackMedicinesRouteImport } from './routes/track/medicines'
+import { Route as TrackMilkRouteImport } from './routes/track/milk'
+import { Route as TrackPottyRouteImport } from './routes/track/potty'
+import { Route as TrackSleepRouteImport } from './routes/track/sleep'
+import { Route as TrackWeightRouteImport } from './routes/track/weight'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReportsRoute = ReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TimelineRoute = TimelineRouteImport.update({
+  id: '/timeline',
+  path: '/timeline',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrackBilirubinRoute = TrackBilirubinRouteImport.update({
+  id: '/track/bilirubin',
+  path: '/track/bilirubin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrackMedicinesRoute = TrackMedicinesRouteImport.update({
+  id: '/track/medicines',
+  path: '/track/medicines',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrackMilkRoute = TrackMilkRouteImport.update({
+  id: '/track/milk',
+  path: '/track/milk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrackPottyRoute = TrackPottyRouteImport.update({
+  id: '/track/potty',
+  path: '/track/potty',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrackSleepRoute = TrackSleepRouteImport.update({
+  id: '/track/sleep',
+  path: '/track/sleep',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrackWeightRoute = TrackWeightRouteImport.update({
+  id: '/track/weight',
+  path: '/track/weight',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/profile': typeof ProfileRoute
+  '/reports': typeof ReportsRoute
+  '/timeline': typeof TimelineRoute
+  '/track/bilirubin': typeof TrackBilirubinRoute
+  '/track/medicines': typeof TrackMedicinesRoute
+  '/track/milk': typeof TrackMilkRoute
+  '/track/potty': typeof TrackPottyRoute
+  '/track/sleep': typeof TrackSleepRoute
+  '/track/weight': typeof TrackWeightRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/profile': typeof ProfileRoute
+  '/reports': typeof ReportsRoute
+  '/timeline': typeof TimelineRoute
+  '/track/bilirubin': typeof TrackBilirubinRoute
+  '/track/medicines': typeof TrackMedicinesRoute
+  '/track/milk': typeof TrackMilkRoute
+  '/track/potty': typeof TrackPottyRoute
+  '/track/sleep': typeof TrackSleepRoute
+  '/track/weight': typeof TrackWeightRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/profile': typeof ProfileRoute
+  '/reports': typeof ReportsRoute
+  '/timeline': typeof TimelineRoute
+  '/track/bilirubin': typeof TrackBilirubinRoute
+  '/track/medicines': typeof TrackMedicinesRoute
+  '/track/milk': typeof TrackMilkRoute
+  '/track/potty': typeof TrackPottyRoute
+  '/track/sleep': typeof TrackSleepRoute
+  '/track/weight': typeof TrackWeightRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/profile'
+    | '/reports'
+    | '/timeline'
+    | '/track/bilirubin'
+    | '/track/medicines'
+    | '/track/milk'
+    | '/track/potty'
+    | '/track/sleep'
+    | '/track/weight'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/profile'
+    | '/reports'
+    | '/timeline'
+    | '/track/bilirubin'
+    | '/track/medicines'
+    | '/track/milk'
+    | '/track/potty'
+    | '/track/sleep'
+    | '/track/weight'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/profile'
+    | '/reports'
+    | '/timeline'
+    | '/track/bilirubin'
+    | '/track/medicines'
+    | '/track/milk'
+    | '/track/potty'
+    | '/track/sleep'
+    | '/track/weight'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
+  ProfileRoute: typeof ProfileRoute
+  ReportsRoute: typeof ReportsRoute
+  TimelineRoute: typeof TimelineRoute
+  TrackBilirubinRoute: typeof TrackBilirubinRoute
+  TrackMedicinesRoute: typeof TrackMedicinesRoute
+  TrackMilkRoute: typeof TrackMilkRoute
+  TrackPottyRoute: typeof TrackPottyRoute
+  TrackSleepRoute: typeof TrackSleepRoute
+  TrackWeightRoute: typeof TrackWeightRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,22 +182,92 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reports': {
+      id: '/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/timeline': {
+      id: '/timeline'
+      path: '/timeline'
+      fullPath: '/timeline'
+      preLoaderRoute: typeof TimelineRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/track/bilirubin': {
+      id: '/track/bilirubin'
+      path: '/track/bilirubin'
+      fullPath: '/track/bilirubin'
+      preLoaderRoute: typeof TrackBilirubinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/track/medicines': {
+      id: '/track/medicines'
+      path: '/track/medicines'
+      fullPath: '/track/medicines'
+      preLoaderRoute: typeof TrackMedicinesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/track/milk': {
+      id: '/track/milk'
+      path: '/track/milk'
+      fullPath: '/track/milk'
+      preLoaderRoute: typeof TrackMilkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/track/potty': {
+      id: '/track/potty'
+      path: '/track/potty'
+      fullPath: '/track/potty'
+      preLoaderRoute: typeof TrackPottyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/track/sleep': {
+      id: '/track/sleep'
+      path: '/track/sleep'
+      fullPath: '/track/sleep'
+      preLoaderRoute: typeof TrackSleepRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/track/weight': {
+      id: '/track/weight'
+      path: '/track/weight'
+      fullPath: '/track/weight'
+      preLoaderRoute: typeof TrackWeightRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
+  ProfileRoute: ProfileRoute,
+  ReportsRoute: ReportsRoute,
+  TimelineRoute: TimelineRoute,
+  TrackBilirubinRoute: TrackBilirubinRoute,
+  TrackMedicinesRoute: TrackMedicinesRoute,
+  TrackMilkRoute: TrackMilkRoute,
+  TrackPottyRoute: TrackPottyRoute,
+  TrackSleepRoute: TrackSleepRoute,
+  TrackWeightRoute: TrackWeightRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
