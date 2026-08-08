@@ -193,8 +193,10 @@ function MilkTracker() {
                   {e.type === "breast" ? "🤱" : "🍼"}
                 </span>
                 <div className="flex-1">
-                  <p className="text-sm font-bold capitalize">
-                    {e.type === "breast" ? `${e.side} · ${durationLabel(e.minutes)}` : `${e.ml} ml formula`}
+                  <p className="text-sm font-bold">
+                    {e.type === "breast"
+                      ? `${e.side[0]?.toUpperCase()}${e.side.slice(1)} · ${durationLabel(e.minutes)}`
+                      : `${e.ml} ml formula`}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {formatTime(e.at)} · {timeAgo(e.at, now)} · {e.by}
