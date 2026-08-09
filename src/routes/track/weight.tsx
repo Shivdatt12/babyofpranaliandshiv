@@ -10,6 +10,7 @@ import { useBabyBond } from "@/lib/babybond-store";
 import { formatDate, type Entry } from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/track/weight")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Weight & growth — BabyBond" },

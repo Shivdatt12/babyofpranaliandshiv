@@ -9,6 +9,7 @@ import { useBabyBond } from "@/lib/babybond-store";
 import { bilirubinLevel, formatDate, type Entry } from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/track/bilirubin")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Bilirubin tracker — BabyBond" },

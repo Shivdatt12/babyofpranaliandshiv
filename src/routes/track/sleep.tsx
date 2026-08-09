@@ -6,6 +6,7 @@ import { useBabyBond, useTodayStats } from "@/lib/babybond-store";
 import { durationLabel, formatTime, timeAgo } from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/track/sleep")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Sleep tracker — BabyBond" },

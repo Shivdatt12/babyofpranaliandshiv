@@ -7,6 +7,7 @@ import { useBabyBond, useTodayStats } from "@/lib/babybond-store";
 import { POTTY_KINDS, formatTime, timeAgo, type PottyKind } from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/track/potty")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Nappy tracker — BabyBond" },

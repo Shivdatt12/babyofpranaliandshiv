@@ -11,6 +11,7 @@ import { useBabyBond } from "@/lib/babybond-store";
 import { toDateInput } from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/settings")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Settings — BabyBond" },

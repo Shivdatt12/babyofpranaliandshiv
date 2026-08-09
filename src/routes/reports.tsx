@@ -8,6 +8,7 @@ import { useBabyBond } from "@/lib/babybond-store";
 import { durationLabel, formatDate, formatTime, type Entry } from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/reports")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Reports — BabyBond" },

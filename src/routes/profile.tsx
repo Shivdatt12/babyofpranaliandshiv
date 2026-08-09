@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { useBabyBond, useTodayStats } from "@/lib/babybond-store";
 
 export const Route = createFileRoute("/profile")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Family profile — BabyBond" },

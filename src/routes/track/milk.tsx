@@ -11,6 +11,7 @@ import { useBabyBond, useTodayStats } from "@/lib/babybond-store";
 import { durationLabel, formatTime, timeAgo, type FeedSide } from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/track/milk")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Milk tracker — BabyBond" },

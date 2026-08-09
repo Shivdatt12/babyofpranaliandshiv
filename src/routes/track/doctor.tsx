@@ -11,6 +11,7 @@ import { useBabyBond } from "@/lib/babybond-store";
 import { formatDate, formatTime, type Entry, type FollowUpStatus } from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/track/doctor")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Doctor visits — BabyBond" },

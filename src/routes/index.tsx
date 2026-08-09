@@ -7,6 +7,7 @@ import { useBabyBond, useTodayDoses, useTodayStats } from "@/lib/babybond-store"
 import { durationLabel, formatTime, timeAgo } from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "BabyBond — Today with your little one" },

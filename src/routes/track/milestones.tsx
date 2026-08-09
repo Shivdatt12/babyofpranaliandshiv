@@ -6,6 +6,7 @@ import { useBabyBond } from "@/lib/babybond-store";
 import { formatDate } from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/track/milestones")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Milestones — BabyBond" },
