@@ -55,6 +55,8 @@ export type Medicine = {
   active: boolean;
 };
 
+export type FollowUpStatus = "pending" | "done" | "not-needed";
+
 export type Appointment = {
   id: string;
   doctor: string;
@@ -62,8 +64,13 @@ export type Appointment = {
   at: number;
   reason?: string;
   note?: string;
+  diagnosis?: string;
+  /** legacy single prescription image */
   prescription?: string | null;
+  /** data-URL prescription photos (camera or gallery) */
+  prescriptions?: string[];
   nextVisitAt?: number | null;
+  followUp?: FollowUpStatus;
   reminder: boolean;
 };
 
@@ -88,9 +95,37 @@ export type Baby = {
   bornAt: number;
   gender: "girl" | "boy";
   bloodGroup: string;
+  photo?: string | null;
 };
 
 export type Parent = { id: string; name: string; role: "Mother" | "Father"; emoji: string; online: boolean };
+
+export type Settings = {
+  medicineReminders: boolean;
+  feedReminders: boolean;
+  vaccineReminders: boolean;
+  doctorReminders: boolean;
+  feedGapHours: number;
+  vaccineLeadDays: number;
+  doctorLeadHours: number;
+};
+
+export const DEFAULT_SETTINGS: Settings = {
+  medicineReminders: true,
+  feedReminders: true,
+  vaccineReminders: true,
+  doctorReminders: true,
+  feedGapHours: 3,
+  vaccineLeadDays: 2,
+  doctorLeadHours: 24,
+};
+
+/** Rough newborn jaundice bands (mg/dL) used only to highlight readings. */
+export function bilirubinLevel(value: number): "normal" | "watch" | "high" {
+  if (value >= 15) return "high";
+  if (value >= 12) return "watch";
+  return "normal";
+}
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
