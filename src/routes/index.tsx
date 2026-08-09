@@ -7,6 +7,7 @@ import { useBabyBond, useTodayDoses, useTodayStats } from "@/lib/babybond-store"
 import { durationLabel, formatTime, timeAgo } from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "BabyBond — Today with your little one" },
@@ -74,7 +75,7 @@ function Dashboard() {
 
         <div className="mt-5 flex items-center gap-4">
           <img
-            src={babyPhoto}
+            src={baby.photo || babyPhoto}
             alt={`${baby.name} sleeping in a soft blanket`}
             width={768}
             height={768}

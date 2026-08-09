@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ReportsRouteImport } from './routes/reports'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TimelineRouteImport } from './routes/timeline'
 import { Route as TrackAlbumRouteImport } from './routes/track/album'
 import { Route as TrackBilirubinRouteImport } from './routes/track/bilirubin'
@@ -43,6 +44,11 @@ const ProfileRoute = ProfileRouteImport.update({
 const ReportsRoute = ReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TimelineRoute = TimelineRouteImport.update({
@@ -106,6 +112,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
+  '/settings': typeof SettingsRoute
   '/timeline': typeof TimelineRoute
   '/track/album': typeof TrackAlbumRoute
   '/track/bilirubin': typeof TrackBilirubinRoute
@@ -123,6 +130,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
+  '/settings': typeof SettingsRoute
   '/timeline': typeof TimelineRoute
   '/track/album': typeof TrackAlbumRoute
   '/track/bilirubin': typeof TrackBilirubinRoute
@@ -141,6 +149,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
+  '/settings': typeof SettingsRoute
   '/timeline': typeof TimelineRoute
   '/track/album': typeof TrackAlbumRoute
   '/track/bilirubin': typeof TrackBilirubinRoute
@@ -160,6 +169,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/profile'
     | '/reports'
+    | '/settings'
     | '/timeline'
     | '/track/album'
     | '/track/bilirubin'
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/profile'
     | '/reports'
+    | '/settings'
     | '/timeline'
     | '/track/album'
     | '/track/bilirubin'
@@ -194,6 +205,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/profile'
     | '/reports'
+    | '/settings'
     | '/timeline'
     | '/track/album'
     | '/track/bilirubin'
@@ -212,6 +224,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ProfileRoute: typeof ProfileRoute
   ReportsRoute: typeof ReportsRoute
+  SettingsRoute: typeof SettingsRoute
   TimelineRoute: typeof TimelineRoute
   TrackAlbumRoute: typeof TrackAlbumRoute
   TrackBilirubinRoute: typeof TrackBilirubinRoute
@@ -253,6 +266,13 @@ declare module '@tanstack/react-router' {
       path: '/reports'
       fullPath: '/reports'
       preLoaderRoute: typeof ReportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/timeline': {
@@ -340,6 +360,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ProfileRoute: ProfileRoute,
   ReportsRoute: ReportsRoute,
+  SettingsRoute: SettingsRoute,
   TimelineRoute: TimelineRoute,
   TrackAlbumRoute: TrackAlbumRoute,
   TrackBilirubinRoute: TrackBilirubinRoute,

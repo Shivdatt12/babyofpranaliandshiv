@@ -10,6 +10,7 @@ import { useBabyBond } from "@/lib/babybond-store";
 import { formatDate, startOfToday } from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/track/vaccines")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Vaccination tracker — BabyBond" },

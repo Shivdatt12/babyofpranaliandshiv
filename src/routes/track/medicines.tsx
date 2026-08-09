@@ -22,6 +22,7 @@ import {
 } from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/track/medicines")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Medicines & reminders — BabyBond" },

@@ -7,6 +7,7 @@ import { useBabyBond } from "@/lib/babybond-store";
 import { formatDate } from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/track/album")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Photo album — BabyBond" },

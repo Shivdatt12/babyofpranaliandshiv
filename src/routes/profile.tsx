@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Bell, UserPlus, LogOut, ChevronRight, Wifi, RefreshCw } from "lucide-react";
+import { Bell, UserPlus, LogOut, ChevronRight, Wifi, RefreshCw, Settings as SettingsIcon } from "lucide-react";
 import babyPhoto from "@/assets/baby.jpg";
 import { AppShell, PageHeader, SoftCard, ThemeToggle } from "@/components/babybond/shell";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { useBabyBond, useTodayStats } from "@/lib/babybond-store";
 
 export const Route = createFileRoute("/profile")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Family profile — BabyBond" },
@@ -29,7 +30,7 @@ function Profile() {
       <div className="space-y-4 px-5 pb-6">
         <SoftCard className="flex items-center gap-4">
           <img
-            src={babyPhoto}
+            src={baby.photo || babyPhoto}
             alt={`${baby.name}`}
             loading="lazy"
             width={768}
@@ -112,6 +113,15 @@ function Profile() {
             Entries are cached on your phone and upload automatically when you're back online.
           </p>
         </div>
+
+        <Link
+          to="/settings"
+          className="flex items-center gap-3 rounded-3xl bg-card p-4 text-sm font-semibold bb-shadow"
+        >
+          <SettingsIcon className="size-5 text-muted-foreground" />
+          <span className="flex-1">All settings</span>
+          <ChevronRight className="size-4 text-muted-foreground" />
+        </Link>
 
         <div className="flex items-center gap-3">
           <ThemeToggle />
