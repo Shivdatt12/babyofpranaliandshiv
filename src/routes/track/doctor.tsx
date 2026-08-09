@@ -197,7 +197,10 @@ function Doctor() {
                 accept="image/*"
                 capture="environment"
                 className="hidden"
-                onChange={async (e) => setShots((prev) => [...prev, ...(await readFiles(e.target.files))])}
+                onChange={async (e) => {
+                  const imgs = await readFiles(e.target.files);
+                  setShots((prev) => [...prev, ...imgs]);
+                }}
               />
               <input
                 ref={galleryRef}
@@ -205,7 +208,10 @@ function Doctor() {
                 accept="image/*"
                 multiple
                 className="hidden"
-                onChange={async (e) => setShots((prev) => [...prev, ...(await readFiles(e.target.files))])}
+                onChange={async (e) => {
+                  const imgs = await readFiles(e.target.files);
+                  setShots((prev) => [...prev, ...imgs]);
+                }}
               />
             </div>
 
