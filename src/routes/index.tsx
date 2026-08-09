@@ -74,7 +74,7 @@ function Dashboard() {
 
         <div className="mt-5 flex items-center gap-4">
           <img
-            src={babyPhoto}
+            src={baby.photo || babyPhoto}
             alt={`${baby.name} sleeping in a soft blanket`}
             width={768}
             height={768}
