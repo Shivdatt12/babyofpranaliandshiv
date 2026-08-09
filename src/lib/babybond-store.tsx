@@ -12,6 +12,8 @@ import {
   type Milestone,
   type Parent,
   type Vaccine,
+  type Settings,
+  DEFAULT_SETTINGS,
 } from "./babybond-data";
 
 type Snapshot = {
@@ -22,6 +24,8 @@ type Snapshot = {
   vaccines: Vaccine[];
   milestones: Milestone[];
   meId: string;
+  parents?: Parent[];
+  settings?: Settings;
 };
 
 type Store = {
@@ -52,6 +56,12 @@ type Store = {
   completeVaccine: (id: string, at?: number) => void;
   toggleMilestone: (id: string) => void;
   switchParent: (id: string) => void;
+  updateParent: (id: string, p: Partial<Parent>) => void;
+  settings: Settings;
+  updateSettings: (s: Partial<Settings>) => void;
+  exportData: () => string;
+  importData: (json: string) => boolean;
+  resetData: () => void;
 };
 
 const Ctx = createContext<Store | null>(null);
@@ -79,6 +89,8 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
   const [vaccines, setVaccines] = useState<Vaccine[]>(seed.vaccines);
   const [milestones, setMilestones] = useState<Milestone[]>(seed.milestones);
   const [meId, setMeId] = useState("m");
+  const [parents, setParents] = useState<Parent[]>(seed.parents);
+  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [hydrated, setHydrated] = useState(false);
   const [online, setOnline] = useState(true);
   const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
@@ -97,6 +109,8 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     setAppointments(s.appointments);
     setVaccines(s.vaccines ?? []);
     setMilestones(s.milestones);
+    if (s.parents) setParents(s.parents);
+    if (s.settings) setSettings({ ...DEFAULT_SETTINGS, ...s.settings });
     setLastSyncedAt(Date.now());
   };
 
@@ -129,7 +143,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
   // persist + broadcast
   useEffect(() => {
     if (!hydrated) return;
-    const snapshot: Snapshot = { baby, entries, medicines, appointments, vaccines, milestones, meId };
+    const snapshot: Snapshot = { baby, entries, medicines, appointments, vaccines, milestones, meId, parents, settings };
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
     } catch {
@@ -145,15 +159,15 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       ch.postMessage({ type: "snapshot", payload: snapshot });
       ch.close();
     }
-  }, [hydrated, baby, entries, medicines, appointments, vaccines, milestones, meId]);
+  }, [hydrated, baby, entries, medicines, appointments, vaccines, milestones, meId, parents, settings]);
 
   const value = useMemo<Store>(() => {
-    const me = (seed.parents.find((p) => p.id === meId) ?? seed.parents[0]) as Parent;
+    const me = (parents.find((p) => p.id === meId) ?? parents[0]) as Parent;
     const push = (e: Entry) => setEntries((prev) => [e, ...prev]);
     return {
       now,
       baby,
-      parents: seed.parents,
+      parents,
       me,
       entries: [...entries].sort((a, b) => b.at - a.at),
       medicines,
@@ -206,8 +220,27 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
           prev.map((m) => (m.id === id ? { ...m, achievedAt: m.achievedAt ? null : Date.now() } : m)),
         ),
       switchParent: setMeId,
+      updateParent: (id, patch) => setParents((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p))),
+      settings,
+      updateSettings: (patch) => setSettings((prev) => ({ ...prev, ...patch })),
+      exportData: () =>
+        JSON.stringify({ baby, entries, medicines, appointments, vaccines, milestones, meId, parents, settings }, null, 2),
+      importData: (json) => {
+        try {
+          const parsed = JSON.parse(json) as Snapshot;
+          if (!parsed || !parsed.baby || !Array.isArray(parsed.entries)) return false;
+          applySnapshot(parsed);
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      resetData: () => {
+        const fresh = makeSeed(Date.now());
+        applySnapshot({ ...fresh, meId, settings: DEFAULT_SETTINGS });
+      },
     };
-  }, [now, baby, entries, medicines, appointments, vaccines, milestones, meId, seed.parents, online, lastSyncedAt]);
+  }, [now, baby, entries, medicines, appointments, vaccines, milestones, meId, parents, settings, online, lastSyncedAt]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
