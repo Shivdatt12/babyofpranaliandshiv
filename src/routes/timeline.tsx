@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
 import { useBabyBond } from "@/lib/babybond-store";
 import { durationLabel, formatDate, formatTime, type Entry } from "@/lib/babybond-data";
@@ -28,11 +29,11 @@ export function describe(e: Entry): { emoji: string; title: string; detail: stri
     case "sleep":
       return { emoji: "🌙", title: "Sleep", detail: durationLabel(e.minutes) };
     case "weight":
-      return { emoji: "⚖️", title: "Weight", detail: `${(e.grams / 1000).toFixed(2)} kg` };
+      return { emoji: "⚖️", title: "Weight", detail: `${(e.grams / 1000).toFixed(2)} kg${e.note ? ` · ${e.note}` : ""}` };
     case "bilirubin":
       return { emoji: "🩸", title: "Bilirubin", detail: `${e.value} · ${e.method} test` };
     case "medicine":
-      return { emoji: "💊", title: e.name, detail: e.dose };
+      return { emoji: "💊", title: e.name, detail: `${e.dose}${e.status ? ` · ${e.status}` : ""}` };
     case "visit":
       return { emoji: "🩺", title: e.doctor, detail: `${e.hospital}${e.note ? ` · ${e.note}` : ""}` };
     case "vaccine":
@@ -40,10 +41,38 @@ export function describe(e: Entry): { emoji: string; title: string; detail: stri
   }
 }
 
+const FILTERS = [
+  { key: "all", label: "All", emoji: "✨" },
+  { key: "breast", label: "Breastfeed", emoji: "🤱" },
+  { key: "formula", label: "Formula", emoji: "🍼" },
+  { key: "pee", label: "Pee", emoji: "💛" },
+  { key: "potty", label: "Potty", emoji: "💩" },
+  { key: "sleep", label: "Sleep", emoji: "🌙" },
+  { key: "medicine", label: "Medicine", emoji: "💊" },
+  { key: "weight", label: "Weight", emoji: "⚖️" },
+  { key: "bilirubin", label: "Bilirubin", emoji: "🩸" },
+  { key: "vaccine", label: "Vaccine", emoji: "🛡️" },
+  { key: "visit", label: "Doctor", emoji: "🩺" },
+] as const;
+
+const RANGES = [
+  { key: 1, label: "Today" },
+  { key: 7, label: "7 days" },
+  { key: 30, label: "30 days" },
+  { key: 0, label: "All" },
+] as const;
 
 function Timeline() {
-  const { entries } = useBabyBond();
-  const groups = entries.reduce<Record<string, Entry[]>>((acc, e) => {
+  const { entries, now } = useBabyBond();
+  const [type, setType] = useState<(typeof FILTERS)[number]["key"]>("all");
+  const [days, setDays] = useState<number>(7);
+
+  const filtered = useMemo(() => {
+    const from = days ? new Date(new Date(now).setHours(0, 0, 0, 0)).getTime() - (days - 1) * 86400000 : 0;
+    return entries.filter((e) => e.at >= from && (type === "all" || e.type === type));
+  }, [entries, type, days, now]);
+
+  const groups = filtered.reduce<Record<string, Entry[]>>((acc, e) => {
     const key = new Date(e.at).toDateString();
     (acc[key] ||= []).push(e);
     return acc;
@@ -52,7 +81,41 @@ function Timeline() {
   return (
     <AppShell>
       <PageHeader title="Timeline" subtitle="Everything, from both parents" />
-      <div className="space-y-6 px-5 pb-6">
+      <div className="space-y-4 px-5 pb-6">
+        <div className="flex gap-2">
+          {RANGES.map((r) => (
+            <button
+              key={r.key}
+              type="button"
+              onClick={() => setDays(r.key)}
+              className={`flex-1 rounded-2xl px-3 py-2 text-xs font-semibold transition-colors ${
+                days === r.key ? "bb-gradient text-primary-foreground" : "bg-card text-muted-foreground bb-shadow"
+              }`}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
+          {FILTERS.map((f) => (
+            <button
+              key={f.key}
+              type="button"
+              onClick={() => setType(f.key)}
+              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                type === f.key ? "bb-gradient text-primary-foreground" : "bg-secondary text-secondary-foreground"
+              }`}
+            >
+              {f.emoji} {f.label}
+            </button>
+          ))}
+        </div>
+
+        {Object.keys(groups).length === 0 ? (
+          <SoftCard className="text-center text-sm text-muted-foreground">Nothing logged for this filter yet.</SoftCard>
+        ) : null}
+
         {Object.entries(groups).map(([day, list]) => (
           <section key={day}>
             <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
