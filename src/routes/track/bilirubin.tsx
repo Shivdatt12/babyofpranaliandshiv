@@ -6,7 +6,7 @@ import { AppShell, PageHeader, SoftCard, StatTile } from "@/components/babybond/
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useBabyBond } from "@/lib/babybond-store";
-import { formatDate, type Entry } from "@/lib/babybond-data";
+import { bilirubinLevel, formatDate, type Entry } from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/track/bilirubin")({
   head: () => ({
@@ -20,9 +20,16 @@ export const Route = createFileRoute("/track/bilirubin")({
   component: BilirubinTracker,
 });
 
+const LEVEL_TEXT: Record<string, string> = {
+  normal: "Normal range",
+  watch: "Slightly raised — keep watching",
+  high: "High — check with your doctor",
+};
+
 function BilirubinTracker() {
   const { addEntry, entries } = useBabyBond();
   const [value, setValue] = useState("");
+  const [note, setNote] = useState("");
   const [method, setMethod] = useState<"skin" | "blood">("skin");
 
   const list = (entries.filter((e) => e.type === "bilirubin") as Extract<Entry, { type: "bilirubin" }>[])
@@ -30,6 +37,7 @@ function BilirubinTracker() {
     .sort((a, b) => a.at - b.at);
   const data = list.map((b) => ({ date: formatDate(b.at), value: b.value }));
   const latest = list[list.length - 1];
+  const level = latest ? bilirubinLevel(latest.value) : "normal";
 
   return (
     <AppShell>
@@ -39,6 +47,26 @@ function BilirubinTracker() {
           <StatTile tone="health" emoji="🩸" label="Latest" value={latest ? `${latest.value}` : "—"} hint={latest?.method} />
           <StatTile tone="health" emoji="📉" label="Readings" value={`${list.length}`} hint="all time" />
         </div>
+
+        {latest ? (
+          <SoftCard
+            className={`flex items-center gap-3 py-3 ${
+              level === "high" ? "bg-destructive/10" : level === "watch" ? "bg-potty" : ""
+            }`}
+          >
+            <span className="grid size-10 place-items-center rounded-2xl bg-card/70 text-lg">
+              {level === "high" ? "⚠️" : level === "watch" ? "👀" : "✅"}
+            </span>
+            <div className="flex-1">
+              <p className="text-sm font-bold">
+                {latest.value} mg/dL · {LEVEL_TEXT[level]}
+              </p>
+              <p className="text-xs opacity-70">
+                {latest.method} test · {formatDate(latest.at)} · {latest.by}
+              </p>
+            </div>
+          </SoftCard>
+        ) : null}
 
         <SoftCard>
           <p className="text-sm font-bold">Trend</p>
@@ -84,7 +112,7 @@ function BilirubinTracker() {
               </button>
             ))}
           </div>
-          <div className="mt-3 flex gap-2">
+          <div className="mt-3 space-y-2">
             <Input
               inputMode="decimal"
               placeholder="mg/dL e.g. 8.4"
@@ -92,13 +120,20 @@ function BilirubinTracker() {
               onChange={(e) => setValue(e.target.value)}
               className="h-12 rounded-2xl bg-card/80"
             />
+            <Input
+              placeholder="Note (optional) — e.g. under phototherapy"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              className="h-12 rounded-2xl bg-card/80"
+            />
             <Button
-              className="h-12 rounded-2xl bb-gradient text-primary-foreground"
+              className="h-12 w-full rounded-2xl bb-gradient text-primary-foreground"
               onClick={() => {
                 const v = Number(value);
                 if (!v) return;
-                addEntry({ type: "bilirubin", value: v, method } as never);
+                addEntry({ type: "bilirubin", value: v, method, ...(note ? { note } : {}) } as never);
                 setValue("");
+                setNote("");
                 toast.success(`Bilirubin ${v} saved`);
               }}
             >
@@ -107,21 +142,33 @@ function BilirubinTracker() {
           </div>
         </SoftCard>
 
-        <div className="space-y-2">
-          {list
-            .slice()
-            .reverse()
-            .map((b) => (
-              <SoftCard key={b.id} className="flex items-center gap-3 py-3">
-                <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">🩸</span>
-                <div className="flex-1">
-                  <p className="text-sm font-bold">{b.value} mg/dL</p>
-                  <p className="text-xs capitalize text-muted-foreground">
-                    {b.method} test · {formatDate(b.at)} · {b.by}
-                  </p>
-                </div>
-              </SoftCard>
-            ))}
+        <div>
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">History</h2>
+          <div className="space-y-2">
+            {list
+              .slice()
+              .reverse()
+              .map((b) => {
+                const l = bilirubinLevel(b.value);
+                return (
+                  <SoftCard
+                    key={b.id}
+                    className={`flex items-center gap-3 py-3 ${l === "high" ? "bg-destructive/10" : l === "watch" ? "bg-potty text-potty-foreground" : ""}`}
+                  >
+                    <span className="grid size-10 place-items-center rounded-2xl bg-card/70 text-lg">
+                      {l === "normal" ? "🩸" : l === "watch" ? "👀" : "⚠️"}
+                    </span>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold">{b.value} mg/dL</p>
+                      <p className="text-xs capitalize opacity-70">
+                        {b.method} test · {formatDate(b.at)} · {b.by}
+                        {b.note ? ` · ${b.note}` : ""}
+                      </p>
+                    </div>
+                  </SoftCard>
+                );
+              })}
+          </div>
         </div>
       </div>
     </AppShell>
