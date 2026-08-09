@@ -155,7 +155,10 @@ function Settings() {
             <button
               type="button"
               onClick={() => {
-                if (typeof Notification === "undefined") return toast.error("Notifications unsupported here");
+                if (typeof Notification === "undefined") {
+                  toast.error("Notifications unsupported here");
+                  return;
+                }
                 void Notification.requestPermission().then((p) =>
                   p === "granted" ? toast.success("Notifications allowed") : toast("Notifications blocked"),
                 );
