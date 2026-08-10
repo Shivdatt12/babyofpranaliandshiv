@@ -1,5 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import type { Appointment, Baby, Entry, Medicine, Milestone, Settings, Vaccine } from "./babybond-data";
+
 
 export type DocTable = "medicines" | "appointments" | "vaccines" | "milestones";
 export type SyncTable = DocTable | "entries" | "babies" | "family_settings";
