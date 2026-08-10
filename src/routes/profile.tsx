@@ -21,7 +21,7 @@ export const Route = createFileRoute("/profile")({
 });
 
 function Profile() {
-  const { baby, setBaby, parents, me, switchParent } = useBabyBond();
+  const { baby, setBaby, parents, me, switchParent, authed, signOut } = useBabyBond();
   const s = useTodayStats();
 
   return (
