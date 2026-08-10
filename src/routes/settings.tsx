@@ -72,6 +72,12 @@ function Settings() {
       <PageHeader title="Settings" subtitle="Profiles, reminders & data" />
       <div className="space-y-4 px-5 pb-6">
         <div>
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Account</h2>
+          <AccountCard />
+        </div>
+
+        <div>
+
           <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Baby profile</h2>
           <SoftCard className="space-y-3">
             <div className="flex items-center gap-4">
