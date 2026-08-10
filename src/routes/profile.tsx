@@ -128,12 +128,23 @@ function Profile() {
           <span className="flex-1 text-sm font-semibold">Light / dark mode</span>
         </div>
 
-        <Link
-          to="/auth"
-          className="flex items-center justify-center gap-2 rounded-3xl bg-card p-4 text-sm font-semibold text-destructive bb-shadow"
-        >
-          <LogOut className="size-4" /> Sign out
-        </Link>
+        {authed ? (
+          <button
+            type="button"
+            onClick={() => void signOut().then(() => toast.success("Signed out"))}
+            className="flex w-full items-center justify-center gap-2 rounded-3xl bg-card p-4 text-sm font-semibold text-destructive bb-shadow"
+          >
+            <LogOut className="size-4" /> Sign out
+          </button>
+        ) : (
+          <Link
+            to="/auth"
+            className="flex items-center justify-center gap-2 rounded-3xl bg-card p-4 text-sm font-semibold bb-shadow"
+          >
+            <LogOut className="size-4" /> Sign in to sync
+          </Link>
+        )}
+
       </div>
     </AppShell>
   );
