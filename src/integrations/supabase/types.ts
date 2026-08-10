@@ -14,13 +14,293 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      appointments: {
+        Row: {
+          created_by: string | null
+          data: Json
+          family_id: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_by?: string | null
+          data?: Json
+          family_id: string
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_by?: string | null
+          data?: Json
+          family_id?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      babies: {
+        Row: {
+          data: Json
+          family_id: string
+          updated_at: string
+        }
+        Insert: {
+          data?: Json
+          family_id: string
+          updated_at?: string
+        }
+        Update: {
+          data?: Json
+          family_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "babies_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: true
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      entries: {
+        Row: {
+          at: string
+          created_at: string
+          created_by: string | null
+          data: Json
+          family_id: string
+          id: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          at: string
+          created_at?: string
+          created_by?: string | null
+          data?: Json
+          family_id: string
+          id: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          at?: string
+          created_at?: string
+          created_by?: string | null
+          data?: Json
+          family_id?: string
+          id?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entries_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      families: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          invite_code: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          invite_code?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          invite_code?: string
+        }
+        Relationships: []
+      }
+      family_settings: {
+        Row: {
+          data: Json
+          family_id: string
+          updated_at: string
+        }
+        Insert: {
+          data?: Json
+          family_id: string
+          updated_at?: string
+        }
+        Update: {
+          data?: Json
+          family_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_settings_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: true
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medicines: {
+        Row: {
+          created_by: string | null
+          data: Json
+          family_id: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_by?: string | null
+          data?: Json
+          family_id: string
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_by?: string | null
+          data?: Json
+          family_id?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medicines_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      milestones: {
+        Row: {
+          created_by: string | null
+          data: Json
+          family_id: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_by?: string | null
+          data?: Json
+          family_id: string
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_by?: string | null
+          data?: Json
+          family_id?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "milestones_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string
+          emoji: string
+          family_id: string | null
+          id: string
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string
+          emoji?: string
+          family_id?: string | null
+          id: string
+          role?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          emoji?: string
+          family_id?: string | null
+          id?: string
+          role?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vaccines: {
+        Row: {
+          created_by: string | null
+          data: Json
+          family_id: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_by?: string | null
+          data?: Json
+          family_id: string
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_by?: string | null
+          data?: Json
+          family_id?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vaccines_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      join_family_by_code: { Args: { _code: string }; Returns: string }
+      my_family_id: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never
