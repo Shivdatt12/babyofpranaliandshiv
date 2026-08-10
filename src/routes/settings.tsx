@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { Bell, Download, Upload, Camera, RotateCcw, Info } from "lucide-react";
+import { Bell, Download, Upload, Camera, RotateCcw, Info, LogIn, LogOut, UserPlus, Copy } from "lucide-react";
 import babyPhoto from "@/assets/baby.jpg";
 import { AppShell, PageHeader, SoftCard, ThemeToggle } from "@/components/babybond/shell";
 import { Input } from "@/components/ui/input";
@@ -251,5 +251,93 @@ function Settings() {
         </SoftCard>
       </div>
     </AppShell>
+  );
+}
+
+function AccountCard() {
+  const { authed, authEmail, inviteCode, joinFamily, signOut, online, pendingCount } = useBabyBond();
+  const [code, setCode] = useState("");
+  const [joining, setJoining] = useState(false);
+
+  if (!authed) {
+    return (
+      <SoftCard className="space-y-3">
+        <div className="flex items-center gap-3">
+          <LogIn className="size-5 text-muted-foreground" />
+          <p className="flex-1 text-sm font-semibold">Not signed in</p>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Sign in to sync this journal live between both parents' phones and keep a cloud backup.
+        </p>
+        <Button asChild className="h-11 w-full rounded-2xl bb-gradient text-primary-foreground">
+          <Link to="/auth">Sign in / create account</Link>
+        </Button>
+      </SoftCard>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <SoftCard className="space-y-3">
+        <div className="flex items-center gap-3">
+          <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">👤</span>
+          <div className="flex-1">
+            <p className="text-sm font-bold">{authEmail}</p>
+            <p className="text-[11px] text-muted-foreground">
+              {online ? "Synced live" : "Offline"}
+              {pendingCount ? ` · ${pendingCount} change${pendingCount > 1 ? "s" : ""} waiting` : ""}
+            </p>
+          </div>
+        </div>
+
+        {inviteCode && (
+          <button
+            type="button"
+            onClick={() => {
+              void navigator.clipboard?.writeText(inviteCode);
+              toast.success("Invite code copied", { description: "Share it with your partner." });
+            }}
+            className="flex w-full items-center gap-3 rounded-2xl bg-secondary p-3 text-secondary-foreground"
+          >
+            <UserPlus className="size-5" />
+            <span className="flex-1 text-left text-sm font-semibold">
+              Invite code · <span className="font-display tracking-widest">{inviteCode}</span>
+            </span>
+            <Copy className="size-4" />
+          </button>
+        )}
+
+        <div className="flex gap-2">
+          <Input
+            value={code}
+            onChange={(e) => setCode(e.target.value.toUpperCase())}
+            placeholder="Partner's code"
+            className="h-11 flex-1 rounded-2xl tracking-widest"
+          />
+          <Button
+            variant="secondary"
+            disabled={joining || code.length < 4}
+            className="h-11 rounded-2xl"
+            onClick={() => {
+              setJoining(true);
+              void joinFamily(code)
+                .then(() => toast.success("Joined the family journal"))
+                .catch(() => toast.error("That code didn't work"))
+                .finally(() => setJoining(false));
+            }}
+          >
+            Join
+          </Button>
+        </div>
+      </SoftCard>
+
+      <button
+        type="button"
+        onClick={() => void signOut().then(() => toast.success("Signed out"))}
+        className="flex w-full items-center justify-center gap-2 rounded-3xl bg-card p-3 text-sm font-semibold text-destructive bb-shadow"
+      >
+        <LogOut className="size-4" /> Sign out
+      </button>
+    </div>
   );
 }
