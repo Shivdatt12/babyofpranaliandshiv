@@ -19,19 +19,23 @@ export const asUuid = (id: string) =>
 
 type Row = { id: string; data?: Record<string, unknown> | null; [k: string]: unknown };
 
-export function entryToRow(e: Entry, familyId: string, userId: string | null) {
+export type EntryRow = { id: string; family_id: string; at: string; type: string; data: Json; created_by: string | null };
+export type DocRow = { id: string; family_id: string; data: Json; created_by: string | null };
+
+export function entryToRow(e: Entry, familyId: string, userId: string | null): EntryRow {
   const { id, at, type, ...rest } = e as Entry & Record<string, unknown>;
-  return { id, family_id: familyId, at: new Date(at).toISOString(), type, data: rest, created_by: userId };
+  return { id, family_id: familyId, at: new Date(at).toISOString(), type, data: rest as Json, created_by: userId };
 }
 
 export function rowToEntry(r: Row & { at: string; type: string }): Entry {
   return { id: r.id, type: r.type, at: new Date(r.at).getTime(), ...(r.data ?? {}) } as unknown as Entry;
 }
 
-export function docToRow(doc: { id: string }, familyId: string, userId: string | null) {
+export function docToRow(doc: { id: string }, familyId: string, userId: string | null): DocRow {
   const { id, ...rest } = doc as { id: string } & Record<string, unknown>;
-  return { id, family_id: familyId, data: rest, created_by: userId };
+  return { id, family_id: familyId, data: rest as Json, created_by: userId };
 }
+
 
 export function rowToDoc<T>(r: Row): T {
   return { id: r.id, ...(r.data ?? {}) } as T;
