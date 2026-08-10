@@ -116,15 +116,17 @@ export async function flushQueue(): Promise<number> {
     while (ops.length) {
       const op = ops[0]!;
       const onConflict = op.table === "babies" || op.table === "family_settings" ? "family_id" : "id";
-      const res =
-        op.kind === "upsert"
-          ? await supabase.from(op.table).upsert(op.row as never, { onConflict })
-          : await supabase.from(op.table).delete().eq("id", op.id);
+      const table = supabase.from(op.table) as unknown as {
+        upsert: (row: unknown, o: { onConflict: string }) => Promise<{ error: unknown }>;
+        delete: () => { eq: (c: string, v: string) => Promise<{ error: unknown }> };
+      };
+      const res = op.kind === "upsert" ? await table.upsert(op.row, { onConflict }) : await table.delete().eq("id", op.id);
       if (res.error) break; // still offline / transient — keep the rest queued
       ops = ops.slice(1);
       writeQueue(ops);
       done += 1;
     }
+
   } finally {
     flushing = false;
   }
