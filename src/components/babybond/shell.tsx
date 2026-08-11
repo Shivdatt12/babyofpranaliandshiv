@@ -145,3 +145,16 @@ export function StatTile({
     </SoftCard>
   );
 }
+
+/** The family's own baby photo — falls back to an initial, never a stock/demo image. */
+export function BabyAvatar({ className, alt }: { className?: string; alt?: string }) {
+  const { baby } = useBabyBond();
+  if (baby.photo) {
+    return <img src={baby.photo} alt={alt ?? baby.name} loading="lazy" className={cn("object-cover", className)} />;
+  }
+  return (
+    <div className={cn("grid place-items-center bg-secondary font-display font-bold text-secondary-foreground", className)}>
+      {baby.name ? baby.name.slice(0, 1).toUpperCase() : "🐦"}
+    </div>
+  );
+}
