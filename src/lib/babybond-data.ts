@@ -132,128 +132,20 @@ export function bilirubinLevel(value: number): "normal" | "watch" | "high" {
 const uid = () => Math.random().toString(36).slice(2, 10);
 
 const HOUR = 3600_000;
-const DAY = 24 * HOUR;
 
-export function makeSeed(now: number) {
-  const t = (hoursAgo: number) => Math.round(now - hoursAgo * HOUR);
+/** A brand-new family starts completely empty — no demo or seeded records, ever. */
+export const EMPTY_BABY: Baby = { name: "", bornAt: 0, gender: "girl", bloodGroup: "", photo: null };
 
-  const entries: Entry[] = [
-    { id: uid(), type: "breast", at: t(0.6), side: "left", minutes: 14, by: "Mother" },
-    { id: uid(), type: "pee", at: t(1.1), by: "Father" },
-    { id: uid(), type: "formula", at: t(2.4), ml: 40, by: "Father" },
-    { id: uid(), type: "sleep", at: t(3.2), minutes: 95, by: "Mother" },
-    { id: uid(), type: "potty", at: t(4.1), kind: "yellow", note: "Seedy, normal", by: "Mother" },
-    { id: uid(), type: "breast", at: t(5), side: "both", minutes: 22, by: "Mother" },
-    { id: uid(), type: "pee", at: t(5.8), by: "Mother" },
-    { id: uid(), type: "formula", at: t(7), ml: 30, by: "Father" },
-    { id: uid(), type: "medicine", at: t(8), name: "Vitamin D", dose: "400 IU", status: "given", by: "Father" },
-    { id: uid(), type: "sleep", at: t(9.5), minutes: 140, by: "Father" },
-    { id: uid(), type: "pee", at: t(10.5), by: "Mother" },
-    { id: uid(), type: "breast", at: t(11), side: "right", minutes: 18, by: "Mother" },
-    { id: uid(), type: "weight", at: now - 2 * DAY, grams: 3480, note: "Morning, before feed", by: "Mother" },
-    { id: uid(), type: "weight", at: now - 9 * DAY, grams: 3220, by: "Mother" },
-    { id: uid(), type: "weight", at: now - 16 * DAY, grams: 3050, by: "Father" },
-    { id: uid(), type: "bilirubin", at: now - 1 * DAY, value: 8.4, method: "skin", by: "Father" },
-    { id: uid(), type: "bilirubin", at: now - 4 * DAY, value: 11.2, method: "blood", by: "Mother" },
-    { id: uid(), type: "bilirubin", at: now - 7 * DAY, value: 13.6, method: "blood", by: "Mother" },
-    { id: uid(), type: "visit", at: now - 5 * DAY, doctor: "Dr. Ananya Rao", hospital: "Rainbow Children's", note: "Weight check — all good", by: "Mother" },
-  ];
-
-  const medicines: Medicine[] = [
-    {
-      id: uid(),
-      name: "Vitamin D drops",
-      dose: "400 IU · 1 drop",
-      time: "09:00",
-      type: "Drops",
-      frequency: "Once daily",
-      times: ["09:00"],
-      startAt: now - 20 * DAY,
-      endAt: null,
-      notes: "After the morning feed",
-      active: true,
-    },
-    {
-      id: uid(),
-      name: "Iron supplement",
-      dose: "0.6 ml",
-      time: "18:00",
-      type: "Syrup",
-      frequency: "Twice daily",
-      times: ["09:30", "18:00"],
-      startAt: now - 10 * DAY,
-      endAt: now + 20 * DAY,
-      active: true,
-    },
-    {
-      id: uid(),
-      name: "Colic drops",
-      dose: "as needed",
-      time: "21:30",
-      type: "Drops",
-      frequency: "As needed",
-      times: ["21:30"],
-      startAt: now - 5 * DAY,
-      endAt: null,
-      active: false,
-    },
-  ];
-
-  const appointments: Appointment[] = [
-    {
-      id: uid(),
-      doctor: "Dr. Ananya Rao",
-      hospital: "Rainbow Children's",
-      at: now + 2 * DAY + 3 * HOUR,
-      reason: "6 week check-up",
-      note: "Carry the growth booklet",
-      prescription: null,
-      nextVisitAt: null,
-      reminder: true,
-    },
-    {
-      id: uid(),
-      doctor: "Dr. Vikram Shah",
-      hospital: "City Clinic",
-      at: now + 12 * DAY,
-      reason: "Vaccination — 6 in 1",
-      prescription: null,
-      nextVisitAt: null,
-      reminder: true,
-    },
-  ];
-
-  const vaccines: Vaccine[] = [
-    { id: uid(), name: "BCG", dueAt: now - 26 * DAY, doneAt: now - 26 * DAY, doctorNote: "Given at birth", reminder: false },
-    { id: uid(), name: "Hepatitis B — birth dose", dueAt: now - 25 * DAY, doneAt: now - 25 * DAY, reminder: false },
-    { id: uid(), name: "OPV — 0 dose", dueAt: now - 18 * DAY, doneAt: null, doctorNote: "Missed, reschedule", reminder: true },
-    { id: uid(), name: "6 in 1 — 1st dose", dueAt: now + 12 * DAY, doneAt: null, reminder: true },
-    { id: uid(), name: "Rotavirus — 1st dose", dueAt: now + 12 * DAY, doneAt: null, reminder: true },
-    { id: uid(), name: "PCV — 1st dose", dueAt: now + 40 * DAY, doneAt: null, reminder: true },
-  ];
-
-  const milestones: Milestone[] = [
-    { id: uid(), label: "First smile", emoji: "😊", achievedAt: now - 3 * DAY },
+/** Milestone checklist template used when a baby profile is first created. */
+export function defaultMilestones(): Milestone[] {
+  return [
+    { id: uid(), label: "First smile", emoji: "😊", achievedAt: null },
     { id: uid(), label: "First roll", emoji: "🤸", achievedAt: null },
     { id: uid(), label: "First tooth", emoji: "🦷", achievedAt: null },
+    { id: uid(), label: "First laugh", emoji: "😄", achievedAt: null },
     { id: uid(), label: "First steps", emoji: "👣", achievedAt: null },
-    { id: uid(), label: "First laugh", emoji: "😄", achievedAt: now - 1 * DAY },
     { id: uid(), label: "Sleeps through night", emoji: "🌙", achievedAt: null },
   ];
-
-  const baby: Baby = {
-    name: "Aarohi",
-    bornAt: now - 26 * DAY,
-    gender: "girl",
-    bloodGroup: "O+",
-  };
-
-  const parents: Parent[] = [
-    { id: "m", name: "Priya", role: "Mother", emoji: "👩", online: true },
-    { id: "f", name: "Rohit", role: "Father", emoji: "👨", online: true },
-  ];
-
-  return { entries, medicines, appointments, vaccines, milestones, baby, parents };
 }
 
 export function newId() {
