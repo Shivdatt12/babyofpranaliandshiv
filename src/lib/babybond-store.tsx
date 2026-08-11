@@ -2,10 +2,11 @@ import { createContext, useContext, useMemo, useState, useEffect, useRef, useCal
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  makeSeed,
   startOfToday,
   todayOccurrence,
   isMedicineActiveOn,
+  defaultMilestones,
+  EMPTY_BABY,
   type Appointment,
   type Baby,
   type Entry,
@@ -24,12 +25,14 @@ import {
   loadFamilyData,
   pushOp,
   readQueue,
+  writeQueue,
   uuid,
   type DocTable,
 } from "./babybond-cloud";
+import { clearAllReminders } from "./babybond-push";
 
 type Snapshot = {
-  baby: Baby;
+  baby: Baby | null;
   entries: Entry[];
   medicines: Medicine[];
   appointments: Appointment[];
@@ -42,7 +45,12 @@ type Snapshot = {
 
 type Store = {
   now: number;
+  /** never demo data — EMPTY_BABY until the family creates a profile */
   baby: Baby;
+  hasBaby: boolean;
+  /** auth + first family load finished */
+  ready: boolean;
+  loading: boolean;
   parents: Parent[];
   me: Parent;
   entries: Entry[];
@@ -60,6 +68,7 @@ type Store = {
   pendingCount: number;
   joinFamily: (code: string) => Promise<void>;
   signOut: () => Promise<void>;
+  createBaby: (b: Baby) => Promise<void>;
   addEntry: (e: Omit<Entry, "id" | "at" | "by"> & { at?: number }) => void;
   setBaby: (b: Partial<Baby>) => void;
   toggleMedicine: (id: string) => void;
@@ -86,40 +95,54 @@ type Store = {
 
 const Ctx = createContext<Store | null>(null);
 
-const STORAGE_KEY = "babybond:v2";
+/** Per-family offline cache. Nothing is cached outside a signed-in family. */
+const cacheKey = (familyId: string) => `babybond:cache:${familyId}`;
 const CHANNEL = "babybond-sync";
+const LEGACY_KEYS = ["babybond:v1", "babybond:v2"];
 
-function loadSnapshot(): Snapshot | null {
+function loadCache(familyId: string): Snapshot | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(cacheKey(familyId));
     return raw ? (JSON.parse(raw) as Snapshot) : null;
   } catch {
     return null;
   }
 }
 
+function clearAllLocalData() {
+  if (typeof window === "undefined") return;
+  try {
+    for (const k of Object.keys(window.localStorage)) {
+      if (k.startsWith("babybond:")) window.localStorage.removeItem(k);
+    }
+  } catch {
+    /* ignore */
+  }
+  writeQueue([]);
+}
+
 export function BabyBondProvider({ children }: { children: ReactNode }) {
-  const [seed] = useState(() => makeSeed(Date.now()));
   const [now, setNow] = useState(() => Date.now());
-  const [baby, setBabyState] = useState<Baby>(seed.baby);
-  const [entries, setEntries] = useState<Entry[]>(seed.entries);
-  const [medicines, setMedicines] = useState<Medicine[]>(seed.medicines);
-  const [appointments, setAppointments] = useState<Appointment[]>(seed.appointments);
-  const [vaccines, setVaccines] = useState<Vaccine[]>(seed.vaccines);
-  const [milestones, setMilestones] = useState<Milestone[]>(seed.milestones);
-  const [meId, setMeId] = useState("m");
-  const [parents, setParents] = useState<Parent[]>(seed.parents);
+  const [baby, setBabyState] = useState<Baby | null>(null);
+  const [entries, setEntries] = useState<Entry[]>([]);
+  const [medicines, setMedicines] = useState<Medicine[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [vaccines, setVaccines] = useState<Vaccine[]>([]);
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const [meId, setMeId] = useState("");
+  const [parents, setParents] = useState<Parent[]>([]);
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
-  const [hydrated, setHydrated] = useState(false);
   const [online, setOnline] = useState(true);
   const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
   const applyingRemote = useRef(false);
 
   const [session, setSession] = useState<Session | null>(null);
+  const [authReady, setAuthReady] = useState(false);
   const [familyId, setFamilyId] = useState<string | null>(null);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [pendingCount, setPendingCount] = useState(0);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
   const familyRef = useRef<string | null>(null);
   familyRef.current = familyId;
@@ -131,24 +154,41 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(i);
   }, []);
 
+  const clearMemory = useCallback(() => {
+    applyingRemote.current = true;
+    setBabyState(null);
+    setEntries([]);
+    setMedicines([]);
+    setAppointments([]);
+    setVaccines([]);
+    setMilestones([]);
+    setParents([]);
+    setSettings(DEFAULT_SETTINGS);
+    setDataLoaded(false);
+  }, []);
+
   const applySnapshot = useCallback((s: Snapshot) => {
     applyingRemote.current = true;
-    setBabyState(s.baby);
-    setEntries(s.entries);
-    setMedicines(s.medicines);
-    setAppointments(s.appointments);
+    setBabyState(s.baby ?? null);
+    setEntries(s.entries ?? []);
+    setMedicines(s.medicines ?? []);
+    setAppointments(s.appointments ?? []);
     setVaccines(s.vaccines ?? []);
-    setMilestones(s.milestones);
+    setMilestones(s.milestones ?? []);
     if (s.parents) setParents(s.parents);
     if (s.settings) setSettings({ ...DEFAULT_SETTINGS, ...s.settings });
     setLastSyncedAt(Date.now());
   }, []);
 
-  // hydrate from the offline cache
+  // network state only — no local demo hydration
   useEffect(() => {
-    const saved = loadSnapshot();
-    if (saved) applySnapshot(saved);
-    setHydrated(true);
+    for (const k of LEGACY_KEYS) {
+      try {
+        window.localStorage.removeItem(k);
+      } catch {
+        /* ignore */
+      }
+    }
     setOnline(navigator.onLine);
     setPendingCount(readQueue().length);
     const on = () => {
@@ -162,12 +202,18 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("online", on);
       window.removeEventListener("offline", off);
     };
-  }, [applySnapshot]);
+  }, []);
 
   /* ---------------- auth ---------------- */
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
-    void supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+      setSession(s);
+      setAuthReady(true);
+    });
+    void supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setAuthReady(true);
+    });
     return () => sub.subscription.unsubscribe();
   }, []);
 
@@ -176,6 +222,8 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     if (!session) {
       setFamilyId(null);
       setInviteCode(null);
+      clearMemory();
+      void clearAllReminders();
       return;
     }
     let cancelled = false;
@@ -200,84 +248,59 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       if (!profile || cancelled) return;
 
       let fid = profile.family_id;
-      let isNew = false;
       if (!fid) {
         const fam = await supabase.from("families").insert({ created_by: uid }).select("*").maybeSingle();
         if (!fam.data) return;
         fid = fam.data.id;
-        isNew = true;
         await supabase.from("profiles").update({ family_id: fid }).eq("id", uid);
       }
       if (cancelled || !fid) return;
 
       const famRow = await supabase.from("families").select("invite_code").eq("id", fid).maybeSingle();
       if (!cancelled) setInviteCode(famRow.data?.invite_code ?? null);
-
-      if (isNew) await seedCloudFromLocal(fid, uid);
       if (!cancelled) setFamilyId(fid);
     })();
     return () => {
       cancelled = true;
     };
-  }, [session]);
-
-  /** First sign-in: lift whatever is already on this device into the shared family. */
-  const seedCloudFromLocal = async (fid: string, uid: string) => {
-    const local = loadSnapshot() ?? { ...makeSeed(Date.now()), meId: "m" };
-    await supabase.from("babies").upsert({ family_id: fid, data: local.baby }, { onConflict: "family_id" });
-    await supabase
-      .from("family_settings")
-      .upsert({ family_id: fid, data: local.settings ?? DEFAULT_SETTINGS }, { onConflict: "family_id" });
-    const entryRows = local.entries.map((e) => entryToRow({ ...e, id: asUuid(e.id) }, fid, uid));
-    if (entryRows.length) await supabase.from("entries").upsert(entryRows, { onConflict: "id" });
-    const docs: [DocTable, { id: string }[]][] = [
-      ["medicines", local.medicines],
-      ["appointments", local.appointments],
-      ["vaccines", local.vaccines ?? []],
-      ["milestones", local.milestones],
-    ];
-    for (const [table, list] of docs) {
-      if (!list.length) continue;
-      const rows = list.map((d) => docToRow({ ...d, id: asUuid(d.id) }, fid, uid));
-      await supabase.from(table).upsert(rows, { onConflict: "id" });
-    }
-  };
+  }, [session, clearMemory]);
 
   /* ---------------- cloud load + realtime ---------------- */
-  const reload = useCallback(
-    async (fid: string) => {
-      const cloud = await loadFamilyData(fid);
-      const { data: profileRows } = await supabase.from("profiles").select("*").eq("family_id", fid);
-      applyingRemote.current = true;
-      if (cloud.baby) setBabyState(cloud.baby);
-      if (cloud.settings) setSettings({ ...DEFAULT_SETTINGS, ...cloud.settings });
-      setEntries(cloud.entries);
-      setMedicines(cloud.medicines);
-      setAppointments(cloud.appointments);
-      setVaccines(cloud.vaccines);
-      setMilestones(cloud.milestones);
-      if (profileRows?.length) {
-        setParents(
-          profileRows.map((p) => ({
-            id: p.id,
-            name: p.display_name,
-            role: p.role === "Father" ? "Father" : "Mother",
-            emoji: p.emoji,
-            online: true,
-          })),
-        );
-      }
-      setLastSyncedAt(Date.now());
-    },
-    [],
-  );
+  const reload = useCallback(async (fid: string) => {
+    const cloud = await loadFamilyData(fid);
+    const { data: profileRows } = await supabase.from("profiles").select("*").eq("family_id", fid);
+    applyingRemote.current = true;
+    setBabyState(cloud.baby ?? null);
+    setSettings({ ...DEFAULT_SETTINGS, ...(cloud.settings ?? {}) });
+    setEntries(cloud.entries);
+    setMedicines(cloud.medicines);
+    setAppointments(cloud.appointments);
+    setVaccines(cloud.vaccines);
+    setMilestones(cloud.milestones);
+    setParents(
+      (profileRows ?? []).map((p) => ({
+        id: p.id,
+        name: p.display_name,
+        role: p.role === "Father" ? "Father" : "Mother",
+        emoji: p.emoji,
+        online: true,
+      })),
+    );
+    setLastSyncedAt(Date.now());
+    setDataLoaded(true);
+  }, []);
 
   useEffect(() => {
     if (!familyId) return;
     let alive = true;
+
+    // warm start from this family's own cache (never another family's)
+    const cached = loadCache(familyId);
+    if (cached) applySnapshot(cached);
+
     void flushQueue().then(() => {
       setPendingCount(readQueue().length);
-      if (alive) void reload(familyId);
+      if (alive) void reload(familyId).catch(() => setDataLoaded(true));
     });
     if (session?.user.id) setMeId(session.user.id);
 
@@ -290,7 +313,16 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     };
 
     const channel = supabase.channel(`family-${familyId}`);
-    for (const table of ["entries", "medicines", "appointments", "vaccines", "milestones", "babies", "family_settings", "profiles"]) {
+    for (const table of [
+      "entries",
+      "medicines",
+      "appointments",
+      "vaccines",
+      "milestones",
+      "babies",
+      "family_settings",
+      "profiles",
+    ]) {
       channel.on("postgres_changes", { event: "*", schema: "public", table, filter: `family_id=eq.${familyId}` }, bump);
     }
     channel.subscribe();
@@ -305,24 +337,26 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       clearInterval(retry);
       void supabase.removeChannel(channel);
     };
-  }, [familyId, session?.user.id, reload]);
+  }, [familyId, session?.user.id, reload, applySnapshot]);
 
-  // live sync between tabs on this device (also keeps signed-out demo mode working)
+  // live sync between tabs on this device — scoped to the same family
   useEffect(() => {
     if (typeof BroadcastChannel === "undefined") return;
     const ch = new BroadcastChannel(CHANNEL);
     ch.onmessage = (ev) => {
-      if (ev.data?.type === "snapshot") applySnapshot(ev.data.payload as Snapshot);
+      if (ev.data?.type !== "snapshot") return;
+      if (!familyId || ev.data.familyId !== familyId) return;
+      applySnapshot(ev.data.payload as Snapshot);
     };
     return () => ch.close();
-  }, [applySnapshot]);
+  }, [applySnapshot, familyId]);
 
-  // persist offline cache + broadcast
+  // persist per-family offline cache + broadcast
   useEffect(() => {
-    if (!hydrated) return;
+    if (!familyId || !dataLoaded) return;
     const snapshot: Snapshot = { baby, entries, medicines, appointments, vaccines, milestones, meId, parents, settings };
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+      window.localStorage.setItem(cacheKey(familyId), JSON.stringify(snapshot));
     } catch {
       /* quota — keep working from memory */
     }
@@ -333,15 +367,15 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     setLastSyncedAt(Date.now());
     if (typeof BroadcastChannel !== "undefined") {
       const ch = new BroadcastChannel(CHANNEL);
-      ch.postMessage({ type: "snapshot", payload: snapshot });
+      ch.postMessage({ type: "snapshot", familyId, payload: snapshot });
       ch.close();
     }
-  }, [hydrated, baby, entries, medicines, appointments, vaccines, milestones, meId, parents, settings]);
+  }, [familyId, dataLoaded, baby, entries, medicines, appointments, vaccines, milestones, meId, parents, settings]);
 
   const value = useMemo<Store>(() => {
     const me =
       (parents.find((p) => p.id === meId) ?? parents[0]) ??
-      ({ id: "m", name: "Parent", role: "Mother", emoji: "👩", online: true } as Parent);
+      ({ id: meId || "me", name: "Parent", role: "Mother", emoji: "👩", online: true } as Parent);
 
     const fid = familyRef.current;
     const uid = userRef.current;
@@ -396,7 +430,10 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
 
     return {
       now,
-      baby,
+      baby: baby ?? EMPTY_BABY,
+      hasBaby: !!baby && !!baby.name,
+      ready: authReady && (!session || dataLoaded),
+      loading: !authReady || (!!session && !dataLoaded),
       parents,
       me,
       entries: [...entries].sort((a, b) => b.at - a.at),
@@ -414,17 +451,49 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       joinFamily: async (code) => {
         const { data, error } = await supabase.rpc("join_family_by_code", { _code: code });
         if (error) throw error;
+        clearMemory();
         setFamilyId(data as string);
       },
       signOut: async () => {
-        await supabase.auth.signOut();
+        // stop every reminder belonging to this session before the session goes away
+        await clearAllReminders();
         setFamilyId(null);
         setInviteCode(null);
-        setMeId("m");
+        setMeId("");
+        clearMemory();
+        clearAllLocalData();
+        setPendingCount(0);
+        await supabase.auth.signOut();
+      },
+      createBaby: async (b) => {
+        if (!fid) return;
+        setBabyState(b);
+        setDataLoaded(true);
+        await supabase.from("babies").upsert({ family_id: fid, data: b }, { onConflict: "family_id" });
+        if (!milestones.length) {
+          const seeded = defaultMilestones();
+          setMilestones(seeded);
+          await supabase.from("milestones").upsert(
+            seeded.map((m) => docToRow(m, fid, uid)),
+            { onConflict: "id" },
+          );
+        }
+        if (b.birthWeightGrams) {
+          const entry: Entry = {
+            id: uuid(),
+            type: "weight",
+            at: b.bornAt,
+            grams: b.birthWeightGrams,
+            note: "Birth weight",
+            by: me.role,
+          };
+          setEntries((prev) => [entry, ...prev]);
+          saveEntry(entry);
+        }
       },
       addEntry: (e) => push({ ...(e as Entry), id: uuid(), at: e.at ?? Date.now(), by: me.role }),
       setBaby: (b) => {
-        const next = { ...baby, ...b };
+        const next = { ...(baby ?? EMPTY_BABY), ...b };
         setBabyState(next);
         saveBaby(next);
       },
@@ -553,8 +622,15 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
         }
       },
       resetData: () => {
-        const fresh = makeSeed(Date.now());
-        applySnapshot({ ...fresh, meId, settings: DEFAULT_SETTINGS });
+        // drop the local cache and re-read the family's own cloud data
+        if (familyId) {
+          try {
+            window.localStorage.removeItem(cacheKey(familyId));
+          } catch {
+            /* ignore */
+          }
+          void reload(familyId);
+        }
       },
     };
   }, [
@@ -571,10 +647,13 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     online,
     lastSyncedAt,
     session,
+    authReady,
+    dataLoaded,
     familyId,
     inviteCode,
     pendingCount,
     applySnapshot,
+    clearMemory,
     reload,
   ]);
 
@@ -656,7 +735,7 @@ export function useTodayStats() {
       bilirubin: bili[0] ?? null,
       lastFeed,
       nextFeedAt: lastFeed ? lastFeed.at + 3 * 3600_000 : now,
-      ageDays: Math.max(0, Math.floor((now - baby.bornAt) / 86400000)),
+      ageDays: baby.bornAt ? Math.max(0, Math.floor((now - baby.bornAt) / 86400000)) : 0,
     };
   }, [entries, now, baby.bornAt]);
 }
