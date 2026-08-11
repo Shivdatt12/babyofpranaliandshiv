@@ -140,7 +140,7 @@ export function MedicineReminders() {
 
   // medicines — live, while the app is open
   useEffect(() => {
-    if (!settings.medicineReminders) return;
+    if (!active || !settings.medicineReminders) return;
     for (const d of doses) {
       if (d.status !== "due") continue;
       const snooze = snoozedUntil.current.get(d.key) ?? 0;
@@ -172,11 +172,11 @@ export function MedicineReminders() {
         },
       });
     }
-  }, [doses, now, logMedicine, settings.medicineReminders]);
+  }, [doses, now, logMedicine, settings.medicineReminders, active]);
 
   // feed gap
   useEffect(() => {
-    if (!settings.feedReminders) return;
+    if (!active || !settings.feedReminders) return;
     const lastFeed = entries.find((e) => e.type === "breast" || e.type === "formula");
     if (!lastFeed) return;
     const due = lastFeed.at + settings.feedGapHours * 3600_000;
@@ -197,11 +197,11 @@ export function MedicineReminders() {
         },
       },
     });
-  }, [entries, now, settings.feedReminders, settings.feedGapHours]);
+  }, [entries, now, settings.feedReminders, settings.feedGapHours, active]);
 
   // vaccines
   useEffect(() => {
-    if (!settings.vaccineReminders) return;
+    if (!active || !settings.vaccineReminders) return;
     for (const v of vaccines) {
       if (v.doneAt || !v.reminder) continue;
       if (v.dueAt - now > settings.vaccineLeadDays * 86400000) continue;
@@ -215,11 +215,11 @@ export function MedicineReminders() {
         duration: 20_000,
       });
     }
-  }, [vaccines, now, settings.vaccineReminders, settings.vaccineLeadDays]);
+  }, [vaccines, now, settings.vaccineReminders, settings.vaccineLeadDays, active]);
 
   // appointments
   useEffect(() => {
-    if (!settings.doctorReminders) return;
+    if (!active || !settings.doctorReminders) return;
     for (const a of appointments) {
       if (!a.reminder || a.at < now) continue;
       if (a.at - now > settings.doctorLeadHours * 3600_000) continue;
@@ -232,7 +232,7 @@ export function MedicineReminders() {
         duration: 20_000,
       });
     }
-  }, [appointments, now, settings.doctorReminders, settings.doctorLeadHours]);
+  }, [appointments, now, settings.doctorReminders, settings.doctorLeadHours, active]);
 
   return null;
 }
