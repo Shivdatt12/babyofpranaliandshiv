@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useBabyBond } from "@/lib/babybond-store";
 import { QuickAdd } from "./quick-add";
 import { MedicineReminders } from "./reminders";
+import { CreateBabyProfile, LoadingScreen, SignInPrompt } from "./onboarding";
 
 const NAV = [
   { to: "/", label: "Home", icon: Home },
