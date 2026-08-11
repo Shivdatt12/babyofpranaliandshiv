@@ -92,9 +92,11 @@ export type Milestone = {
 
 export type Baby = {
   name: string;
+  /** date + time of birth */
   bornAt: number;
   gender: "girl" | "boy";
   bloodGroup: string;
+  birthWeightGrams?: number | null;
   photo?: string | null;
 };
 
