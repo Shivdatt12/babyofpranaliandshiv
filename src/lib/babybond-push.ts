@@ -7,6 +7,8 @@ export type ScheduledReminder = {
   title: string;
   body: string;
   kind: "medicine" | "feed" | "vaccine" | "doctor";
+  /** family the reminder belongs to — never fires for another/signed-out session */
+  familyId: string;
   medicineId?: string;
   actions?: { action: string; title: string }[];
 };
