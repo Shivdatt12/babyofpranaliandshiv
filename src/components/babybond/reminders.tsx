@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { useBabyBond, useTodayDoses } from "@/lib/babybond-store";
 import { formatDate, formatTime, todayOccurrence, isMedicineActiveOn } from "@/lib/babybond-data";
 import {
+  clearAllReminders,
   enableBackgroundChecks,
   notifyNow,
   pushSchedule,
