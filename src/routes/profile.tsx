@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Bell, UserPlus, LogOut, ChevronRight, Wifi, RefreshCw, Settings as SettingsIcon } from "lucide-react";
-import { AppShell, PageHeader, SoftCard, ThemeToggle } from "@/components/babybond/shell";
+import { AppShell, PageHeader, SoftCard, ThemeToggle, BabyAvatar } from "@/components/babybond/shell";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useBabyBond, useTodayStats } from "@/lib/babybond-store";

@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Droplets, Baby as BabyIcon, Moon, Scale, Activity, Pill, Syringe, Stethoscope, Images, Sparkles, ChevronRight } from "lucide-react";
-import { AppShell, SoftCard, StatTile, ThemeToggle } from "@/components/babybond/shell";
+import { AppShell, SoftCard, StatTile, ThemeToggle, BabyAvatar } from "@/components/babybond/shell";
 import { useBabyBond, useTodayDoses, useTodayStats } from "@/lib/babybond-store";
 import { durationLabel, formatTime, timeAgo } from "@/lib/babybond-data";
 

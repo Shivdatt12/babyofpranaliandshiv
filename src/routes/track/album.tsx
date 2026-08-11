@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Camera } from "lucide-react";
-import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
+import { AppShell, PageHeader, SoftCard, BabyAvatar } from "@/components/babybond/shell";
 import { useBabyBond } from "@/lib/babybond-store";
 import { formatDate } from "@/lib/babybond-data";
 

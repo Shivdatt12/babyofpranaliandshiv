@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Bell, Download, Upload, Camera, RotateCcw, Info, LogIn, LogOut, UserPlus, Copy } from "lucide-react";
-import { AppShell, PageHeader, SoftCard, ThemeToggle } from "@/components/babybond/shell";
+import { AppShell, PageHeader, SoftCard, ThemeToggle, BabyAvatar } from "@/components/babybond/shell";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
