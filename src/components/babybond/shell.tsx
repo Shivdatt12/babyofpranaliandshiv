@@ -63,15 +63,19 @@ export function BottomNav() {
 }
 
 export function AppShell({ children, nav = true }: { children: ReactNode; nav?: boolean }) {
+  const { loading, authed, hasBaby } = useBabyBond();
+  const gate = loading ? <LoadingScreen /> : !authed ? <SignInPrompt /> : !hasBaby ? <CreateBabyProfile /> : null;
+  const showNav = nav && !gate;
   return (
     <div className="mx-auto min-h-screen w-full max-w-md bg-background pb-28">
-      {children}
+      {gate ?? children}
       <MedicineReminders />
-      {nav ? <QuickAdd /> : null}
-      {nav ? <BottomNav /> : null}
+      {showNav ? <QuickAdd /> : null}
+      {showNav ? <BottomNav /> : null}
     </div>
   );
 }
+
 
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   const { me } = useBabyBond();
