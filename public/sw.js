@@ -4,6 +4,7 @@
 
 const STORE = "babybond-schedule";
 const SCHEDULE_URL = "/__babybond_schedule";
+const SESSION_URL = "/__babybond_session";
 
 async function readSchedule() {
   try {
@@ -20,17 +21,50 @@ async function writeSchedule(items) {
   await cache.put(SCHEDULE_URL, new Response(JSON.stringify(items)));
 }
 
+async function readSession() {
+  try {
+    const cache = await caches.open(STORE);
+    const res = await cache.match(SESSION_URL);
+    return res ? (await res.json()).session ?? null : null;
+  } catch {
+    return null;
+  }
+}
+
+async function writeSession(session) {
+  const cache = await caches.open(STORE);
+  await cache.put(SESSION_URL, new Response(JSON.stringify({ session })));
+}
+
+async function clearAll() {
+  await writeSchedule([]);
+  await writeSession(null);
+  const shown = await self.registration.getNotifications();
+  for (const n of shown) n.close();
+}
+
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
 
 self.addEventListener("message", (event) => {
   const data = event.data || {};
+  if (data.type === "clear") {
+    event.waitUntil(clearAll());
+    return;
+  }
   if (data.type === "schedule") {
     event.waitUntil(
       (async () => {
+        // a new session owns the schedule: drop anything from a previous family
+        const prev = await readSession();
+        if (prev !== (data.session ?? null)) await clearAll();
+        if (!data.session) return; // signed out — nothing may be scheduled
+        await writeSession(data.session);
         const existing = await readSchedule();
         const shown = new Set(existing.filter((i) => i.shown).map((i) => i.id));
-        const merged = (data.items || []).map((i) => ({ ...i, shown: shown.has(i.id) }));
+        const merged = (data.items || [])
+          .filter((i) => i.familyId === data.session)
+          .map((i) => ({ ...i, shown: shown.has(i.id) }));
         await writeSchedule(merged);
         await fireDue();
       })(),
@@ -40,10 +74,13 @@ self.addEventListener("message", (event) => {
 });
 
 async function fireDue() {
+  const session = await readSession();
+  if (!session) return; // signed out: never fire
   const items = await readSchedule();
   const now = Date.now();
   let changed = false;
   for (const item of items) {
+    if (item.familyId !== session) continue;
     if (item.shown || item.at > now || item.at < now - 6 * 3600000) continue;
     await self.registration.showNotification(item.title, {
       body: item.body,
@@ -60,6 +97,7 @@ async function fireDue() {
   const kept = items.filter((i) => i.at > now - 24 * 3600000);
   if (changed || kept.length !== items.length) await writeSchedule(kept);
 }
+
 
 self.addEventListener("periodicsync", (event) => {
   if (event.tag === "babybond-reminders") event.waitUntil(fireDue());

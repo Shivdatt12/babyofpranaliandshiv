@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { useBabyBond, useTodayDoses } from "@/lib/babybond-store";
 import { formatDate, formatTime, todayOccurrence, isMedicineActiveOn } from "@/lib/babybond-data";
 import {
+  clearAllReminders,
   enableBackgroundChecks,
   notifyNow,
   pushSchedule,
@@ -23,18 +24,29 @@ const MED_ACTIONS = [
  * still arrive when the app is in the background.
  */
 export function MedicineReminders() {
-  const { logMedicine, now, entries, medicines, vaccines, appointments, settings } = useBabyBond();
+  const { logMedicine, now, entries, medicines, vaccines, appointments, settings, authed, familyId, hasBaby } =
+    useBabyBond();
   const doses = useTodayDoses();
   const notified = useRef<Set<string>>(new Set());
   const snoozedUntil = useRef<Map<string, number>>(new Map());
+  const active = authed && !!familyId && hasBaby;
 
   useEffect(() => {
+    if (!active) return;
     void (async () => {
       await registerReminderWorker();
       await requestNotificationPermission();
       await enableBackgroundChecks();
     })();
-  }, []);
+  }, [active]);
+
+  // a session change wipes anything left over from the previous account
+  useEffect(() => {
+    notified.current.clear();
+    snoozedUntil.current.clear();
+    if (!active) void clearAllReminders();
+  }, [active, familyId]);
+
 
   // notification action buttons coming back from the worker
   useEffect(() => {
@@ -55,6 +67,10 @@ export function MedicineReminders() {
 
   // hand the upcoming schedule to the worker so it can fire without an open tab
   useEffect(() => {
+    if (!active || !familyId) {
+      void pushSchedule([], null);
+      return;
+    }
     const items: ScheduledReminder[] = [];
     const base = Date.now();
 
@@ -68,6 +84,7 @@ export function MedicineReminders() {
             items.push({
               id: `med-${m.id}-${t}-${new Date(at).toDateString()}`,
               at,
+              familyId,
               title: `💊 ${m.name} is due`,
               body: `${m.dose} · ${formatTime(at)}`,
               kind: "medicine",
@@ -83,7 +100,7 @@ export function MedicineReminders() {
         if (v.doneAt || !v.reminder) continue;
         const at = v.dueAt - settings.vaccineLeadDays * 86400000;
         if (at < base) continue;
-        items.push({ id: `vac-${v.id}`, at, title: `🛡️ ${v.name}`, body: `Vaccine due ${formatDate(v.dueAt)}`, kind: "vaccine" });
+        items.push({ id: `vac-${v.id}`, at, familyId, title: `🛡️ ${v.name}`, body: `Vaccine due ${formatDate(v.dueAt)}`, kind: "vaccine" });
       }
     }
     if (settings.doctorReminders) {
@@ -94,6 +111,7 @@ export function MedicineReminders() {
         items.push({
           id: `apt-${a.id}`,
           at,
+          familyId,
           title: `🩺 ${a.doctor}`,
           body: `${a.hospital} · ${formatDate(a.at)} at ${formatTime(a.at)}`,
           kind: "doctor",
@@ -108,6 +126,7 @@ export function MedicineReminders() {
           items.push({
             id: `feed-${lastFeed.id}`,
             at,
+            familyId,
             title: "🍼 Feed reminder",
             body: `It has been ${settings.feedGapHours}h since the last feed`,
             kind: "feed",
@@ -115,12 +134,13 @@ export function MedicineReminders() {
         }
       }
     }
-    void pushSchedule(items);
-  }, [medicines, vaccines, appointments, entries, settings]);
+    void pushSchedule(items, familyId);
+  }, [medicines, vaccines, appointments, entries, settings, active, familyId]);
+
 
   // medicines — live, while the app is open
   useEffect(() => {
-    if (!settings.medicineReminders) return;
+    if (!active || !settings.medicineReminders) return;
     for (const d of doses) {
       if (d.status !== "due") continue;
       const snooze = snoozedUntil.current.get(d.key) ?? 0;
@@ -152,11 +172,11 @@ export function MedicineReminders() {
         },
       });
     }
-  }, [doses, now, logMedicine, settings.medicineReminders]);
+  }, [doses, now, logMedicine, settings.medicineReminders, active]);
 
   // feed gap
   useEffect(() => {
-    if (!settings.feedReminders) return;
+    if (!active || !settings.feedReminders) return;
     const lastFeed = entries.find((e) => e.type === "breast" || e.type === "formula");
     if (!lastFeed) return;
     const due = lastFeed.at + settings.feedGapHours * 3600_000;
@@ -177,11 +197,11 @@ export function MedicineReminders() {
         },
       },
     });
-  }, [entries, now, settings.feedReminders, settings.feedGapHours]);
+  }, [entries, now, settings.feedReminders, settings.feedGapHours, active]);
 
   // vaccines
   useEffect(() => {
-    if (!settings.vaccineReminders) return;
+    if (!active || !settings.vaccineReminders) return;
     for (const v of vaccines) {
       if (v.doneAt || !v.reminder) continue;
       if (v.dueAt - now > settings.vaccineLeadDays * 86400000) continue;
@@ -195,11 +215,11 @@ export function MedicineReminders() {
         duration: 20_000,
       });
     }
-  }, [vaccines, now, settings.vaccineReminders, settings.vaccineLeadDays]);
+  }, [vaccines, now, settings.vaccineReminders, settings.vaccineLeadDays, active]);
 
   // appointments
   useEffect(() => {
-    if (!settings.doctorReminders) return;
+    if (!active || !settings.doctorReminders) return;
     for (const a of appointments) {
       if (!a.reminder || a.at < now) continue;
       if (a.at - now > settings.doctorLeadHours * 3600_000) continue;
@@ -212,7 +232,7 @@ export function MedicineReminders() {
         duration: 20_000,
       });
     }
-  }, [appointments, now, settings.doctorReminders, settings.doctorLeadHours]);
+  }, [appointments, now, settings.doctorReminders, settings.doctorLeadHours, active]);
 
   return null;
 }

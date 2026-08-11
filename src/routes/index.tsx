@@ -1,8 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Droplets, Baby as BabyIcon, Moon, Scale, Activity, Pill, Syringe, Stethoscope, Images, Sparkles, ChevronRight } from "lucide-react";
-import babyPhoto from "@/assets/baby.jpg";
-import { AppShell, SoftCard, StatTile, ThemeToggle } from "@/components/babybond/shell";
+import { AppShell, SoftCard, StatTile, ThemeToggle, BabyAvatar } from "@/components/babybond/shell";
 import { useBabyBond, useTodayDoses, useTodayStats } from "@/lib/babybond-store";
 import { durationLabel, formatTime, timeAgo } from "@/lib/babybond-data";
 
@@ -74,13 +73,7 @@ function Dashboard() {
         </div>
 
         <div className="mt-5 flex items-center gap-4">
-          <img
-            src={baby.photo || babyPhoto}
-            alt={`${baby.name} sleeping in a soft blanket`}
-            width={768}
-            height={768}
-            className="size-20 rounded-3xl object-cover ring-4 ring-card/70 bb-shadow-float"
-          />
+          <BabyAvatar className="size-20 rounded-3xl text-3xl ring-4 ring-card/70 bb-shadow-float" />
           <div className="min-w-0">
             <h1 className="truncate font-display text-2xl font-bold">{baby.name}</h1>
             <p className="text-sm text-foreground/70">

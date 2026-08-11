@@ -1,8 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Bell, UserPlus, LogOut, ChevronRight, Wifi, RefreshCw, Settings as SettingsIcon } from "lucide-react";
-import babyPhoto from "@/assets/baby.jpg";
-import { AppShell, PageHeader, SoftCard, ThemeToggle } from "@/components/babybond/shell";
+import { AppShell, PageHeader, SoftCard, ThemeToggle, BabyAvatar } from "@/components/babybond/shell";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useBabyBond, useTodayStats } from "@/lib/babybond-store";
@@ -29,14 +28,7 @@ function Profile() {
       <PageHeader title="Profile" subtitle="Family account" />
       <div className="space-y-4 px-5 pb-6">
         <SoftCard className="flex items-center gap-4">
-          <img
-            src={baby.photo || babyPhoto}
-            alt={`${baby.name}`}
-            loading="lazy"
-            width={768}
-            height={768}
-            className="size-16 rounded-2xl object-cover"
-          />
+          <BabyAvatar className="size-16 rounded-2xl text-2xl" />
           <div className="flex-1">
             <Input
               value={baby.name}

@@ -2,8 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { Bell, Download, Upload, Camera, RotateCcw, Info, LogIn, LogOut, UserPlus, Copy } from "lucide-react";
-import babyPhoto from "@/assets/baby.jpg";
-import { AppShell, PageHeader, SoftCard, ThemeToggle } from "@/components/babybond/shell";
+import { AppShell, PageHeader, SoftCard, ThemeToggle, BabyAvatar } from "@/components/babybond/shell";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -81,12 +80,7 @@ function Settings() {
           <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Baby profile</h2>
           <SoftCard className="space-y-3">
             <div className="flex items-center gap-4">
-              <img
-                src={baby.photo || babyPhoto}
-                alt={baby.name}
-                loading="lazy"
-                className="size-16 rounded-2xl object-cover"
-              />
+              <BabyAvatar className="size-16 rounded-2xl text-2xl" />
               <button
                 type="button"
                 onClick={() => photoRef.current?.click()}

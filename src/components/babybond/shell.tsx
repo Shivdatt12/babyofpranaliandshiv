@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useBabyBond } from "@/lib/babybond-store";
 import { QuickAdd } from "./quick-add";
 import { MedicineReminders } from "./reminders";
+import { CreateBabyProfile, LoadingScreen, SignInPrompt } from "./onboarding";
 
 const NAV = [
   { to: "/", label: "Home", icon: Home },
@@ -63,15 +64,19 @@ export function BottomNav() {
 }
 
 export function AppShell({ children, nav = true }: { children: ReactNode; nav?: boolean }) {
+  const { loading, authed, hasBaby } = useBabyBond();
+  const gate = loading ? <LoadingScreen /> : !authed ? <SignInPrompt /> : !hasBaby ? <CreateBabyProfile /> : null;
+  const showNav = nav && !gate;
   return (
     <div className="mx-auto min-h-screen w-full max-w-md bg-background pb-28">
-      {children}
+      {gate ?? children}
       <MedicineReminders />
-      {nav ? <QuickAdd /> : null}
-      {nav ? <BottomNav /> : null}
+      {showNav ? <QuickAdd /> : null}
+      {showNav ? <BottomNav /> : null}
     </div>
   );
 }
+
 
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   const { me } = useBabyBond();
@@ -138,5 +143,18 @@ export function StatTile({
       <span className="font-display text-xl font-bold leading-tight">{value}</span>
       {hint ? <span className="text-[11px] opacity-70">{hint}</span> : null}
     </SoftCard>
+  );
+}
+
+/** The family's own baby photo — falls back to an initial, never a stock/demo image. */
+export function BabyAvatar({ className, alt }: { className?: string; alt?: string }) {
+  const { baby } = useBabyBond();
+  if (baby.photo) {
+    return <img src={baby.photo} alt={alt ?? baby.name} loading="lazy" className={cn("object-cover", className)} />;
+  }
+  return (
+    <div className={cn("grid place-items-center bg-secondary font-display font-bold text-secondary-foreground", className)}>
+      {baby.name ? baby.name.slice(0, 1).toUpperCase() : "🐦"}
+    </div>
   );
 }

@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Camera } from "lucide-react";
-import babyPhoto from "@/assets/baby.jpg";
-import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
+import { AppShell, PageHeader, SoftCard, BabyAvatar } from "@/components/babybond/shell";
 import { useBabyBond } from "@/lib/babybond-store";
 import { formatDate } from "@/lib/babybond-data";
 
@@ -37,16 +36,9 @@ function Album() {
         </button>
 
         <SoftCard className="p-3">
-          <img
-            src={babyPhoto}
-            alt={`${baby.name} sleeping`}
-            loading="lazy"
-            width={768}
-            height={768}
-            className="aspect-square w-full rounded-2xl object-cover"
-          />
-          <p className="mt-2 px-1 text-sm font-bold">First week at home</p>
-          <p className="px-1 text-xs text-muted-foreground">{formatDate(baby.bornAt + 5 * 86400000)}</p>
+          <BabyAvatar className="aspect-square w-full rounded-2xl text-5xl" />
+          <p className="mt-2 px-1 text-sm font-bold">{baby.name}</p>
+          <p className="px-1 text-xs text-muted-foreground">Born {formatDate(baby.bornAt)}</p>
         </SoftCard>
 
         <div>
@@ -62,14 +54,11 @@ function Album() {
                   }`}
                 >
                   {unlocked ? (
-                    <img
-                      src={babyPhoto}
-                      alt={`Month ${m}`}
-                      loading="lazy"
-                      width={768}
-                      height={768}
-                      className="size-full rounded-3xl object-cover"
-                    />
+                    <span>
+                      Month
+                      <br />
+                      {m}
+                    </span>
                   ) : (
                     <span>
                       Month

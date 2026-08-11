@@ -7,6 +7,8 @@ export type ScheduledReminder = {
   title: string;
   body: string;
   kind: "medicine" | "feed" | "vaccine" | "doctor";
+  /** family the reminder belongs to — never fires for another/signed-out session */
+  familyId: string;
   medicineId?: string;
   actions?: { action: string; title: string }[];
 };
@@ -51,11 +53,30 @@ export async function enableBackgroundChecks() {
   }
 }
 
-export async function pushSchedule(items: ScheduledReminder[]) {
+export async function pushSchedule(items: ScheduledReminder[], familyId: string | null) {
   const reg = await registerReminderWorker();
   const target = reg?.active ?? navigator.serviceWorker?.controller;
-  target?.postMessage({ type: "schedule", items });
+  target?.postMessage({ type: "schedule", items, session: familyId });
 }
+
+/** Sign-out / session change: stop every scheduled reminder and dismiss visible ones. */
+export async function clearAllReminders() {
+  if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
+  try {
+    const reg = await navigator.serviceWorker.getRegistration("/");
+    const target = reg?.active ?? navigator.serviceWorker.controller;
+    target?.postMessage({ type: "clear" });
+    if (reg) {
+      const shown = await reg.getNotifications();
+      for (const n of shown) n.close();
+      const sub = await reg.pushManager?.getSubscription?.();
+      await sub?.unsubscribe().catch(() => undefined);
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
 
 /** Immediate notification through the worker so it survives a backgrounded tab. */
 export async function notifyNow(
