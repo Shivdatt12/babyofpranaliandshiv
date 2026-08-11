@@ -23,18 +23,29 @@ const MED_ACTIONS = [
  * still arrive when the app is in the background.
  */
 export function MedicineReminders() {
-  const { logMedicine, now, entries, medicines, vaccines, appointments, settings } = useBabyBond();
+  const { logMedicine, now, entries, medicines, vaccines, appointments, settings, authed, familyId, hasBaby } =
+    useBabyBond();
   const doses = useTodayDoses();
   const notified = useRef<Set<string>>(new Set());
   const snoozedUntil = useRef<Map<string, number>>(new Map());
+  const active = authed && !!familyId && hasBaby;
 
   useEffect(() => {
+    if (!active) return;
     void (async () => {
       await registerReminderWorker();
       await requestNotificationPermission();
       await enableBackgroundChecks();
     })();
-  }, []);
+  }, [active]);
+
+  // a session change wipes anything left over from the previous account
+  useEffect(() => {
+    notified.current.clear();
+    snoozedUntil.current.clear();
+    if (!active) void clearAllReminders();
+  }, [active, familyId]);
+
 
   // notification action buttons coming back from the worker
   useEffect(() => {
