@@ -66,6 +66,10 @@ export function MedicineReminders() {
 
   // hand the upcoming schedule to the worker so it can fire without an open tab
   useEffect(() => {
+    if (!active || !familyId) {
+      void pushSchedule([], null);
+      return;
+    }
     const items: ScheduledReminder[] = [];
     const base = Date.now();
 
@@ -79,6 +83,7 @@ export function MedicineReminders() {
             items.push({
               id: `med-${m.id}-${t}-${new Date(at).toDateString()}`,
               at,
+              familyId,
               title: `💊 ${m.name} is due`,
               body: `${m.dose} · ${formatTime(at)}`,
               kind: "medicine",
@@ -94,7 +99,7 @@ export function MedicineReminders() {
         if (v.doneAt || !v.reminder) continue;
         const at = v.dueAt - settings.vaccineLeadDays * 86400000;
         if (at < base) continue;
-        items.push({ id: `vac-${v.id}`, at, title: `🛡️ ${v.name}`, body: `Vaccine due ${formatDate(v.dueAt)}`, kind: "vaccine" });
+        items.push({ id: `vac-${v.id}`, at, familyId, title: `🛡️ ${v.name}`, body: `Vaccine due ${formatDate(v.dueAt)}`, kind: "vaccine" });
       }
     }
     if (settings.doctorReminders) {
@@ -105,6 +110,7 @@ export function MedicineReminders() {
         items.push({
           id: `apt-${a.id}`,
           at,
+          familyId,
           title: `🩺 ${a.doctor}`,
           body: `${a.hospital} · ${formatDate(a.at)} at ${formatTime(a.at)}`,
           kind: "doctor",
@@ -119,6 +125,7 @@ export function MedicineReminders() {
           items.push({
             id: `feed-${lastFeed.id}`,
             at,
+            familyId,
             title: "🍼 Feed reminder",
             body: `It has been ${settings.feedGapHours}h since the last feed`,
             kind: "feed",
@@ -126,8 +133,9 @@ export function MedicineReminders() {
         }
       }
     }
-    void pushSchedule(items);
-  }, [medicines, vaccines, appointments, entries, settings]);
+    void pushSchedule(items, familyId);
+  }, [medicines, vaccines, appointments, entries, settings, active, familyId]);
+
 
   // medicines — live, while the app is open
   useEffect(() => {
