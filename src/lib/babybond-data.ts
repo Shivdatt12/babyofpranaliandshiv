@@ -2,12 +2,34 @@ export type FeedSide = "left" | "right" | "both";
 
 export type MedicineStatus = "given" | "skipped";
 
+export type ParentRole = "Mother" | "Father" | "Parent";
+
 export type Entry =
-  | { id: string; type: "breast"; at: number; side: FeedSide; minutes: number; note?: string; by: string }
+  | {
+      id: string;
+      type: "breast";
+      at: number;
+      side: FeedSide;
+      minutes: number;
+      /** set for timer + manual sessions so history can show the real window */
+      startedAt?: number;
+      endedAt?: number;
+      note?: string;
+      by: string;
+    }
   | { id: string; type: "formula"; at: number; ml: number; note?: string; by: string }
   | { id: string; type: "pee"; at: number; by: string }
   | { id: string; type: "potty"; at: number; kind: PottyKind; note?: string; by: string }
-  | { id: string; type: "sleep"; at: number; minutes: number; by: string }
+  | {
+      id: string;
+      type: "sleep";
+      at: number;
+      minutes: number;
+      startedAt?: number;
+      endedAt?: number;
+      note?: string;
+      by: string;
+    }
   | { id: string; type: "weight"; at: number; grams: number; note?: string; by: string }
   | { id: string; type: "bilirubin"; at: number; value: number; method: "skin" | "blood"; note?: string; by: string }
   | {
@@ -21,7 +43,9 @@ export type Entry =
       by: string;
     }
   | { id: string; type: "visit"; at: number; doctor: string; hospital: string; note?: string; by: string }
+  | { id: string; type: "photo"; at: number; path: string; caption?: string; by: string }
   | { id: string; type: "vaccine"; at: number; name: string; note?: string; by: string };
+
 
 export type PottyKind = "normal" | "loose" | "green" | "yellow" | "black";
 
