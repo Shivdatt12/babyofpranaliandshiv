@@ -16,6 +16,8 @@ import {
   type Vaccine,
   type Settings,
   DEFAULT_SETTINGS,
+  normalizeRole,
+  roleEmoji,
 } from "./babybond-data";
 import {
   asUuid,
@@ -27,7 +29,10 @@ import {
   readQueue,
   writeQueue,
   uuid,
+  timerToRow,
   type DocTable,
+  type ActiveTimer,
+  type TimerKind,
 } from "./babybond-cloud";
 import { clearAllReminders } from "./babybond-push";
 
@@ -41,6 +46,7 @@ type Snapshot = {
   meId: string;
   parents?: Parent[];
   settings?: Settings;
+  timers?: ActiveTimer[];
 };
 
 type Store = {
@@ -58,6 +64,8 @@ type Store = {
   appointments: Appointment[];
   vaccines: Vaccine[];
   milestones: Milestone[];
+  /** live breastfeed / sleep sessions shared by the whole family */
+  timers: ActiveTimer[];
   online: boolean;
   lastSyncedAt: number;
   /* cloud account */
@@ -70,6 +78,12 @@ type Store = {
   signOut: () => Promise<void>;
   createBaby: (b: Baby) => Promise<void>;
   addEntry: (e: Omit<Entry, "id" | "at" | "by"> & { at?: number }) => void;
+  updateEntry: (id: string, patch: Partial<Entry>) => void;
+  deleteEntry: (id: string) => void;
+  startTimer: (kind: TimerKind, extra?: { side?: string; note?: string }) => void;
+  updateTimer: (kind: TimerKind, extra: { side?: string; note?: string }) => void;
+  stopTimer: (kind: TimerKind) => void;
+  cancelTimer: (kind: TimerKind) => void;
   setBaby: (b: Partial<Baby>) => void;
   toggleMedicine: (id: string) => void;
   addMedicine: (m: Omit<Medicine, "id">) => void;
@@ -130,6 +144,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [vaccines, setVaccines] = useState<Vaccine[]>([]);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const [timers, setTimers] = useState<ActiveTimer[]>([]);
   const [meId, setMeId] = useState("");
   const [parents, setParents] = useState<Parent[]>([]);
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
@@ -162,6 +177,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     setAppointments([]);
     setVaccines([]);
     setMilestones([]);
+    setTimers([]);
     setParents([]);
     setSettings(DEFAULT_SETTINGS);
     setDataLoaded(false);
@@ -175,6 +191,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     setAppointments(s.appointments ?? []);
     setVaccines(s.vaccines ?? []);
     setMilestones(s.milestones ?? []);
+    setTimers(s.timers ?? []);
     if (s.parents) setParents(s.parents);
     if (s.settings) setSettings({ ...DEFAULT_SETTINGS, ...s.settings });
     setLastSyncedAt(Date.now());
@@ -232,14 +249,14 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       const meta = session.user.user_metadata as { name?: string; role?: string; full_name?: string };
       let { data: profile } = await supabase.from("profiles").select("*").eq("id", uid).maybeSingle();
       if (!profile) {
-        const role = meta.role === "Father" ? "Father" : "Mother";
+        const role = normalizeRole(meta.role);
         const insert = await supabase
           .from("profiles")
           .insert({
             id: uid,
             display_name: meta.name || meta.full_name || session.user.email?.split("@")[0] || "Parent",
             role,
-            emoji: role === "Father" ? "👨" : "👩",
+            emoji: roleEmoji(role),
           })
           .select("*")
           .maybeSingle();
@@ -277,13 +294,15 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     setAppointments(cloud.appointments);
     setVaccines(cloud.vaccines);
     setMilestones(cloud.milestones);
+    setTimers(cloud.timers);
     setParents(
       (profileRows ?? []).map((p) => ({
         id: p.id,
         name: p.display_name,
-        role: p.role === "Father" ? "Father" : "Mother",
+        role: normalizeRole(p.role),
         emoji: p.emoji,
         online: true,
+        avatar: (p as { avatar_url?: string | null }).avatar_url ?? null,
       })),
     );
     setLastSyncedAt(Date.now());
@@ -322,6 +341,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       "babies",
       "family_settings",
       "profiles",
+      "active_timers",
     ]) {
       channel.on("postgres_changes", { event: "*", schema: "public", table, filter: `family_id=eq.${familyId}` }, bump);
     }
@@ -354,7 +374,18 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
   // persist per-family offline cache + broadcast
   useEffect(() => {
     if (!familyId || !dataLoaded) return;
-    const snapshot: Snapshot = { baby, entries, medicines, appointments, vaccines, milestones, meId, parents, settings };
+    const snapshot: Snapshot = {
+      baby,
+      entries,
+      medicines,
+      appointments,
+      vaccines,
+      milestones,
+      meId,
+      parents,
+      settings,
+      timers,
+    };
     try {
       window.localStorage.setItem(cacheKey(familyId), JSON.stringify(snapshot));
     } catch {
@@ -370,7 +401,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       ch.postMessage({ type: "snapshot", familyId, payload: snapshot });
       ch.close();
     }
-  }, [familyId, dataLoaded, baby, entries, medicines, appointments, vaccines, milestones, meId, parents, settings]);
+  }, [familyId, dataLoaded, baby, entries, medicines, appointments, vaccines, milestones, meId, parents, settings, timers]);
 
   const value = useMemo<Store>(() => {
     const me =
@@ -441,6 +472,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       appointments: [...appointments].sort((a, b) => a.at - b.at),
       vaccines: [...vaccines].sort((a, b) => a.dueAt - b.dueAt),
       milestones,
+      timers,
       online,
       lastSyncedAt,
       authed: !!session,
@@ -492,6 +524,57 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
         }
       },
       addEntry: (e) => push({ ...(e as Entry), id: uuid(), at: e.at ?? Date.now(), by: me.role }),
+      updateEntry: (id, patch) => {
+        const next = entries.map((x) => (x.id === id ? ({ ...x, ...patch } as Entry) : x));
+        setEntries(next);
+        const doc = next.find((x) => x.id === id);
+        if (doc) saveEntry(doc);
+      },
+      deleteEntry: (id) => {
+        setEntries((prev) => prev.filter((x) => x.id !== id));
+        if (!fid) return;
+        pushOp({ kind: "delete", table: "entries", id });
+        sync();
+      },
+      startTimer: (kind, extra) => {
+        if (!fid) return;
+        if (timers.some((t) => t.kind === kind)) return; // one active session per kind, per family
+        const timer: ActiveTimer = { kind, startedAt: Date.now(), by: me.role, ...(extra ?? {}) };
+        setTimers((prev) => [...prev.filter((t) => t.kind !== kind), timer]);
+        pushOp({ kind: "upsert", table: "active_timers", row: timerToRow(timer, fid, uid) });
+        sync();
+      },
+      updateTimer: (kind, extra) => {
+        if (!fid) return;
+        const current = timers.find((t) => t.kind === kind);
+        if (!current) return;
+        const timer: ActiveTimer = { ...current, ...extra };
+        setTimers((prev) => prev.map((t) => (t.kind === kind ? timer : t)));
+        pushOp({ kind: "upsert", table: "active_timers", row: timerToRow(timer, fid, uid) });
+        sync();
+      },
+      stopTimer: (kind) => {
+        if (!fid) return;
+        const current = timers.find((t) => t.kind === kind);
+        if (!current) return;
+        const endedAt = Date.now();
+        const minutes = Math.max(1, Math.round((endedAt - current.startedAt) / 60000));
+        setTimers((prev) => prev.filter((t) => t.kind !== kind));
+        pushOp({ kind: "deleteTimer", table: "active_timers", familyId: fid, timerKind: kind });
+        const base = { id: uuid(), at: endedAt, startedAt: current.startedAt, endedAt, minutes, by: me.role };
+        const entry = (
+          kind === "breast"
+            ? { ...base, type: "breast", side: (current.side ?? "both") as never, ...(current.note ? { note: current.note } : {}) }
+            : { ...base, type: "sleep", ...(current.note ? { note: current.note } : {}) }
+        ) as Entry;
+        push(entry);
+      },
+      cancelTimer: (kind) => {
+        if (!fid) return;
+        setTimers((prev) => prev.filter((t) => t.kind !== kind));
+        pushOp({ kind: "deleteTimer", table: "active_timers", familyId: fid, timerKind: kind });
+        sync();
+      },
       setBaby: (b) => {
         const next = { ...(baby ?? EMPTY_BABY), ...b };
         setBabyState(next);
@@ -578,6 +661,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
               ...(patch.name !== undefined ? { display_name: patch.name } : {}),
               ...(patch.role !== undefined ? { role: patch.role } : {}),
               ...(patch.emoji !== undefined ? { emoji: patch.emoji } : {}),
+              ...(patch.avatar !== undefined ? { avatar_url: patch.avatar } : {}),
             })
             .eq("id", id);
         }
@@ -589,7 +673,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
         saveSettings(next);
       },
       exportData: () =>
-        JSON.stringify({ baby, entries, medicines, appointments, vaccines, milestones, meId, parents, settings }, null, 2),
+        JSON.stringify({ baby, entries, medicines, appointments, vaccines, milestones, meId, parents, settings, timers }, null, 2),
       importData: (json) => {
         try {
           const parsed = JSON.parse(json) as Snapshot;
@@ -641,6 +725,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     appointments,
     vaccines,
     milestones,
+    timers,
     meId,
     parents,
     settings,
