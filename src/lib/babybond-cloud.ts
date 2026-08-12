@@ -59,10 +59,11 @@ export type CloudSnapshot = {
   appointments: Appointment[];
   vaccines: Vaccine[];
   milestones: Milestone[];
+  timers: ActiveTimer[];
 };
 
 export async function loadFamilyData(familyId: string): Promise<CloudSnapshot> {
-  const [baby, settings, entries, medicines, appointments, vaccines, milestones] = await Promise.all([
+  const [baby, settings, entries, medicines, appointments, vaccines, milestones, timers] = await Promise.all([
     supabase.from("babies").select("data").eq("family_id", familyId).maybeSingle(),
     supabase.from("family_settings").select("data").eq("family_id", familyId).maybeSingle(),
     supabase.from("entries").select("*").eq("family_id", familyId).order("at", { ascending: false }).limit(5000),
@@ -70,6 +71,7 @@ export async function loadFamilyData(familyId: string): Promise<CloudSnapshot> {
     supabase.from("appointments").select("*").eq("family_id", familyId),
     supabase.from("vaccines").select("*").eq("family_id", familyId),
     supabase.from("milestones").select("*").eq("family_id", familyId),
+    supabase.from("active_timers").select("*").eq("family_id", familyId),
   ]);
 
   return {
@@ -80,6 +82,28 @@ export async function loadFamilyData(familyId: string): Promise<CloudSnapshot> {
     appointments: ((appointments.data ?? []) as Row[]).map((r) => rowToDoc<Appointment>(r)),
     vaccines: ((vaccines.data ?? []) as Row[]).map((r) => rowToDoc<Vaccine>(r)),
     milestones: ((milestones.data ?? []) as Row[]).map((r) => rowToDoc<Milestone>(r)),
+    timers: ((timers.data ?? []) as unknown as {
+      kind: TimerKind;
+      started_at: string;
+      data: Record<string, unknown> | null;
+    }[]).map((t) => ({
+      kind: t.kind,
+      startedAt: new Date(t.started_at).getTime(),
+      by: String(t.data?.['by'] ?? ""),
+      ...(t.data?.['side'] ? { side: String(t.data['side']) } : {}),
+      ...(t.data?.['note'] ? { note: String(t.data['note']) } : {}),
+    })),
+  };
+}
+
+export function timerToRow(timer: ActiveTimer, familyId: string, userId: string | null) {
+  const { kind, startedAt, ...rest } = timer;
+  return {
+    family_id: familyId,
+    kind,
+    started_at: new Date(startedAt).toISOString(),
+    started_by: userId,
+    data: rest as Json,
   };
 }
 
@@ -87,7 +111,9 @@ export async function loadFamilyData(familyId: string): Promise<CloudSnapshot> {
 
 export type QueuedOp =
   | { kind: "upsert"; table: SyncTable; row: Record<string, unknown> }
-  | { kind: "delete"; table: SyncTable; id: string };
+  | { kind: "delete"; table: SyncTable; id: string }
+  | { kind: "deleteTimer"; table: "active_timers"; familyId: string; timerKind: TimerKind };
+
 
 const QUEUE_KEY = "babybond:queue:v1";
 
