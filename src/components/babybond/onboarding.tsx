@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { SoftCard } from "@/components/babybond/shell";
 import { useBabyBond } from "@/lib/babybond-store";
 import type { Baby } from "@/lib/babybond-data";
+import { ACCEPTED_IMAGE_TYPES, MediaError, uploadMedia, useMediaUrl } from "@/lib/babybond-media";
 
 /** Shown while the signed-in family's profile and records are still loading. */
 export function LoadingScreen() {
@@ -44,7 +45,7 @@ const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 /** Empty-state onboarding: the family creates its own baby, no demo data anywhere. */
 export function CreateBabyProfile() {
-  const { createBaby } = useBabyBond();
+  const { createBaby, familyId } = useBabyBond();
   const [name, setName] = useState("");
   const [gender, setGender] = useState<"girl" | "boy">("girl");
   const [date, setDate] = useState("");
@@ -54,11 +55,20 @@ export function CreateBabyProfile() {
   const [photo, setPhoto] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const pickPhoto = (file: File | undefined) => {
+  const [uploading, setUploading] = useState(false);
+  const photoUrl = useMediaUrl(photo);
+
+  const pickPhoto = async (file: File | undefined) => {
     if (!file) return;
-    const r = new FileReader();
-    r.onload = () => setPhoto(String(r.result));
-    r.readAsDataURL(file);
+    setUploading(true);
+    try {
+      setPhoto(await uploadMedia(familyId, "baby", file));
+      toast.success("Photo added");
+    } catch (err) {
+      toast.error(err instanceof MediaError ? err.message : "Photo upload failed — please try again.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const submit = async () => {
@@ -97,15 +107,23 @@ export function CreateBabyProfile() {
       <SoftCard className="space-y-3">
         <div className="flex items-center gap-4">
           <div className="grid size-16 place-items-center overflow-hidden rounded-2xl bg-secondary">
-            {photo ? (
-              <img src={photo} alt="Baby" className="size-16 object-cover" />
+            {photoUrl ? (
+              <img src={photoUrl} alt="Baby" className="size-16 object-cover" />
             ) : (
               <Heart className="size-6 text-muted-foreground" />
             )}
           </div>
           <label className="flex cursor-pointer items-center gap-2 rounded-2xl bg-secondary px-4 py-2 text-xs font-semibold text-secondary-foreground">
-            <Camera className="size-4" /> Add photo
-            <input type="file" accept="image/*" className="hidden" onChange={(e) => pickPhoto(e.target.files?.[0])} />
+            <Camera className="size-4" /> {uploading ? "Uploading…" : "Add photo"}
+            <input
+              type="file"
+              accept={ACCEPTED_IMAGE_TYPES}
+              className="hidden"
+              onChange={(e) => {
+                void pickPhoto(e.target.files?.[0]);
+                e.target.value = "";
+              }}
+            />
           </label>
         </div>
 

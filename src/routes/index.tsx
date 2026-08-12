@@ -52,6 +52,44 @@ function Countdown({ target, now }: { target: number; now: number }) {
   );
 }
 
+function ActiveTimerBanner() {
+  const { timers, now, stopTimer } = useBabyBond();
+  if (!timers.length) return null;
+  return (
+    <div className="space-y-2 px-5 pt-4">
+      {timers.map((t) => {
+        const mins = Math.max(0, Math.floor((now - t.startedAt) / 60000));
+        const secs = Math.max(0, Math.floor((now - t.startedAt) / 1000) % 60);
+        return (
+          <div
+            key={t.kind}
+            className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow"
+          >
+            <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">
+              {t.kind === "breast" ? "🤱" : "😴"}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold">
+                {t.kind === "breast" ? "Breastfeeding in progress" : "Sleep in progress"}
+              </p>
+              <p className="text-xs text-muted-foreground tabular-nums">
+                {mins}m {String(secs).padStart(2, "0")}s · started {formatTime(t.startedAt)} by {t.by}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => stopTimer(t.kind)}
+              className="rounded-2xl bb-gradient px-4 py-2 text-xs font-bold text-primary-foreground active:scale-95"
+            >
+              Stop
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function Dashboard() {
   const { baby, parents, me, addEntry, now } = useBabyBond();
   const s = useTodayStats();
@@ -108,6 +146,8 @@ function Dashboard() {
           <span className="text-3xl">🍼</span>
         </SoftCard>
       </div>
+
+      <ActiveTimerBanner />
 
       <section className="px-5 py-5">
         <div className="grid grid-cols-2 gap-3">

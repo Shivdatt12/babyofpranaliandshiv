@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Bell, Download, Upload, Camera, RotateCcw, Info, LogIn, LogOut, UserPlus, Copy } from "lucide-react";
 import { AppShell, PageHeader, SoftCard, ThemeToggle, BabyAvatar } from "@/components/babybond/shell";
@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useBabyBond } from "@/lib/babybond-store";
-import { toDateInput } from "@/lib/babybond-data";
+import { PARENT_ROLES, roleEmoji, toDateInput, type ParentRole } from "@/lib/babybond-data";
+import { ACCEPTED_IMAGE_TYPES, MediaError, removeMedia, uploadMedia } from "@/lib/babybond-media";
 
 export const Route = createFileRoute("/settings")({
   ssr: false,
@@ -23,20 +24,28 @@ export const Route = createFileRoute("/settings")({
 });
 
 function Settings() {
-  const { baby, setBaby, parents, updateParent, settings, updateSettings, exportData, importData, resetData } =
+  const { baby, setBaby, parents, updateParent, settings, updateSettings, exportData, importData, resetData, familyId } =
     useBabyBond();
   const photoRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
   const restoreRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
-  const pickPhoto = (file: File | undefined) => {
+  const pickPhoto = async (file: File | undefined) => {
     if (!file) return;
-    const r = new FileReader();
-    r.onload = () => {
-      setBaby({ photo: String(r.result) });
+    setUploading(true);
+    const previous = baby.photo;
+    try {
+      const path = await uploadMedia(familyId, "baby", file);
+      setBaby({ photo: path });
+      void removeMedia(previous);
       toast.success("Baby photo updated");
-    };
-    r.readAsDataURL(file);
+    } catch (err) {
+      toast.error(err instanceof MediaError ? err.message : "Photo upload failed — please try again.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const backup = () => {
@@ -81,19 +90,58 @@ function Settings() {
           <SoftCard className="space-y-3">
             <div className="flex items-center gap-4">
               <BabyAvatar className="size-16 rounded-2xl text-2xl" />
-              <button
-                type="button"
-                onClick={() => photoRef.current?.click()}
-                className="flex items-center gap-2 rounded-2xl bg-secondary px-4 py-2 text-xs font-semibold text-secondary-foreground"
-              >
-                <Camera className="size-4" /> Change photo
-              </button>
+              <div className="flex flex-1 flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={uploading}
+                  onClick={() => photoRef.current?.click()}
+                  className="flex items-center gap-2 rounded-2xl bg-secondary px-4 py-2 text-xs font-semibold text-secondary-foreground disabled:opacity-60"
+                >
+                  <Camera className="size-4" /> {uploading ? "Uploading…" : "Gallery"}
+                </button>
+                <button
+                  type="button"
+                  disabled={uploading}
+                  onClick={() => cameraRef.current?.click()}
+                  className="flex items-center gap-2 rounded-2xl bg-secondary px-4 py-2 text-xs font-semibold text-secondary-foreground disabled:opacity-60"
+                >
+                  <Camera className="size-4" /> Camera
+                </button>
+                {baby.photo ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const previous = baby.photo;
+                      setBaby({ photo: null });
+                      void removeMedia(previous);
+                      toast.success("Photo removed");
+                    }}
+                    className="rounded-2xl bg-secondary px-4 py-2 text-xs font-semibold text-destructive"
+                  >
+                    Remove
+                  </button>
+                ) : null}
+              </div>
               <input
                 ref={photoRef}
                 type="file"
-                accept="image/*"
+                accept={ACCEPTED_IMAGE_TYPES}
                 className="hidden"
-                onChange={(e) => pickPhoto(e.target.files?.[0])}
+                onChange={(e) => {
+                  void pickPhoto(e.target.files?.[0]);
+                  e.target.value = "";
+                }}
+              />
+              <input
+                ref={cameraRef}
+                type="file"
+                accept={ACCEPTED_IMAGE_TYPES}
+                capture="environment"
+                className="hidden"
+                onChange={(e) => {
+                  void pickPhoto(e.target.files?.[0]);
+                  e.target.value = "";
+                }}
               />
             </div>
             <Input value={baby.name} onChange={(e) => setBaby({ name: e.target.value })} className="h-11 rounded-2xl" />
@@ -130,14 +178,32 @@ function Settings() {
           <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Parents</h2>
           <div className="space-y-2">
             {parents.map((p) => (
-              <SoftCard key={p.id} className="flex items-center gap-3 py-3">
-                <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">{p.emoji}</span>
-                <Input
-                  value={p.name}
-                  onChange={(e) => updateParent(p.id, { name: e.target.value })}
-                  className="h-10 flex-1 rounded-2xl"
-                />
-                <span className="text-xs font-semibold text-muted-foreground">{p.role}</span>
+              <SoftCard key={p.id} className="space-y-3 py-3">
+                <div className="flex items-center gap-3">
+                  <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">{p.emoji}</span>
+                  <Input
+                    value={p.name}
+                    onChange={(e) => updateParent(p.id, { name: e.target.value })}
+                    className="h-10 flex-1 rounded-2xl"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  {PARENT_ROLES.map((r: ParentRole) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => {
+                        updateParent(p.id, { role: r, emoji: roleEmoji(r) });
+                        toast.success(`Role saved · ${r}`);
+                      }}
+                      className={`flex-1 rounded-2xl py-2 text-xs font-semibold ${
+                        p.role === r ? "bb-gradient text-primary-foreground" : "bg-secondary text-secondary-foreground"
+                      }`}
+                    >
+                      {roleEmoji(r)} {r}
+                    </button>
+                  ))}
+                </div>
               </SoftCard>
             ))}
           </div>
@@ -173,25 +239,7 @@ function Settings() {
 
         <div>
           <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Reminder timing</h2>
-          <div className="space-y-2">
-            {[
-              { key: "feedGapHours", label: "Feed reminder after (hours)", min: 1, max: 6 },
-              { key: "vaccineLeadDays", label: "Vaccine reminder lead (days)", min: 0, max: 14 },
-              { key: "doctorLeadHours", label: "Appointment reminder lead (hours)", min: 1, max: 72 },
-            ].map((f) => (
-              <SoftCard key={f.key} className="flex items-center gap-3 py-3">
-                <span className="flex-1 text-sm font-semibold">{f.label}</span>
-                <Input
-                  type="number"
-                  min={f.min}
-                  max={f.max}
-                  value={settings[f.key as "feedGapHours"]}
-                  onChange={(e) => updateSettings({ [f.key]: Number(e.target.value) || 1 })}
-                  className="h-10 w-20 rounded-2xl text-center"
-                />
-              </SoftCard>
-            ))}
-          </div>
+          <ReminderTiming />
         </div>
 
         <div>
@@ -220,11 +268,11 @@ function Settings() {
             type="button"
             onClick={() => {
               resetData();
-              toast.success("Sample data restored");
+              toast.success("Reloaded from your family account");
             }}
             className="mt-3 flex w-full items-center justify-center gap-2 rounded-3xl bg-card p-3 text-sm font-semibold text-destructive bb-shadow"
           >
-            <RotateCcw className="size-4" /> Reset to sample data
+            <RotateCcw className="size-4" /> Reload from cloud
           </button>
         </div>
 
@@ -245,6 +293,74 @@ function Settings() {
         </SoftCard>
       </div>
     </AppShell>
+  );
+}
+
+const REMINDER_FIELDS = [
+  { key: "feedGapHours", label: "Feed reminder after (hours)", min: 1, max: 12 },
+  { key: "vaccineLeadDays", label: "Vaccine reminder lead (days)", min: 0, max: 30 },
+  { key: "doctorLeadHours", label: "Appointment reminder lead (hours)", min: 1, max: 72 },
+] as const;
+
+type ReminderKey = (typeof REMINDER_FIELDS)[number]["key"];
+
+/** Editable as free text so a value can be cleared and retyped, then saved explicitly. */
+function ReminderTiming() {
+  const { settings, updateSettings } = useBabyBond();
+  const saved = useMemo(
+    () => Object.fromEntries(REMINDER_FIELDS.map((f) => [f.key, String(settings[f.key])])) as Record<ReminderKey, string>,
+    [settings],
+  );
+  const [draft, setDraft] = useState<Record<ReminderKey, string>>(saved);
+  useEffect(() => setDraft(saved), [saved]);
+
+  const dirty = REMINDER_FIELDS.some((f) => draft[f.key] !== saved[f.key]);
+
+  const save = () => {
+    const patch: Partial<Record<ReminderKey, number>> = {};
+    for (const f of REMINDER_FIELDS) {
+      const raw = draft[f.key].trim();
+      if (raw === "") {
+        toast.error(`${f.label} cannot be empty`);
+        return;
+      }
+      const value = Number(raw);
+      if (!Number.isFinite(value) || value < f.min || value > f.max) {
+        toast.error(`${f.label} must be between ${f.min} and ${f.max}`);
+        return;
+      }
+      patch[f.key] = Math.round(value);
+    }
+    updateSettings(patch);
+    toast.success("Reminder settings updated successfully.");
+  };
+
+  return (
+    <div className="space-y-2">
+      {REMINDER_FIELDS.map((f) => (
+        <SoftCard key={f.key} className="flex items-center gap-3 py-3">
+          <span className="flex-1 text-sm font-semibold">{f.label}</span>
+          <Input
+            type="number"
+            inputMode="numeric"
+            min={f.min}
+            max={f.max}
+            value={draft[f.key]}
+            onFocus={(e) => e.currentTarget.select()}
+            onChange={(e) => setDraft((prev) => ({ ...prev, [f.key]: e.target.value }))}
+            className="h-10 w-20 rounded-2xl text-center"
+          />
+        </SoftCard>
+      ))}
+      <div className="grid grid-cols-2 gap-2">
+        <Button disabled={!dirty} className="h-11 rounded-2xl bb-gradient text-primary-foreground" onClick={save}>
+          Save
+        </Button>
+        <Button disabled={!dirty} variant="secondary" className="h-11 rounded-2xl" onClick={() => setDraft(saved)}>
+          Cancel
+        </Button>
+      </div>
+    </div>
   );
 }
 

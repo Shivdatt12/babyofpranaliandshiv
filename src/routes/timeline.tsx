@@ -37,9 +37,12 @@ export function describe(e: Entry): { emoji: string; title: string; detail: stri
       return { emoji: "💊", title: e.name, detail: `${e.dose}${e.status ? ` · ${e.status}` : ""}` };
     case "visit":
       return { emoji: "🩺", title: e.doctor, detail: `${e.hospital}${e.note ? ` · ${e.note}` : ""}` };
+    case "photo":
+      return { emoji: "📸", title: "Photo", detail: e.caption || "added to the album" };
     case "vaccine":
       return { emoji: "🛡️", title: e.name, detail: e.note ? `vaccine · ${e.note}` : "vaccine given" };
   }
+
 }
 
 const FILTERS = [

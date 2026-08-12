@@ -4,7 +4,17 @@ import type { Appointment, Baby, Entry, Medicine, Milestone, Settings, Vaccine }
 
 
 export type DocTable = "medicines" | "appointments" | "vaccines" | "milestones";
-export type SyncTable = DocTable | "entries" | "babies" | "family_settings";
+export type SyncTable = DocTable | "entries" | "babies" | "family_settings" | "active_timers";
+
+export type TimerKind = "breast" | "sleep";
+export type ActiveTimer = {
+  kind: TimerKind;
+  startedAt: number;
+  by: string;
+  side?: string;
+  note?: string;
+};
+
 
 export const uuid = () =>
   typeof globalThis.crypto?.randomUUID === "function"
@@ -49,10 +59,11 @@ export type CloudSnapshot = {
   appointments: Appointment[];
   vaccines: Vaccine[];
   milestones: Milestone[];
+  timers: ActiveTimer[];
 };
 
 export async function loadFamilyData(familyId: string): Promise<CloudSnapshot> {
-  const [baby, settings, entries, medicines, appointments, vaccines, milestones] = await Promise.all([
+  const [baby, settings, entries, medicines, appointments, vaccines, milestones, timers] = await Promise.all([
     supabase.from("babies").select("data").eq("family_id", familyId).maybeSingle(),
     supabase.from("family_settings").select("data").eq("family_id", familyId).maybeSingle(),
     supabase.from("entries").select("*").eq("family_id", familyId).order("at", { ascending: false }).limit(5000),
@@ -60,6 +71,7 @@ export async function loadFamilyData(familyId: string): Promise<CloudSnapshot> {
     supabase.from("appointments").select("*").eq("family_id", familyId),
     supabase.from("vaccines").select("*").eq("family_id", familyId),
     supabase.from("milestones").select("*").eq("family_id", familyId),
+    supabase.from("active_timers").select("*").eq("family_id", familyId),
   ]);
 
   return {
@@ -70,6 +82,28 @@ export async function loadFamilyData(familyId: string): Promise<CloudSnapshot> {
     appointments: ((appointments.data ?? []) as Row[]).map((r) => rowToDoc<Appointment>(r)),
     vaccines: ((vaccines.data ?? []) as Row[]).map((r) => rowToDoc<Vaccine>(r)),
     milestones: ((milestones.data ?? []) as Row[]).map((r) => rowToDoc<Milestone>(r)),
+    timers: ((timers.data ?? []) as unknown as {
+      kind: TimerKind;
+      started_at: string;
+      data: Record<string, unknown> | null;
+    }[]).map((t) => ({
+      kind: t.kind,
+      startedAt: new Date(t.started_at).getTime(),
+      by: String(t.data?.['by'] ?? ""),
+      ...(t.data?.['side'] ? { side: String(t.data['side']) } : {}),
+      ...(t.data?.['note'] ? { note: String(t.data['note']) } : {}),
+    })),
+  };
+}
+
+export function timerToRow(timer: ActiveTimer, familyId: string, userId: string | null) {
+  const { kind, startedAt, ...rest } = timer;
+  return {
+    family_id: familyId,
+    kind,
+    started_at: new Date(startedAt).toISOString(),
+    started_by: userId,
+    data: rest as Json,
   };
 }
 
@@ -77,7 +111,9 @@ export async function loadFamilyData(familyId: string): Promise<CloudSnapshot> {
 
 export type QueuedOp =
   | { kind: "upsert"; table: SyncTable; row: Record<string, unknown> }
-  | { kind: "delete"; table: SyncTable; id: string };
+  | { kind: "delete"; table: SyncTable; id: string }
+  | { kind: "deleteTimer"; table: "active_timers"; familyId: string; timerKind: TimerKind };
+
 
 const QUEUE_KEY = "babybond:queue:v1";
 
@@ -99,13 +135,16 @@ export function writeQueue(ops: QueuedOp[]) {
   }
 }
 
+function opKey(op: QueuedOp): string {
+  if (op.kind === "delete") return op.id;
+  if (op.kind === "deleteTimer") return `${op.familyId}:${op.timerKind}`;
+  return String(op.row['id'] ?? `${op.row['family_id']}:${op.row['kind'] ?? ""}`);
+}
+
 /** Collapse repeated writes to the same row so a long offline session replays cleanly. */
 export function pushOp(op: QueuedOp) {
-  const key = op.kind === "delete" ? op.id : String(op.row['id'] ?? op.row['family_id']);
-  const next = readQueue().filter((o) => {
-    const k = o.kind === "delete" ? o.id : String(o.row['id'] ?? o.row['family_id']);
-    return !(o.table === op.table && k === key);
-  });
+  const key = opKey(op);
+  const next = readQueue().filter((o) => !(o.table === op.table && opKey(o) === key));
   next.push(op);
   writeQueue(next);
 }
@@ -121,20 +160,34 @@ export async function flushQueue(): Promise<number> {
     let ops = readQueue();
     while (ops.length) {
       const op = ops[0]!;
-      const onConflict = op.table === "babies" || op.table === "family_settings" ? "family_id" : "id";
+      const onConflict =
+        op.table === "babies" || op.table === "family_settings"
+          ? "family_id"
+          : op.table === "active_timers"
+            ? "family_id,kind"
+            : "id";
       const table = supabase.from(op.table) as unknown as {
         upsert: (row: unknown, o: { onConflict: string }) => Promise<{ error: unknown }>;
-        delete: () => { eq: (c: string, v: string) => Promise<{ error: unknown }> };
+        delete: () => {
+          eq: (c: string, v: string) => Promise<{ error: unknown }> & {
+            eq: (c: string, v: string) => Promise<{ error: unknown }>;
+          };
+        };
       };
-      const res = op.kind === "upsert" ? await table.upsert(op.row, { onConflict }) : await table.delete().eq("id", op.id);
+      const res =
+        op.kind === "upsert"
+          ? await table.upsert(op.row, { onConflict })
+          : op.kind === "deleteTimer"
+            ? await table.delete().eq("family_id", op.familyId).eq("kind", op.timerKind)
+            : await table.delete().eq("id", op.id);
       if (res.error) break; // still offline / transient — keep the rest queued
       ops = ops.slice(1);
       writeQueue(ops);
       done += 1;
     }
-
   } finally {
     flushing = false;
   }
   return done;
 }
+

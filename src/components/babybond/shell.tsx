@@ -3,6 +3,7 @@ import { Home, CalendarClock, FileBarChart2, User, Moon, Sun, ArrowLeft } from "
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { useBabyBond } from "@/lib/babybond-store";
+import { useMediaUrl } from "@/lib/babybond-media";
 import { QuickAdd } from "./quick-add";
 import { MedicineReminders } from "./reminders";
 import { CreateBabyProfile, LoadingScreen, SignInPrompt } from "./onboarding";
@@ -149,8 +150,9 @@ export function StatTile({
 /** The family's own baby photo — falls back to an initial, never a stock/demo image. */
 export function BabyAvatar({ className, alt }: { className?: string; alt?: string }) {
   const { baby } = useBabyBond();
-  if (baby.photo) {
-    return <img src={baby.photo} alt={alt ?? baby.name} loading="lazy" className={cn("object-cover", className)} />;
+  const url = useMediaUrl(baby.photo);
+  if (url) {
+    return <img src={url} alt={alt ?? baby.name} loading="lazy" className={cn("object-cover", className)} />;
   }
   return (
     <div className={cn("grid place-items-center bg-secondary font-display font-bold text-secondary-foreground", className)}>
