@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      active_timers: {
+        Row: {
+          created_at: string
+          data: Json
+          family_id: string
+          kind: string
+          started_at: string
+          started_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          family_id: string
+          kind: string
+          started_at?: string
+          started_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          family_id?: string
+          kind?: string
+          started_at?: string
+          started_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "active_timers_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointments: {
         Row: {
           created_by: string | null
@@ -226,6 +264,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
           display_name: string
           emoji: string
@@ -235,6 +274,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           display_name?: string
           emoji?: string
@@ -244,6 +284,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           display_name?: string
           emoji?: string
