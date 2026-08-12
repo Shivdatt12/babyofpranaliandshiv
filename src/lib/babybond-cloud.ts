@@ -4,7 +4,17 @@ import type { Appointment, Baby, Entry, Medicine, Milestone, Settings, Vaccine }
 
 
 export type DocTable = "medicines" | "appointments" | "vaccines" | "milestones";
-export type SyncTable = DocTable | "entries" | "babies" | "family_settings";
+export type SyncTable = DocTable | "entries" | "babies" | "family_settings" | "active_timers";
+
+export type TimerKind = "breast" | "sleep";
+export type ActiveTimer = {
+  kind: TimerKind;
+  startedAt: number;
+  by: string;
+  side?: string;
+  note?: string;
+};
+
 
 export const uuid = () =>
   typeof globalThis.crypto?.randomUUID === "function"
