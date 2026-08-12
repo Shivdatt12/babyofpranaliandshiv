@@ -124,7 +124,25 @@ export type Baby = {
   photo?: string | null;
 };
 
-export type Parent = { id: string; name: string; role: "Mother" | "Father"; emoji: string; online: boolean };
+export type Parent = {
+  id: string;
+  name: string;
+  role: ParentRole;
+  emoji: string;
+  online: boolean;
+  avatar?: string | null;
+};
+
+export const PARENT_ROLES: ParentRole[] = ["Mother", "Father", "Parent"];
+
+export function roleEmoji(role: ParentRole) {
+  return role === "Father" ? "👨" : role === "Mother" ? "👩" : "🧑";
+}
+
+export function normalizeRole(value: string | null | undefined): ParentRole {
+  return value === "Father" ? "Father" : value === "Parent" ? "Parent" : "Mother";
+}
+
 
 export type Settings = {
   medicineReminders: boolean;
