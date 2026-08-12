@@ -135,13 +135,16 @@ export function writeQueue(ops: QueuedOp[]) {
   }
 }
 
+function opKey(op: QueuedOp): string {
+  if (op.kind === "delete") return op.id;
+  if (op.kind === "deleteTimer") return `${op.familyId}:${op.timerKind}`;
+  return String(op.row['id'] ?? `${op.row['family_id']}:${op.row['kind'] ?? ""}`);
+}
+
 /** Collapse repeated writes to the same row so a long offline session replays cleanly. */
 export function pushOp(op: QueuedOp) {
-  const key = op.kind === "delete" ? op.id : String(op.row['id'] ?? op.row['family_id']);
-  const next = readQueue().filter((o) => {
-    const k = o.kind === "delete" ? o.id : String(o.row['id'] ?? o.row['family_id']);
-    return !(o.table === op.table && k === key);
-  });
+  const key = opKey(op);
+  const next = readQueue().filter((o) => !(o.table === op.table && opKey(o) === key));
   next.push(op);
   writeQueue(next);
 }
@@ -157,20 +160,34 @@ export async function flushQueue(): Promise<number> {
     let ops = readQueue();
     while (ops.length) {
       const op = ops[0]!;
-      const onConflict = op.table === "babies" || op.table === "family_settings" ? "family_id" : "id";
+      const onConflict =
+        op.table === "babies" || op.table === "family_settings"
+          ? "family_id"
+          : op.table === "active_timers"
+            ? "family_id,kind"
+            : "id";
       const table = supabase.from(op.table) as unknown as {
         upsert: (row: unknown, o: { onConflict: string }) => Promise<{ error: unknown }>;
-        delete: () => { eq: (c: string, v: string) => Promise<{ error: unknown }> };
+        delete: () => {
+          eq: (c: string, v: string) => Promise<{ error: unknown }> & {
+            eq: (c: string, v: string) => Promise<{ error: unknown }>;
+          };
+        };
       };
-      const res = op.kind === "upsert" ? await table.upsert(op.row, { onConflict }) : await table.delete().eq("id", op.id);
+      const res =
+        op.kind === "upsert"
+          ? await table.upsert(op.row, { onConflict })
+          : op.kind === "deleteTimer"
+            ? await table.delete().eq("family_id", op.familyId).eq("kind", op.timerKind)
+            : await table.delete().eq("id", op.id);
       if (res.error) break; // still offline / transient — keep the rest queued
       ops = ops.slice(1);
       writeQueue(ops);
       done += 1;
     }
-
   } finally {
     flushing = false;
   }
   return done;
 }
+
