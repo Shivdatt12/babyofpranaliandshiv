@@ -200,8 +200,12 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     setVaccines(s.vaccines ?? []);
     setMilestones(s.milestones ?? []);
     setTimers(s.timers ?? []);
-    if (s.parents) setParents(s.parents);
-    if (s.settings) setSettings({ ...DEFAULT_SETTINGS, ...s.settings });
+    if (s.parents)
+      setParents((prev) =>
+        s.parents!.map((p) => (parentGuarded(p.id) ? (prev.find((x) => x.id === p.id) ?? p) : p)),
+      );
+    if (s.settings && !settingsGuarded()) setSettings({ ...DEFAULT_SETTINGS, ...s.settings });
+
     setLastSyncedAt(Date.now());
   }, []);
 
