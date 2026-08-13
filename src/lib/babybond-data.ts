@@ -231,6 +231,18 @@ export function formatDate(ts: number) {
   return new Date(ts).toLocaleDateString([], { day: "numeric", month: "short" });
 }
 
+/** "12 Aug 2026" — used for date-wise timeline / report headings. */
+export function formatFullDate(ts: number) {
+  return new Date(ts).toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" });
+}
+
+export function dayKey(ts: number) {
+  const d = new Date(ts);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
+
 export function timeAgo(ts: number, now: number) {
   const mins = Math.max(0, Math.round((now - ts) / 60000));
   if (mins < 1) return "just now";
