@@ -139,10 +139,22 @@ export function roleEmoji(role: ParentRole) {
   return role === "Father" ? "👨" : role === "Mother" ? "👩" : "🧑";
 }
 
-export function normalizeRole(value: string | null | undefined): ParentRole {
-  return value === "Father" ? "Father" : value === "Parent" ? "Parent" : "Mother";
+/** Only ever falls back for a brand-new profile with no role saved yet. */
+export function normalizeRole(value: string | null | undefined, fallback: ParentRole = "Mother"): ParentRole {
+  if (value === "Father") return "Father";
+  if (value === "Mother") return "Mother";
+  if (value === "Parent") return "Parent";
+  return fallback;
 }
 
+/** App estimate only — 1 minute of breastfeeding ≈ 1 ml of breastmilk. */
+export const ESTIMATED_ML_PER_MINUTE = 1;
+
+export function estimatedBreastMl(minutes: number) {
+  return Math.round(Math.max(0, minutes) * ESTIMATED_ML_PER_MINUTE);
+}
+
+export type SoundMode = "default" | "silent";
 
 export type Settings = {
   medicineReminders: boolean;
@@ -152,6 +164,12 @@ export type Settings = {
   feedGapHours: number;
   vaccineLeadDays: number;
   doctorLeadHours: number;
+  /** minutes before the scheduled time that the first reminder fires */
+  reminderLeadMinutes: number;
+  /** minutes for snooze + the single automatic follow-up after a swipe */
+  snoozeMinutes: number;
+  soundMode: SoundMode;
+  vibrate: boolean;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -162,7 +180,12 @@ export const DEFAULT_SETTINGS: Settings = {
   feedGapHours: 3,
   vaccineLeadDays: 2,
   doctorLeadHours: 24,
+  reminderLeadMinutes: 5,
+  snoozeMinutes: 10,
+  soundMode: "default",
+  vibrate: true,
 };
+
 
 /** Rough newborn jaundice bands (mg/dL) used only to highlight readings. */
 export function bilirubinLevel(value: number): "normal" | "watch" | "high" {
