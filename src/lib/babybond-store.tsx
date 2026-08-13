@@ -164,6 +164,14 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
   const userRef = useRef<string | null>(null);
   userRef.current = session?.user.id ?? null;
 
+  /** Recent local writes win over anything a slower cloud/cache read brings back. */
+  const GUARD_MS = 30_000;
+  const localSettingsAt = useRef(0);
+  const localParentAt = useRef<Map<string, number>>(new Map());
+  const settingsGuarded = () => Date.now() - localSettingsAt.current < GUARD_MS;
+  const parentGuarded = (id: string) => Date.now() - (localParentAt.current.get(id) ?? 0) < GUARD_MS;
+
+
   useEffect(() => {
     const i = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(i);
