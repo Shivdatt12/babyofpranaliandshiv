@@ -677,6 +677,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
         setMeId(id);
       },
       updateParent: (id, patch) => {
+        localParentAt.current.set(id, Date.now());
         setParents((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
         if (session && id === session.user.id) {
           void supabase
@@ -687,15 +688,21 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
               ...(patch.emoji !== undefined ? { emoji: patch.emoji } : {}),
               ...(patch.avatar !== undefined ? { avatar_url: patch.avatar } : {}),
             })
-            .eq("id", id);
+            .eq("id", id)
+            .then(() => {
+              // keep the guard alive until the write is definitely persisted
+              localParentAt.current.set(id, Date.now());
+            });
         }
       },
       settings,
       updateSettings: (patch) => {
+        localSettingsAt.current = Date.now();
         const next = { ...settings, ...patch };
         setSettings(next);
         saveSettings(next);
       },
+
       exportData: () =>
         JSON.stringify({ baby, entries, medicines, appointments, vaccines, milestones, meId, parents, settings, timers }, null, 2),
       importData: (json) => {
