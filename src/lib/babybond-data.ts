@@ -301,3 +301,16 @@ export function toDateTimeInput(ts: number) {
   const p = (n: number) => String(n).padStart(2, "0");
   return `${toDateInput(ts)}T${p(d.getHours())}:${p(d.getMinutes())}`;
 }
+
+export function toTimeInput(ts: number) {
+  const d = new Date(ts);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+/** Combine a yyyy-mm-dd + HH:mm pair into a local timestamp (0 when incomplete). */
+export function fromDateTimeInputs(date: string, time: string) {
+  if (!date || !time) return 0;
+  const ts = new Date(`${date}T${time}`).getTime();
+  return Number.isFinite(ts) ? ts : 0;
+}
