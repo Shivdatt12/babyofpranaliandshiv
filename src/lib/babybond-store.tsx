@@ -164,6 +164,14 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
   const userRef = useRef<string | null>(null);
   userRef.current = session?.user.id ?? null;
 
+  /** Recent local writes win over anything a slower cloud/cache read brings back. */
+  const GUARD_MS = 30_000;
+  const localSettingsAt = useRef(0);
+  const localParentAt = useRef<Map<string, number>>(new Map());
+  const settingsGuarded = () => Date.now() - localSettingsAt.current < GUARD_MS;
+  const parentGuarded = (id: string) => Date.now() - (localParentAt.current.get(id) ?? 0) < GUARD_MS;
+
+
   useEffect(() => {
     const i = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(i);
@@ -192,8 +200,16 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     setVaccines(s.vaccines ?? []);
     setMilestones(s.milestones ?? []);
     setTimers(s.timers ?? []);
-    if (s.parents) setParents(s.parents);
-    if (s.settings) setSettings({ ...DEFAULT_SETTINGS, ...s.settings });
+    if (s.parents)
+      setParents((prev) =>
+        s.parents!.map((p) =>
+          Date.now() - (localParentAt.current.get(p.id) ?? 0) < 30_000 ? (prev.find((x) => x.id === p.id) ?? p) : p,
+        ),
+      );
+    if (s.settings && Date.now() - localSettingsAt.current >= 30_000)
+      setSettings({ ...DEFAULT_SETTINGS, ...s.settings });
+
+
     setLastSyncedAt(Date.now());
   }, []);
 
@@ -288,23 +304,31 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     const { data: profileRows } = await supabase.from("profiles").select("*").eq("family_id", fid);
     applyingRemote.current = true;
     setBabyState(cloud.baby ?? null);
-    setSettings({ ...DEFAULT_SETTINGS, ...(cloud.settings ?? {}) });
+    // a settings change made seconds ago must not be undone by a slower cloud read
+    if (Date.now() - localSettingsAt.current >= 30_000)
+      setSettings({ ...DEFAULT_SETTINGS, ...(cloud.settings ?? {}) });
     setEntries(cloud.entries);
     setMedicines(cloud.medicines);
     setAppointments(cloud.appointments);
     setVaccines(cloud.vaccines);
     setMilestones(cloud.milestones);
     setTimers(cloud.timers);
-    setParents(
-      (profileRows ?? []).map((p) => ({
-        id: p.id,
-        name: p.display_name,
-        role: normalizeRole(p.role),
-        emoji: p.emoji,
-        online: true,
-        avatar: (p as { avatar_url?: string | null }).avatar_url ?? null,
-      })),
+    setParents((prev) =>
+      (profileRows ?? []).map((p) => {
+        const local = prev.find((x) => x.id === p.id);
+        // a role the parent just picked wins until the write has round-tripped
+        if (local && Date.now() - (localParentAt.current.get(p.id) ?? 0) < 30_000) return local;
+        return {
+          id: p.id,
+          name: p.display_name,
+          role: normalizeRole(p.role, local?.role ?? "Mother"),
+          emoji: p.emoji,
+          online: true,
+          avatar: (p as { avatar_url?: string | null }).avatar_url ?? null,
+        };
+      }),
     );
+
     setLastSyncedAt(Date.now());
     setDataLoaded(true);
   }, []);
@@ -653,6 +677,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
         setMeId(id);
       },
       updateParent: (id, patch) => {
+        localParentAt.current.set(id, Date.now());
         setParents((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
         if (session && id === session.user.id) {
           void supabase
@@ -663,15 +688,21 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
               ...(patch.emoji !== undefined ? { emoji: patch.emoji } : {}),
               ...(patch.avatar !== undefined ? { avatar_url: patch.avatar } : {}),
             })
-            .eq("id", id);
+            .eq("id", id)
+            .then(() => {
+              // keep the guard alive until the write is definitely persisted
+              localParentAt.current.set(id, Date.now());
+            });
         }
       },
       settings,
       updateSettings: (patch) => {
+        localSettingsAt.current = Date.now();
         const next = { ...settings, ...patch };
         setSettings(next);
         saveSettings(next);
       },
+
       exportData: () =>
         JSON.stringify({ baby, entries, medicines, appointments, vaccines, milestones, meId, parents, settings, timers }, null, 2),
       importData: (json) => {

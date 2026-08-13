@@ -139,10 +139,22 @@ export function roleEmoji(role: ParentRole) {
   return role === "Father" ? "👨" : role === "Mother" ? "👩" : "🧑";
 }
 
-export function normalizeRole(value: string | null | undefined): ParentRole {
-  return value === "Father" ? "Father" : value === "Parent" ? "Parent" : "Mother";
+/** Only ever falls back for a brand-new profile with no role saved yet. */
+export function normalizeRole(value: string | null | undefined, fallback: ParentRole = "Mother"): ParentRole {
+  if (value === "Father") return "Father";
+  if (value === "Mother") return "Mother";
+  if (value === "Parent") return "Parent";
+  return fallback;
 }
 
+/** App estimate only — 1 minute of breastfeeding ≈ 1 ml of breastmilk. */
+export const ESTIMATED_ML_PER_MINUTE = 1;
+
+export function estimatedBreastMl(minutes: number) {
+  return Math.round(Math.max(0, minutes) * ESTIMATED_ML_PER_MINUTE);
+}
+
+export type SoundMode = "default" | "silent";
 
 export type Settings = {
   medicineReminders: boolean;
@@ -152,6 +164,12 @@ export type Settings = {
   feedGapHours: number;
   vaccineLeadDays: number;
   doctorLeadHours: number;
+  /** minutes before the scheduled time that the first reminder fires */
+  reminderLeadMinutes: number;
+  /** minutes for snooze + the single automatic follow-up after a swipe */
+  snoozeMinutes: number;
+  soundMode: SoundMode;
+  vibrate: boolean;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -162,7 +180,12 @@ export const DEFAULT_SETTINGS: Settings = {
   feedGapHours: 3,
   vaccineLeadDays: 2,
   doctorLeadHours: 24,
+  reminderLeadMinutes: 5,
+  snoozeMinutes: 10,
+  soundMode: "default",
+  vibrate: true,
 };
+
 
 /** Rough newborn jaundice bands (mg/dL) used only to highlight readings. */
 export function bilirubinLevel(value: number): "normal" | "watch" | "high" {
@@ -207,6 +230,18 @@ export function formatTime(ts: number) {
 export function formatDate(ts: number) {
   return new Date(ts).toLocaleDateString([], { day: "numeric", month: "short" });
 }
+
+/** "12 Aug 2026" — used for date-wise timeline / report headings. */
+export function formatFullDate(ts: number) {
+  return new Date(ts).toLocaleDateString([], { day: "numeric", month: "short", year: "numeric" });
+}
+
+export function dayKey(ts: number) {
+  const d = new Date(ts);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
 
 export function timeAgo(ts: number, now: number) {
   const mins = Math.max(0, Math.round((now - ts) / 60000));
@@ -265,4 +300,17 @@ export function toDateTimeInput(ts: number) {
   const d = new Date(ts);
   const p = (n: number) => String(n).padStart(2, "0");
   return `${toDateInput(ts)}T${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+export function toTimeInput(ts: number) {
+  const d = new Date(ts);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+/** Combine a yyyy-mm-dd + HH:mm pair into a local timestamp (0 when incomplete). */
+export function fromDateTimeInputs(date: string, time: string) {
+  if (!date || !time) return 0;
+  const ts = new Date(`${date}T${time}`).getTime();
+  return Number.isFinite(ts) ? ts : 0;
 }
