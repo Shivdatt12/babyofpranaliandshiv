@@ -304,23 +304,31 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     const { data: profileRows } = await supabase.from("profiles").select("*").eq("family_id", fid);
     applyingRemote.current = true;
     setBabyState(cloud.baby ?? null);
-    setSettings({ ...DEFAULT_SETTINGS, ...(cloud.settings ?? {}) });
+    // a settings change made seconds ago must not be undone by a slower cloud read
+    if (Date.now() - localSettingsAt.current >= 30_000)
+      setSettings({ ...DEFAULT_SETTINGS, ...(cloud.settings ?? {}) });
     setEntries(cloud.entries);
     setMedicines(cloud.medicines);
     setAppointments(cloud.appointments);
     setVaccines(cloud.vaccines);
     setMilestones(cloud.milestones);
     setTimers(cloud.timers);
-    setParents(
-      (profileRows ?? []).map((p) => ({
-        id: p.id,
-        name: p.display_name,
-        role: normalizeRole(p.role),
-        emoji: p.emoji,
-        online: true,
-        avatar: (p as { avatar_url?: string | null }).avatar_url ?? null,
-      })),
+    setParents((prev) =>
+      (profileRows ?? []).map((p) => {
+        const local = prev.find((x) => x.id === p.id);
+        // a role the parent just picked wins until the write has round-tripped
+        if (local && Date.now() - (localParentAt.current.get(p.id) ?? 0) < 30_000) return local;
+        return {
+          id: p.id,
+          name: p.display_name,
+          role: normalizeRole(p.role, local?.role ?? "Mother"),
+          emoji: p.emoji,
+          online: true,
+          avatar: (p as { avatar_url?: string | null }).avatar_url ?? null,
+        };
+      }),
     );
+
     setLastSyncedAt(Date.now());
     setDataLoaded(true);
   }, []);
