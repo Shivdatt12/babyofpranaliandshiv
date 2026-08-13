@@ -202,9 +202,13 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     setTimers(s.timers ?? []);
     if (s.parents)
       setParents((prev) =>
-        s.parents!.map((p) => (parentGuarded(p.id) ? (prev.find((x) => x.id === p.id) ?? p) : p)),
+        s.parents!.map((p) =>
+          Date.now() - (localParentAt.current.get(p.id) ?? 0) < 30_000 ? (prev.find((x) => x.id === p.id) ?? p) : p,
+        ),
       );
-    if (s.settings && !settingsGuarded()) setSettings({ ...DEFAULT_SETTINGS, ...s.settings });
+    if (s.settings && Date.now() - localSettingsAt.current >= 30_000)
+      setSettings({ ...DEFAULT_SETTINGS, ...s.settings });
+
 
     setLastSyncedAt(Date.now());
   }, []);
