@@ -54,6 +54,7 @@ function MilkTracker() {
   const { addEntry, deleteEntry, entries, now, timers, startTimer, updateTimer, stopTimer, cancelTimer } =
     useBabyBond();
   const s = useTodayStats();
+  const breastMl = useBreastEstimate();
   const active = timers.find((t) => t.kind === "breast");
   const [side, setSide] = useState<FeedSide>("left");
   const [note, setNote] = useState("");
@@ -336,6 +337,7 @@ function ManualFormula() {
 
 function EditFeedSheet({ entry, onClose }: { entry: BreastEntry | FormulaEntry | null; onClose: () => void }) {
   const { updateEntry, deleteEntry } = useBabyBond();
+  const breastMl = useBreastEstimate();
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [value, setValue] = useState("");
@@ -423,6 +425,7 @@ function EditFeedSheet({ entry, onClose }: { entry: BreastEntry | FormulaEntry |
 
 function ManualFeed() {
   const { addEntry } = useBabyBond();
+  const breastMl = useBreastEstimate();
   const today = toDateInput(Date.now());
   const [side, setSide] = useState<FeedSide>("left");
   const [startDate, setStartDate] = useState(today);
