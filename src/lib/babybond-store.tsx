@@ -808,6 +808,21 @@ export function useBabyBond() {
   return ctx;
 }
 
+/**
+ * Estimated breastmilk from a breastfeeding duration, using the family's saved
+ * ml/min setting. Durations are never converted permanently — always derived.
+ */
+export function useBreastEstimate() {
+  const { settings } = useBabyBond();
+  const rate = settings.breastMlPerMinute;
+  return useMemo(() => {
+    const fn = (minutes: number) => estimatedBreastMl(minutes, rate);
+    return Object.assign(fn, { mlPerMinute: rate });
+  }, [rate]);
+}
+
+
+
 export type MedicineDose = {
   key: string;
   medicine: Medicine;
@@ -863,7 +878,7 @@ export function useTodayStats() {
 
     const formulaMl = formula.reduce((s, e) => s + e.ml, 0);
     const breastMinutes = breast.reduce((s, e) => s + e.minutes, 0);
-    const breastMl = estimatedBreastMl(breastMinutes);
+    const breastMl = estimatedBreastMl(breastMinutes, settings.breastMlPerMinute);
     const gapMs = Math.max(1, settings.feedGapHours) * 3600_000;
 
     return {
