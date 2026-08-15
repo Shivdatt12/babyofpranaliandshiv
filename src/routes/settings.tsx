@@ -301,9 +301,15 @@ function Settings() {
 
 
         <div>
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Feeding</h2>
+          <BreastEstimateSetting />
+        </div>
+
+        <div>
           <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Reminder timing</h2>
           <ReminderTiming />
         </div>
+
 
         <div>
           <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Data</h2>
