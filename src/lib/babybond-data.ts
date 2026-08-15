@@ -18,7 +18,7 @@ export type Entry =
       by: string;
     }
   | { id: string; type: "formula"; at: number; ml: number; note?: string; by: string }
-  | { id: string; type: "pee"; at: number; by: string }
+  | { id: string; type: "pee"; at: number; note?: string; by: string }
   | { id: string; type: "potty"; at: number; kind: PottyKind; note?: string; by: string }
   | {
       id: string;

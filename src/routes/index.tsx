@@ -133,7 +133,7 @@ function Dashboard() {
         <SoftCard className="mt-5 flex items-center justify-between bg-card/85">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Next feed in
+              Next feed in · {s.feedGapHours}h gap
             </p>
             <Countdown target={s.nextFeedAt} now={now} />
             <p className="text-[11px] text-muted-foreground">
@@ -145,6 +145,7 @@ function Dashboard() {
           </div>
           <span className="text-3xl">🍼</span>
         </SoftCard>
+
       </div>
 
       <ActiveTimerBanner />
@@ -175,16 +176,23 @@ function Dashboard() {
 
         <h2 className="mt-6 mb-3 font-display text-base font-bold">Today</h2>
         <div className="grid grid-cols-2 gap-3">
-          <StatTile tone="milk" emoji="🥛" label="Today's milk" value={`${s.milkMl} ml`} hint="breast + formula" />
+          <StatTile
+            tone="milk"
+            emoji="🥛"
+            label="Today's milk"
+            value={`${s.milkMl} ml`}
+            hint="formula + estimated breastmilk"
+          />
           <StatTile tone="formula" emoji="🍼" label="Formula" value={`${s.formulaMl} ml`} hint="bottle feeds" />
           <StatTile
             tone="milk"
             emoji="🤱"
-            label="Breastfeeds"
-            value={`${s.breastCount}`}
-            hint={durationLabel(s.breastMinutes)}
+            label="Estimated Breastmilk"
+            value={`${s.breastMl} ml`}
+            hint={`${s.breastCount} feeds · ${durationLabel(s.breastMinutes)}`}
           />
           <StatTile tone="sleep" emoji="🌙" label="Sleep" value={durationLabel(s.sleepMinutes)} hint="total today" />
+
           <StatTile
             tone="health"
             emoji="⚖️"

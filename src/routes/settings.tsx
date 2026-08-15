@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { useBabyBond } from "@/lib/babybond-store";
 import { PARENT_ROLES, roleEmoji, toDateInput, type ParentRole } from "@/lib/babybond-data";
 import { ACCEPTED_IMAGE_TYPES, MediaError, removeMedia, uploadMedia } from "@/lib/babybond-media";
+import { notifyNow, pushPrefs, requestNotificationPermission } from "@/lib/babybond-push";
+
 
 export const Route = createFileRoute("/settings")({
   ssr: false,
@@ -234,8 +236,69 @@ function Settings() {
             >
               Allow device notifications
             </button>
+
+            <SoftCard className="space-y-3">
+              <div className="flex items-center gap-3">
+                <span className="flex-1 text-sm font-semibold">Notification sound</span>
+                <div className="flex gap-2">
+                  {(["default", "silent"] as const).map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => updateSettings({ soundMode: m })}
+                      className={`rounded-2xl px-4 py-2 text-xs font-semibold capitalize ${
+                        settings.soundMode === m
+                          ? "bb-gradient text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground"
+                      }`}
+                    >
+                      {m}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="flex-1 text-sm font-semibold">Vibration</span>
+                <Switch checked={settings.vibrate} onCheckedChange={(v) => updateSettings({ vibrate: v })} />
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                Sound and vibration follow your device's notification channel. Android may keep its own sound setting for
+                the installed app.
+              </p>
+              <Button
+                variant="secondary"
+                className="h-11 w-full rounded-2xl"
+                onClick={() => {
+                  void (async () => {
+                    const prefs = {
+                      snoozeMs: settings.snoozeMinutes * 60_000,
+                      silent: settings.soundMode === "silent",
+                      vibrate: settings.vibrate,
+                    };
+                    const permission = await requestNotificationPermission();
+                    if (permission !== "granted") {
+                      toast.error("Allow device notifications first");
+                      return;
+                    }
+                    await pushPrefs(prefs);
+                    const shown = await notifyNow(
+                      "babybond-test",
+                      "🔔 Test notification",
+                      `Sound: ${settings.soundMode} · Vibration: ${settings.vibrate ? "on" : "off"}`,
+                      { prefs },
+                    );
+                    if (settings.vibrate) navigator.vibrate?.([200, 100, 200]);
+                    if (shown) toast.success("Test notification sent");
+                    else toast.error("Could not show a notification here");
+                  })();
+                }}
+              >
+                Test notification
+              </Button>
+            </SoftCard>
           </div>
         </div>
+
 
         <div>
           <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Reminder timing</h2>
@@ -300,6 +363,8 @@ const REMINDER_FIELDS = [
   { key: "feedGapHours", label: "Feed reminder after (hours)", min: 1, max: 12 },
   { key: "vaccineLeadDays", label: "Vaccine reminder lead (days)", min: 0, max: 30 },
   { key: "doctorLeadHours", label: "Appointment reminder lead (hours)", min: 1, max: 72 },
+  { key: "reminderLeadMinutes", label: "Notify before due (minutes)", min: 0, max: 120 },
+  { key: "snoozeMinutes", label: "Snooze / follow-up (minutes)", min: 1, max: 60 },
 ] as const;
 
 type ReminderKey = (typeof REMINDER_FIELDS)[number]["key"];

@@ -1,11 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { FileDown, Share2 } from "lucide-react";
 import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
 import { Button } from "@/components/ui/button";
 import { useBabyBond } from "@/lib/babybond-store";
-import { durationLabel, formatDate, formatTime, type Entry } from "@/lib/babybond-data";
+import {
+  dayKey,
+  durationLabel,
+  estimatedBreastMl,
+  formatDate,
+  formatFullDate,
+  formatTime,
+  startOfToday,
+  type Entry,
+} from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/reports")({
   ssr: false,
@@ -26,36 +35,167 @@ const RANGES = [
   { key: 30, label: "30 days" },
 ] as const;
 
+type Totals = {
+  breastCount: number;
+  breastMinutes: number;
+  breastMl: number;
+  formulaCount: number;
+  formulaMl: number;
+  pee: number;
+  potty: number;
+  sleepMinutes: number;
+  medDoses: number;
+  medGiven: number;
+  medSkipped: number;
+  visits: number;
+  weights: Extract<Entry, { type: "weight" }>[];
+  bili: Extract<Entry, { type: "bilirubin" }>[];
+};
+
+function emptyTotals(): Totals {
+  return {
+    breastCount: 0,
+    breastMinutes: 0,
+    breastMl: 0,
+    formulaCount: 0,
+    formulaMl: 0,
+    pee: 0,
+    potty: 0,
+    sleepMinutes: 0,
+    medDoses: 0,
+    medGiven: 0,
+    medSkipped: 0,
+    visits: 0,
+    weights: [],
+    bili: [],
+  };
+}
+
+function tally(list: Entry[]): Totals {
+  const t = emptyTotals();
+  for (const e of list) {
+    switch (e.type) {
+      case "breast":
+        t.breastCount += 1;
+        t.breastMinutes += e.minutes;
+        break;
+      case "formula":
+        t.formulaCount += 1;
+        t.formulaMl += e.ml;
+        break;
+      case "pee":
+        t.pee += 1;
+        break;
+      case "potty":
+        t.potty += 1;
+        break;
+      case "sleep":
+        t.sleepMinutes += e.minutes;
+        break;
+      case "medicine":
+        t.medDoses += 1;
+        if (e.status === "skipped") t.medSkipped += 1;
+        else t.medGiven += 1;
+        break;
+      case "visit":
+        t.visits += 1;
+        break;
+      case "weight":
+        t.weights.push(e);
+        break;
+      case "bilirubin":
+        t.bili.push(e);
+        break;
+      default:
+        break;
+    }
+  }
+  t.breastMl = estimatedBreastMl(t.breastMinutes);
+  t.weights.sort((a, b) => a.at - b.at);
+  t.bili.sort((a, b) => a.at - b.at);
+  return t;
+}
+
+function moduleLines(t: Totals, extras?: { vaccinesDone?: number; vaccinesPending?: number; vaccinesMissed?: number }) {
+  const first = t.weights[0];
+  const last = t.weights[t.weights.length - 1];
+  const lastBili = t.bili[t.bili.length - 1];
+  const lines: { emoji: string; label: string; value: string; sub: string }[] = [
+    {
+      emoji: "🤱",
+      label: "Breastfeeding",
+      value: `${t.breastCount} sessions`,
+      sub: `${durationLabel(t.breastMinutes)} · Estimated Breastmilk ${t.breastMl} ml`,
+    },
+    { emoji: "🍼", label: "Formula", value: `${t.formulaMl} ml`, sub: `${t.formulaCount} feeds` },
+    { emoji: "💛", label: "Pee", value: `${t.pee}`, sub: "nappy changes" },
+    { emoji: "💩", label: "Potty", value: `${t.potty}`, sub: "bowel movements" },
+    { emoji: "🌙", label: "Sleep", value: durationLabel(t.sleepMinutes), sub: "total" },
+    {
+      emoji: "💊",
+      label: "Medicines",
+      value: `${t.medDoses} doses`,
+      sub: `${t.medGiven} given · ${t.medSkipped} skipped`,
+    },
+    {
+      emoji: "⚖️",
+      label: "Weight",
+      value: last ? `${(last.grams / 1000).toFixed(2)} kg` : "—",
+      sub:
+        first && last && first !== last
+          ? `${last.grams - first.grams > 0 ? "+" : ""}${last.grams - first.grams} g change`
+          : `${t.weights.length} reading${t.weights.length === 1 ? "" : "s"}`,
+    },
+    {
+      emoji: "🩸",
+      label: "Bilirubin",
+      value: lastBili ? `${lastBili.value}` : "—",
+      sub: `${t.bili.length} test${t.bili.length === 1 ? "" : "s"}`,
+    },
+    { emoji: "🩺", label: "Doctor", value: `${t.visits}`, sub: "visits" },
+  ];
+  if (extras) {
+    lines.push({
+      emoji: "🛡️",
+      label: "Vaccines",
+      value: `${extras.vaccinesDone ?? 0} completed`,
+      sub: `${extras.vaccinesPending ?? 0} pending · ${extras.vaccinesMissed ?? 0} missed`,
+    });
+  }
+  return lines;
+}
+
 function Reports() {
   const { entries, baby, now, vaccines, appointments } = useBabyBond();
   const [days, setDays] = useState<number>(7);
   const [busy, setBusy] = useState(false);
-  const from = now - days * 86400000;
-  const scoped = entries.filter((e) => e.at >= from);
 
-  const sum = (t: Entry["type"]) => scoped.filter((e) => e.type === t);
-  const formula = sum("formula") as Extract<Entry, { type: "formula" }>[];
-  const breast = sum("breast") as Extract<Entry, { type: "breast" }>[];
-  const sleep = sum("sleep") as Extract<Entry, { type: "sleep" }>[];
-  const weights = sum("weight") as Extract<Entry, { type: "weight" }>[];
-  const bili = sum("bilirubin") as Extract<Entry, { type: "bilirubin" }>[];
+  // whole-day ranges so "Today" means today, not the last 24 hours
+  const from = startOfToday(now) - (days - 1) * 86400000;
+  const scoped = useMemo(() => entries.filter((e) => e.at >= from), [entries, from]);
 
-  const formulaMl = formula.reduce((s, e) => s + e.ml, 0);
-  const breastMin = breast.reduce((s, e) => s + e.minutes, 0);
+  const groups = useMemo(() => {
+    const map = new Map<string, Entry[]>();
+    for (const e of scoped) {
+      const key = dayKey(e.at);
+      const list = map.get(key);
+      if (list) list.push(e);
+      else map.set(key, [e]);
+    }
+    return [...map.entries()]
+      .sort((a, b) => (a[0] < b[0] ? 1 : -1))
+      .map(([key, list]) => ({ key, at: list[0]!.at, totals: tally(list) }));
+  }, [scoped]);
 
-  const rows = [
-    { emoji: "🍼", label: "Formula", value: `${formulaMl} ml`, sub: `${formula.length} bottles` },
-    { emoji: "🤱", label: "Breastfeeding", value: durationLabel(breastMin), sub: `${breast.length} sessions` },
-    { emoji: "🥛", label: "Total milk", value: `${formulaMl + breastMin * 8} ml`, sub: "estimated intake" },
-    { emoji: "💛", label: "Pee", value: `${sum("pee").length}`, sub: "nappy changes" },
-    { emoji: "💩", label: "Potty", value: `${sum("potty").length}`, sub: "bowel movements" },
-    { emoji: "🌙", label: "Sleep", value: durationLabel(sleep.reduce((s, e) => s + e.minutes, 0)), sub: `${sleep.length} naps` },
-    { emoji: "⚖️", label: "Weight", value: weights[0] ? `${(weights[0].grams / 1000).toFixed(2)} kg` : "—", sub: `${weights.length} readings` },
-    { emoji: "🩸", label: "Bilirubin", value: bili[0] ? `${bili[0].value}` : "—", sub: `${bili.length} tests` },
-    { emoji: "💊", label: "Medicines", value: `${sum("medicine").length}`, sub: "doses logged" },
-    { emoji: "🛡️", label: "Vaccines", value: `${vaccines.filter((v) => v.doneAt).length}/${vaccines.length}`, sub: "completed" },
-    { emoji: "🩺", label: "Doctor visits", value: `${sum("visit").length}`, sub: "appointments" },
-  ];
+  const total = useMemo(() => tally(scoped), [scoped]);
+  const vaxDone = vaccines.filter((v) => v.doneAt).length;
+  const vaxMissed = vaccines.filter((v) => !v.doneAt && v.dueAt < now).length;
+  const vaxPending = vaccines.length - vaxDone - vaxMissed;
+  const summaryRows = moduleLines(total, {
+    vaccinesDone: vaxDone,
+    vaccinesPending: vaxPending,
+    vaccinesMissed: vaxMissed,
+  });
 
   const buildPdf = async () => {
     const { jsPDF } = await import("jspdf");
@@ -70,14 +210,14 @@ function Reports() {
     doc.text(`${baby.name}'s care report`, 40, 55);
     doc.setFont("helvetica", "normal").setFontSize(11);
     doc.text(
-      `${RANGES.find((r) => r.key === days)?.label ?? ""} · generated ${formatDate(now)} ${formatTime(now)}`,
+      `${RANGES.find((r) => r.key === days)?.label ?? ""} · ${formatFullDate(from)} – ${formatFullDate(now)}`,
       40,
       78,
     );
     y = 145;
 
     const heading = (t: string) => {
-      if (y > 760) {
+      if (y > 740) {
         doc.addPage();
         y = 60;
       }
@@ -100,35 +240,23 @@ function Reports() {
       y += 15;
     };
 
-    heading("Summary");
-    for (const r of rows) line(`${r.label}: ${r.value} (${r.sub})`);
-    y += 12;
+    heading("TOTAL SUMMARY");
+    for (const r of summaryRows) line(`${r.label}: ${r.value} — ${r.sub}`);
+    y += 14;
 
-    const section = (title: string, list: Entry[], fmt: (e: Entry) => string) => {
-      if (!list.length) return;
-      heading(title);
-      for (const e of list.slice(0, 60)) line(`${formatDate(e.at)} ${formatTime(e.at)} — ${fmt(e)} · ${e.by}`);
-      y += 12;
-    };
-
-    section("Breastfeeding", breast, (e) => `${(e as Extract<Entry, { type: "breast" }>).side} · ${durationLabel((e as Extract<Entry, { type: "breast" }>).minutes)}`);
-    section("Formula", formula, (e) => `${(e as Extract<Entry, { type: "formula" }>).ml} ml`);
-    section("Pee", sum("pee"), () => "nappy change");
-    section("Potty", sum("potty"), (e) => (e as Extract<Entry, { type: "potty" }>).kind);
-    section("Sleep", sleep, (e) => durationLabel((e as Extract<Entry, { type: "sleep" }>).minutes));
-    section("Weight", weights, (e) => `${((e as Extract<Entry, { type: "weight" }>).grams / 1000).toFixed(2)} kg`);
-    section("Bilirubin", bili, (e) => `${(e as Extract<Entry, { type: "bilirubin" }>).value} mg/dL (${(e as Extract<Entry, { type: "bilirubin" }>).method})`);
-    section("Medicines", sum("medicine"), (e) => {
-      const m = e as Extract<Entry, { type: "medicine" }>;
-      return `${m.name} · ${m.dose} · ${m.status ?? "given"}`;
-    });
+    for (const g of groups) {
+      heading(formatFullDate(g.at));
+      for (const r of moduleLines(g.totals)) line(`${r.label}: ${r.value} — ${r.sub}`);
+      y += 10;
+    }
 
     heading("Vaccines");
     for (const v of vaccines) line(`${v.name} — ${v.doneAt ? `done ${formatDate(v.doneAt)}` : `due ${formatDate(v.dueAt)}`}`);
     y += 12;
 
     heading("Doctor visits");
-    for (const a of appointments) line(`${formatDate(a.at)} ${formatTime(a.at)} — ${a.doctor}, ${a.hospital}${a.diagnosis ? ` · ${a.diagnosis}` : ""}`);
+    for (const a of appointments)
+      line(`${formatDate(a.at)} ${formatTime(a.at)} — ${a.doctor}, ${a.hospital}${a.diagnosis ? ` · ${a.diagnosis}` : ""}`);
 
     return doc;
   };
@@ -186,15 +314,38 @@ function Reports() {
           ))}
         </div>
 
-        <div className="mt-4 space-y-2">
-          {rows.map((r) => (
+        <h2 className="mb-2 mt-5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Total summary · {formatFullDate(from)} – {formatFullDate(now)}
+        </h2>
+        <div className="space-y-2">
+          {summaryRows.map((r) => (
             <SoftCard key={r.label} className="flex items-center gap-3 py-3">
               <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">{r.emoji}</span>
-              <div className="flex-1">
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold">{r.label}</p>
                 <p className="text-xs text-muted-foreground">{r.sub}</p>
               </div>
               <p className="font-display text-base font-bold">{r.value}</p>
+            </SoftCard>
+          ))}
+        </div>
+
+        <h2 className="mb-2 mt-6 text-xs font-bold uppercase tracking-wider text-muted-foreground">Day by day</h2>
+        {groups.length === 0 ? (
+          <SoftCard className="text-center text-sm text-muted-foreground">Nothing logged in this range yet.</SoftCard>
+        ) : null}
+        <div className="space-y-3">
+          {groups.map((g) => (
+            <SoftCard key={g.key} className="space-y-1">
+              <p className="font-display text-base font-bold">{formatFullDate(g.at)}</p>
+              {moduleLines(g.totals).map((r) => (
+                <div key={r.label} className="flex items-baseline gap-2 text-xs">
+                  <span>{r.emoji}</span>
+                  <span className="font-semibold">{r.label}</span>
+                  <span className="flex-1 truncate text-muted-foreground">{r.sub}</span>
+                  <span className="font-bold">{r.value}</span>
+                </div>
+              ))}
             </SoftCard>
           ))}
         </div>

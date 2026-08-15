@@ -1,14 +1,25 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Play, Square, Trash2, X } from "lucide-react";
+import { Pencil, Play, Square, Trash2, X } from "lucide-react";
 import { AppShell, PageHeader, SoftCard, StatTile } from "@/components/babybond/shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useBabyBond, useTodayStats } from "@/lib/babybond-store";
-import { durationLabel, formatTime, timeAgo, toDateInput, type FeedSide } from "@/lib/babybond-data";
+import {
+  durationLabel,
+  estimatedBreastMl,
+  formatTime,
+  fromDateTimeInputs,
+  timeAgo,
+  toDateInput,
+  toTimeInput,
+  type Entry,
+  type FeedSide,
+} from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/track/milk")({
   ssr: false,
@@ -37,6 +48,9 @@ function clock(ms: number) {
   return `${p(Math.floor(total / 3600))}:${p(Math.floor((total % 3600) / 60))}:${p(total % 60)}`;
 }
 
+type BreastEntry = Extract<Entry, { type: "breast" }>;
+type FormulaEntry = Extract<Entry, { type: "formula" }>;
+
 function MilkTracker() {
   const { addEntry, deleteEntry, entries, now, timers, startTimer, updateTimer, stopTimer, cancelTimer } =
     useBabyBond();
@@ -45,6 +59,7 @@ function MilkTracker() {
   const [side, setSide] = useState<FeedSide>("left");
   const [note, setNote] = useState("");
   const [custom, setCustom] = useState("");
+  const [editing, setEditing] = useState<BreastEntry | FormulaEntry | null>(null);
 
   const logFormula = (ml: number) => {
     if (!ml) return;
@@ -53,18 +68,34 @@ function MilkTracker() {
     setCustom("");
   };
 
-  const feeds = entries.filter((e) => e.type === "breast" || e.type === "formula").slice(0, 8);
+  const feeds = entries.filter((e) => e.type === "breast" || e.type === "formula").slice(0, 12) as (
+    | BreastEntry
+    | FormulaEntry
+  )[];
   const currentSide = (active?.side as FeedSide | undefined) ?? side;
+  const liveMinutes = active ? Math.max(0, Math.floor((now - active.startedAt) / 60000)) : 0;
 
   return (
     <AppShell>
       <PageHeader title="Milk" subtitle="Breastfeed & formula" />
       <div className="space-y-4 px-5 pb-6">
-        <div className="grid grid-cols-3 gap-3">
-          <StatTile tone="milk" emoji="🥛" label="Milk" value={`${s.milkMl} ml`} />
-          <StatTile tone="formula" emoji="🍼" label="Formula" value={`${s.formulaMl} ml`} />
-          <StatTile tone="milk" emoji="🤱" label="Feeds" value={`${s.breastCount}`} />
+        <div className="grid grid-cols-2 gap-3">
+          <StatTile tone="formula" emoji="🍼" label="Formula" value={`${s.formulaMl} ml`} hint="measured" />
+          <StatTile
+            tone="milk"
+            emoji="🤱"
+            label="Estimated Breastmilk"
+            value={`${s.breastMl} ml`}
+            hint={`${s.breastCount} sessions · ${durationLabel(s.breastMinutes)}`}
+          />
         </div>
+        <SoftCard className="flex items-center justify-between py-3">
+          <div>
+            <p className="text-sm font-bold">Total today</p>
+            <p className="text-[11px] text-muted-foreground">Formula + Estimated Breastmilk</p>
+          </div>
+          <p className="font-display text-xl font-bold">{s.milkMl} ml</p>
+        </SoftCard>
 
         <Tabs defaultValue="breast">
           <TabsList className="grid w-full grid-cols-3 rounded-2xl">
@@ -109,6 +140,9 @@ function MilkTracker() {
                     ? `running since ${formatTime(active.startedAt)} · started by ${active.by}`
                     : `timer · ${currentSide} side`}
                 </p>
+                <p className="mt-1 text-xs font-semibold">
+                  Estimated Breastmilk · {estimatedBreastMl(liveMinutes)} ml
+                </p>
               </div>
 
               <div className="mt-4 flex gap-2">
@@ -118,7 +152,9 @@ function MilkTracker() {
                       className="h-12 flex-1 rounded-2xl bb-gradient text-primary-foreground"
                       onClick={() => {
                         stopTimer("breast");
-                        toast.success("Breastfeed saved");
+                        toast.success("Breastfeed saved", {
+                          description: `Estimated Breastmilk · ${estimatedBreastMl(Math.max(1, liveMinutes))} ml`,
+                        });
                       }}
                     >
                       <Square className="mr-2 size-4" /> Stop &amp; save
@@ -169,6 +205,7 @@ function MilkTracker() {
           <TabsContent value="formula" className="mt-4 space-y-3">
             <SoftCard tone="formula">
               <p className="text-sm font-bold">Quick amounts</p>
+              <p className="text-[11px] opacity-70">Saves with the current time</p>
               <div className="mt-3 grid grid-cols-3 gap-2">
                 {QUICK.map((ml) => (
                   <button
@@ -196,8 +233,8 @@ function MilkTracker() {
                   Add
                 </Button>
               </div>
-              <p className="mt-3 text-xs opacity-70">Daily intake updates automatically for both parents.</p>
             </SoftCard>
+            <ManualFormula />
           </TabsContent>
         </Tabs>
 
@@ -209,16 +246,25 @@ function MilkTracker() {
                 <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">
                   {e.type === "breast" ? "🤱" : "🍼"}
                 </span>
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <p className="text-sm font-bold">
                     {e.type === "breast"
                       ? `${e.side[0]?.toUpperCase()}${e.side.slice(1)} · ${durationLabel(e.minutes)}`
                       : `${e.ml} ml formula`}
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="truncate text-xs text-muted-foreground">
+                    {e.type === "breast" ? `Estimated Breastmilk ${estimatedBreastMl(e.minutes)} ml · ` : ""}
                     {formatTime(e.at)} · {timeAgo(e.at, now)} · {e.by}
                   </p>
                 </div>
+                <button
+                  type="button"
+                  aria-label="Edit feed"
+                  onClick={() => setEditing(e)}
+                  className="grid size-9 place-items-center rounded-2xl bg-secondary text-muted-foreground"
+                >
+                  <Pencil className="size-4" />
+                </button>
                 <button
                   type="button"
                   aria-label="Delete feed"
@@ -235,7 +281,144 @@ function MilkTracker() {
           </div>
         </div>
       </div>
+
+      <EditFeedSheet entry={editing} onClose={() => setEditing(null)} />
     </AppShell>
+  );
+}
+
+/** Historical formula feed — the chosen date/time is the real feeding time. */
+function ManualFormula() {
+  const { addEntry } = useBabyBond();
+  const [date, setDate] = useState(toDateInput(Date.now()));
+  const [time, setTime] = useState(toTimeInput(Date.now()));
+  const [ml, setMl] = useState("");
+  const [note, setNote] = useState("");
+
+  return (
+    <SoftCard tone="formula" className="space-y-3">
+      <p className="text-sm font-bold">Add manually</p>
+      <div className="grid grid-cols-2 gap-2">
+        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="h-11 rounded-2xl bg-card/80" />
+        <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="h-11 rounded-2xl bg-card/80" />
+      </div>
+      <Input
+        inputMode="numeric"
+        placeholder="Quantity in ml"
+        value={ml}
+        onChange={(e) => setMl(e.target.value)}
+        className="h-11 rounded-2xl bg-card/80"
+      />
+      <Textarea placeholder="Notes" value={note} onChange={(e) => setNote(e.target.value)} className="rounded-2xl bg-card/70" />
+      <Button
+        className="h-12 w-full rounded-2xl bb-gradient text-primary-foreground"
+        onClick={() => {
+          const at = fromDateTimeInputs(date, time);
+          const amount = Number(ml);
+          if (!at) {
+            toast.error("Pick the date and time of the feed");
+            return;
+          }
+          if (!Number.isFinite(amount) || amount <= 0) {
+            toast.error("Enter the amount in ml");
+            return;
+          }
+          addEntry({ type: "formula", ml: Math.round(amount), at, ...(note ? { note } : {}) } as never);
+          setMl("");
+          setNote("");
+          toast.success(`${Math.round(amount)} ml saved · ${formatTime(at)}`);
+        }}
+      >
+        Save formula feed
+      </Button>
+    </SoftCard>
+  );
+}
+
+function EditFeedSheet({ entry, onClose }: { entry: BreastEntry | FormulaEntry | null; onClose: () => void }) {
+  const { updateEntry, deleteEntry } = useBabyBond();
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [value, setValue] = useState("");
+  const [note, setNote] = useState("");
+  const [loadedId, setLoadedId] = useState<string | null>(null);
+
+  if (entry && entry.id !== loadedId) {
+    setLoadedId(entry.id);
+    setDate(toDateInput(entry.at));
+    setTime(toTimeInput(entry.at));
+    setValue(entry.type === "formula" ? String(entry.ml) : String(entry.minutes));
+    setNote(entry.note ?? "");
+  }
+
+  return (
+    <Sheet open={!!entry} onOpenChange={(o) => !o && onClose()}>
+      <SheetContent side="bottom" className="mx-auto max-w-md rounded-t-[2rem] bg-card px-5 pb-8">
+        <SheetHeader className="px-0">
+          <SheetTitle className="font-display text-lg">
+            {entry?.type === "formula" ? "Edit formula feed" : "Edit breastfeed"}
+          </SheetTitle>
+        </SheetHeader>
+        {entry ? (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="h-11 rounded-2xl" />
+              <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="h-11 rounded-2xl" />
+            </div>
+            <Input
+              inputMode="numeric"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              placeholder={entry.type === "formula" ? "ml" : "minutes"}
+              className="h-11 rounded-2xl"
+            />
+            {entry.type === "breast" ? (
+              <p className="text-xs text-muted-foreground">
+                Estimated Breastmilk · {estimatedBreastMl(Number(value) || 0)} ml
+              </p>
+            ) : null}
+            <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Notes" className="rounded-2xl" />
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                className="h-11 rounded-2xl bb-gradient text-primary-foreground"
+                onClick={() => {
+                  const at = fromDateTimeInputs(date, time);
+                  const num = Number(value);
+                  if (!at) {
+                    toast.error("Pick a valid date and time");
+                    return;
+                  }
+                  if (!Number.isFinite(num) || num <= 0) {
+                    toast.error("Enter a valid amount");
+                    return;
+                  }
+                  updateEntry(entry.id, {
+                    at,
+                    note,
+                    ...(entry.type === "formula" ? { ml: Math.round(num) } : { minutes: Math.round(num) }),
+                  } as never);
+                  toast.success("Feed updated");
+                  onClose();
+                }}
+              >
+                Save
+              </Button>
+              <Button
+                variant="secondary"
+                className="h-11 rounded-2xl text-destructive"
+                onClick={() => {
+                  deleteEntry(entry.id);
+                  toast.success("Feed deleted");
+                  onClose();
+                }}
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+        ) : null}
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -249,8 +432,8 @@ function ManualFeed() {
   const [endTime, setEndTime] = useState("");
   const [note, setNote] = useState("");
 
-  const startedAt = startDate && startTime ? new Date(`${startDate}T${startTime}`).getTime() : 0;
-  const endedAt = endDate && endTime ? new Date(`${endDate}T${endTime}`).getTime() : 0;
+  const startedAt = fromDateTimeInputs(startDate, startTime);
+  const endedAt = fromDateTimeInputs(endDate, endTime);
   const minutes = startedAt && endedAt ? Math.round((endedAt - startedAt) / 60000) : 0;
 
   return (
@@ -281,7 +464,10 @@ function ManualFeed() {
         onChange={(e) => setNote(e.target.value)}
         className="rounded-2xl bg-card/70"
       />
-      <p className="text-xs opacity-70">Duration · {minutes > 0 ? durationLabel(minutes) : "—"}</p>
+      <p className="text-xs opacity-70">
+        Duration · {minutes > 0 ? durationLabel(minutes) : "—"} · Estimated Breastmilk{" "}
+        {minutes > 0 ? estimatedBreastMl(minutes) : 0} ml
+      </p>
       <Button
         className="h-12 w-full rounded-2xl bb-gradient text-primary-foreground"
         onClick={() => {
@@ -305,7 +491,9 @@ function ManualFeed() {
           setNote("");
           setStartTime("");
           setEndTime("");
-          toast.success(`Breastfeed saved · ${durationLabel(minutes)}`);
+          toast.success(`Breastfeed saved · ${durationLabel(minutes)}`, {
+            description: `Estimated Breastmilk · ${estimatedBreastMl(minutes)} ml`,
+          });
         }}
       >
         Save breastfeed
