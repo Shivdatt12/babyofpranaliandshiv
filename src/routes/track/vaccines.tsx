@@ -234,7 +234,7 @@ function Vaccines() {
         onUndo={() => {
           if (!editing) return;
           if (editing.doneAt) completeVaccine(editing.id);
-          updateVaccine(editing.id, { completedBy: undefined, completedById: undefined });
+          updateVaccine(editing.id, { completedBy: "", completedById: "" });
           setEditing(null);
           toast.success("Marked as pending again");
         }}
@@ -309,9 +309,9 @@ function MarkDoneSheet({
                     doneAt: at,
                     completedBy: by.trim() || parentName,
                     completedById: parentId,
-                    doctor: doctor.trim() || undefined,
-                    hospital: hospital.trim() || undefined,
-                    batch: batch.trim() || undefined,
+                    doctor: doctor.trim(),
+                    hospital: hospital.trim(),
+                    batch: batch.trim(),
                     doctorNote: notes,
                   },
                   !vaccine.doneAt,
