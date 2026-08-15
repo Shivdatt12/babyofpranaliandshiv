@@ -153,8 +153,8 @@ async function fireDue() {
         body: item.body,
         tag: item.id,
         renotify: true,
-        icon: "/favicon.ico",
-        badge: "/favicon.ico",
+        icon: "/icon-192.png",
+        badge: "/icon-192.png",
         data: item,
         silent: !!prefs.silent,
         vibrate: prefs.vibrate ? [200, 100, 200] : [],
@@ -192,8 +192,8 @@ self.addEventListener("push", (event) => {
       const prefs = await readPrefs();
       await self.registration.showNotification(payload.title || "माझी चिमणी", {
         body: payload.body || "",
-        icon: "/favicon.ico",
-        badge: "/favicon.ico",
+        icon: "/icon-192.png",
+        badge: "/icon-192.png",
         data: payload,
         silent: !!prefs.silent,
         vibrate: prefs.vibrate ? [200, 100, 200] : [],
