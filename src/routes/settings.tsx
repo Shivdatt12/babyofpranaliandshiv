@@ -363,6 +363,8 @@ const REMINDER_FIELDS = [
   { key: "feedGapHours", label: "Feed reminder after (hours)", min: 1, max: 12 },
   { key: "vaccineLeadDays", label: "Vaccine reminder lead (days)", min: 0, max: 30 },
   { key: "doctorLeadHours", label: "Appointment reminder lead (hours)", min: 1, max: 72 },
+  { key: "reminderLeadMinutes", label: "Notify before due (minutes)", min: 0, max: 120 },
+  { key: "snoozeMinutes", label: "Snooze / follow-up (minutes)", min: 1, max: 60 },
 ] as const;
 
 type ReminderKey = (typeof REMINDER_FIELDS)[number]["key"];
