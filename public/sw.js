@@ -148,21 +148,25 @@ async function fireDue() {
     }
 
     const actions = item.actions || [];
-    await self.registration.showNotification(item.title, {
-      body: item.body,
-      tag: item.id,
-      renotify: true,
-      icon: "/favicon.ico",
-      badge: "/favicon.ico",
-      data: item,
-      silent: !!prefs.silent,
-      vibrate: prefs.vibrate ? [200, 100, 200] : [],
-      // only actionable reminders stay on screen; plain ones auto-dismiss
-      requireInteraction: actions.length > 0,
-      actions,
-    });
-    item.shown = true;
-    changed = true;
+    try {
+      await self.registration.showNotification(item.title, {
+        body: item.body,
+        tag: item.id,
+        renotify: true,
+        icon: "/favicon.ico",
+        badge: "/favicon.ico",
+        data: item,
+        silent: !!prefs.silent,
+        vibrate: prefs.vibrate ? [200, 100, 200] : [],
+        // only actionable reminders stay on screen; plain ones auto-dismiss
+        requireInteraction: actions.length > 0,
+        actions,
+      });
+      item.shown = true;
+      changed = true;
+    } catch {
+      /* permission revoked or unsupported — try again on the next check */
+    }
   }
 
   const kept = items.filter((i) => i.at > now - 24 * 3600000);
