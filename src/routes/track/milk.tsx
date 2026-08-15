@@ -315,8 +315,14 @@ function ManualFormula() {
         onClick={() => {
           const at = fromDateTimeInputs(date, time);
           const amount = Number(ml);
-          if (!at) return toast.error("Pick the date and time of the feed");
-          if (!Number.isFinite(amount) || amount <= 0) return toast.error("Enter the amount in ml");
+          if (!at) {
+            toast.error("Pick the date and time of the feed");
+            return;
+          }
+          if (!Number.isFinite(amount) || amount <= 0) {
+            toast.error("Enter the amount in ml");
+            return;
+          }
           addEntry({ type: "formula", ml: Math.round(amount), at, ...(note ? { note } : {}) } as never);
           setMl("");
           setNote("");
@@ -378,8 +384,14 @@ function EditFeedSheet({ entry, onClose }: { entry: BreastEntry | FormulaEntry |
                 onClick={() => {
                   const at = fromDateTimeInputs(date, time);
                   const num = Number(value);
-                  if (!at) return toast.error("Pick a valid date and time");
-                  if (!Number.isFinite(num) || num <= 0) return toast.error("Enter a valid amount");
+                  if (!at) {
+                    toast.error("Pick a valid date and time");
+                    return;
+                  }
+                  if (!Number.isFinite(num) || num <= 0) {
+                    toast.error("Enter a valid amount");
+                    return;
+                  }
                   updateEntry(entry.id, {
                     at,
                     note,
