@@ -201,6 +201,7 @@ export const DEFAULT_SETTINGS: Settings = {
   vaccineReminders: true,
   doctorReminders: true,
   feedGapHours: 3,
+  breastMlPerMinute: ESTIMATED_ML_PER_MINUTE,
   vaccineLeadDays: 2,
   doctorLeadHours: 24,
   reminderLeadMinutes: 5,
