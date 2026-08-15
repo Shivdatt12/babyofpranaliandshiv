@@ -37,6 +37,7 @@ import {
   type TimerKind,
 } from "./babybond-cloud";
 import { clearAllReminders } from "./babybond-push";
+import { buildDefaultVaccines } from "./babybond-vaccines";
 
 type Snapshot = {
   baby: Baby | null;
@@ -99,6 +100,8 @@ type Store = {
   updateVaccine: (id: string, v: Partial<Vaccine>) => void;
   deleteVaccine: (id: string) => void;
   completeVaccine: (id: string, at?: number) => void;
+  /** add any missing rows from the default Indian NIS checklist (never touches existing ones) */
+  syncDefaultVaccines: () => number;
   toggleMilestone: (id: string) => void;
   switchParent: (id: string) => void;
   updateParent: (id: string, p: Partial<Parent>) => void;
@@ -654,6 +657,18 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
         setVaccines((prev) => prev.filter((v) => v.id !== id));
         removeDoc("vaccines", id);
       },
+      syncDefaultVaccines: () => {
+        const bornAt = baby?.bornAt;
+        if (!bornAt) return 0;
+        const have = new Set(vaccines.map((v) => v.code).filter(Boolean));
+        const docs = buildDefaultVaccines(bornAt)
+          .filter((t) => !have.has(t.code))
+          .map((t) => ({ ...t, id: uuid() }));
+        if (!docs.length) return 0;
+        setVaccines((prev) => [...prev, ...docs]);
+        for (const d of docs) saveDoc("vaccines", d);
+        return docs.length;
+      },
       completeVaccine: (id, at) => {
         const v = vaccines.find((x) => x.id === id);
         if (!v) return;
@@ -774,6 +789,15 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     clearMemory,
     reload,
   ]);
+
+  // auto-fill the default NIS checklist once per family, as soon as a DOB exists
+  const autoScheduleRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!familyId || !dataLoaded || !baby?.bornAt) return;
+    if (autoScheduleRef.current === familyId) return;
+    autoScheduleRef.current = familyId;
+    value.syncDefaultVaccines();
+  }, [familyId, dataLoaded, baby?.bornAt, value]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
