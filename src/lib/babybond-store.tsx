@@ -37,6 +37,7 @@ import {
   type TimerKind,
 } from "./babybond-cloud";
 import { clearAllReminders } from "./babybond-push";
+import { buildDefaultVaccines } from "./babybond-vaccines";
 
 type Snapshot = {
   baby: Baby | null;
@@ -99,6 +100,8 @@ type Store = {
   updateVaccine: (id: string, v: Partial<Vaccine>) => void;
   deleteVaccine: (id: string) => void;
   completeVaccine: (id: string, at?: number) => void;
+  /** add any missing rows from the default Indian NIS checklist (never touches existing ones) */
+  syncDefaultVaccines: () => number;
   toggleMilestone: (id: string) => void;
   switchParent: (id: string) => void;
   updateParent: (id: string, p: Partial<Parent>) => void;
@@ -653,6 +656,18 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       deleteVaccine: (id) => {
         setVaccines((prev) => prev.filter((v) => v.id !== id));
         removeDoc("vaccines", id);
+      },
+      syncDefaultVaccines: () => {
+        const bornAt = baby?.bornAt;
+        if (!bornAt) return 0;
+        const have = new Set(vaccines.map((v) => v.code).filter(Boolean));
+        const docs = buildDefaultVaccines(bornAt)
+          .filter((t) => !have.has(t.code))
+          .map((t) => ({ ...t, id: uuid() }));
+        if (!docs.length) return 0;
+        setVaccines((prev) => [...prev, ...docs]);
+        for (const d of docs) saveDoc("vaccines", d);
+        return docs.length;
       },
       completeVaccine: (id, at) => {
         const v = vaccines.find((x) => x.id === id);
