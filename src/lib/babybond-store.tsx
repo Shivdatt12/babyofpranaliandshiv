@@ -790,6 +790,15 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     reload,
   ]);
 
+  // auto-fill the default NIS checklist once per family, as soon as a DOB exists
+  const autoScheduleRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!familyId || !dataLoaded || !baby?.bornAt) return;
+    if (autoScheduleRef.current === familyId) return;
+    autoScheduleRef.current = familyId;
+    value.syncDefaultVaccines();
+  }, [familyId, dataLoaded, baby?.bornAt, value]);
+
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
