@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
 import { useBabyBond } from "@/lib/babybond-store";
-import { durationLabel, formatDate, formatTime, type Entry } from "@/lib/babybond-data";
+import { dayKey, durationLabel, estimatedBreastMl, formatFullDate, formatTime, type Entry } from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/timeline")({
   ssr: false,
@@ -20,11 +20,15 @@ export const Route = createFileRoute("/timeline")({
 export function describe(e: Entry): { emoji: string; title: string; detail: string } {
   switch (e.type) {
     case "breast":
-      return { emoji: "🤱", title: "Breastfeed", detail: `${e.side} · ${durationLabel(e.minutes)}` };
+      return {
+        emoji: "🤱",
+        title: "Breastfeed",
+        detail: `${e.side} · ${durationLabel(e.minutes)} · Estimated Breastmilk ${estimatedBreastMl(e.minutes)} ml`,
+      };
     case "formula":
       return { emoji: "🍼", title: "Formula", detail: `${e.ml} ml` };
     case "pee":
-      return { emoji: "💛", title: "Pee", detail: "nappy change" };
+      return { emoji: "💛", title: "Pee", detail: e.note || "nappy change" };
     case "potty":
       return { emoji: "💩", title: "Potty", detail: e.kind + (e.note ? ` · ${e.note}` : "") };
     case "sleep":
@@ -76,11 +80,19 @@ function Timeline() {
     return entries.filter((e) => e.at >= from && (type === "all" || e.type === type));
   }, [entries, type, days, now]);
 
-  const groups = filtered.reduce<Record<string, Entry[]>>((acc, e) => {
-    const key = new Date(e.at).toDateString();
-    (acc[key] ||= []).push(e);
-    return acc;
-  }, {});
+  // one section per calendar date, newest date first, chronological inside the day
+  const groups = useMemo(() => {
+    const map = new Map<string, Entry[]>();
+    for (const e of filtered) {
+      const key = dayKey(e.at);
+      const list = map.get(key);
+      if (list) list.push(e);
+      else map.set(key, [e]);
+    }
+    return [...map.entries()]
+      .sort((a, b) => (a[0] < b[0] ? 1 : -1))
+      .map(([key, list]) => [key, [...list].sort((a, b) => a.at - b.at)] as const);
+  }, [filtered]);
 
   return (
     <AppShell>
@@ -116,14 +128,14 @@ function Timeline() {
           ))}
         </div>
 
-        {Object.keys(groups).length === 0 ? (
+        {groups.length === 0 ? (
           <SoftCard className="text-center text-sm text-muted-foreground">Nothing logged for this filter yet.</SoftCard>
         ) : null}
 
-        {Object.entries(groups).map(([day, list]) => (
+        {groups.map(([day, list]) => (
           <section key={day}>
             <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              {new Date(day).toDateString() === new Date().toDateString() ? "Today" : formatDate(new Date(day).getTime())}
+              {day === dayKey(now) ? `Today · ${formatFullDate(list[0]!.at)}` : formatFullDate(list[0]!.at)}
             </h2>
             <div className="space-y-2">
               {list.map((e) => {
