@@ -823,11 +823,11 @@ export function useTodayDoses(): MedicineDose[] {
 }
 
 export function useTodayStats() {
-  const { entries, now, baby } = useBabyBond();
+  const { entries, now, baby, settings } = useBabyBond();
   return useMemo(() => {
     const from = startOfToday(now);
     const today = entries.filter((e) => e.at >= from);
-    const breast = today.filter((e) => e.type === "breast");
+    const breast = today.filter((e) => e.type === "breast") as Extract<Entry, { type: "breast" }>[];
     const formula = today.filter((e) => e.type === "formula") as Extract<Entry, { type: "formula" }>[];
     const sleep = today.filter((e) => e.type === "sleep") as Extract<Entry, { type: "sleep" }>[];
     const weights = entries.filter((e) => e.type === "weight") as Extract<Entry, { type: "weight" }>[];
@@ -836,13 +836,18 @@ export function useTodayStats() {
     const lastFeed = feeds[0] ?? null;
 
     const formulaMl = formula.reduce((s, e) => s + e.ml, 0);
-    const breastMinutes = (breast as Extract<Entry, { type: "breast" }>[]).reduce((s, e) => s + e.minutes, 0);
+    const breastMinutes = breast.reduce((s, e) => s + e.minutes, 0);
+    const breastMl = estimatedBreastMl(breastMinutes);
+    const gapMs = Math.max(1, settings.feedGapHours) * 3600_000;
 
     return {
       breastCount: breast.length,
       breastMinutes,
+      /** estimated breastmilk (1 min ≈ 1 ml) — never a measured amount */
+      breastMl,
       formulaMl,
-      milkMl: formulaMl + breastMinutes * 8,
+      /** formula + estimated breastmilk */
+      milkMl: formulaMl + breastMl,
       peeCount: today.filter((e) => e.type === "pee").length,
       pottyCount: today.filter((e) => e.type === "potty").length,
       sleepMinutes: sleep.reduce((s, e) => s + e.minutes, 0),
@@ -850,8 +855,10 @@ export function useTodayStats() {
       prevWeight: weights[1] ?? null,
       bilirubin: bili[0] ?? null,
       lastFeed,
-      nextFeedAt: lastFeed ? lastFeed.at + 3 * 3600_000 : now,
+      feedGapHours: settings.feedGapHours,
+      nextFeedAt: lastFeed ? lastFeed.at + gapMs : now,
       ageDays: baby.bornAt ? Math.max(0, Math.floor((now - baby.bornAt) / 86400000)) : 0,
     };
-  }, [entries, now, baby.bornAt]);
+  }, [entries, now, baby.bornAt, settings.feedGapHours]);
 }
+
