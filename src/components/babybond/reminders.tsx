@@ -114,7 +114,7 @@ export function MedicineReminders() {
 
     if (settings.vaccineReminders) {
       for (const v of vaccines) {
-        if (v.doneAt || !v.reminder) continue;
+        if (v.doneAt || v.notApplicable || !v.reminder) continue;
         const dueAt = v.dueAt - settings.vaccineLeadDays * DAY;
         const at = dueAt - lead;
         if (at < base - 5 * 60_000) continue;
@@ -229,7 +229,7 @@ export function MedicineReminders() {
     if (!active) return;
     if (settings.vaccineReminders) {
       for (const v of vaccines) {
-        if (v.doneAt || !v.reminder) continue;
+        if (v.doneAt || v.notApplicable || !v.reminder) continue;
         if (v.dueAt - now > settings.vaccineLeadDays * DAY) continue;
         const key = `vaccine-${v.id}`;
         if (toasted.current.has(key)) continue;
