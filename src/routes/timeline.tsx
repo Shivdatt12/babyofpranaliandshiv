@@ -17,13 +17,16 @@ export const Route = createFileRoute("/timeline")({
   component: Timeline,
 });
 
-export function describe(e: Entry): { emoji: string; title: string; detail: string } {
+export function describe(
+  e: Entry,
+  mlPerMinute?: number,
+): { emoji: string; title: string; detail: string } {
   switch (e.type) {
     case "breast":
       return {
         emoji: "🤱",
         title: "Breastfeed",
-        detail: `${e.side} · ${durationLabel(e.minutes)} · Estimated Breastmilk ${estimatedBreastMl(e.minutes)} ml`,
+        detail: `${e.side} · ${durationLabel(e.minutes)} · Estimated Breastmilk ${estimatedBreastMl(e.minutes, mlPerMinute)} ml`,
       };
     case "formula":
       return { emoji: "🍼", title: "Formula", detail: `${e.ml} ml` };
@@ -71,7 +74,7 @@ const RANGES = [
 ] as const;
 
 function Timeline() {
-  const { entries, now } = useBabyBond();
+  const { entries, now, settings } = useBabyBond();
   const [type, setType] = useState<(typeof FILTERS)[number]["key"]>("all");
   const [days, setDays] = useState<number>(7);
 
@@ -139,7 +142,7 @@ function Timeline() {
             </h2>
             <div className="space-y-2">
               {list.map((e) => {
-                const d = describe(e);
+                const d = describe(e, settings.breastMlPerMinute);
                 return (
                   <SoftCard key={e.id} className="flex items-center gap-3 py-3">
                     <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-secondary text-lg">

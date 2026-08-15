@@ -301,9 +301,15 @@ function Settings() {
 
 
         <div>
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Feeding</h2>
+          <BreastEstimateSetting />
+        </div>
+
+        <div>
           <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Reminder timing</h2>
           <ReminderTiming />
         </div>
+
 
         <div>
           <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Data</h2>
@@ -513,6 +519,60 @@ function AccountCard() {
       >
         <LogOut className="size-4" /> Sign out
       </button>
+    </div>
+  );
+}
+
+/** Family-wide breastmilk estimate rate (ml per minute of breastfeeding). */
+function BreastEstimateSetting() {
+  const { settings, updateSettings } = useBabyBond();
+  const saved = String(settings.breastMlPerMinute);
+  const [draft, setDraft] = useState(saved);
+  useEffect(() => setDraft(saved), [saved]);
+  const dirty = draft !== saved;
+
+  const save = () => {
+    const value = Number(draft.trim());
+    if (!draft.trim() || !Number.isFinite(value) || value <= 0) {
+      toast.error("Milk per minute must be greater than 0");
+      return;
+    }
+    updateSettings({ breastMlPerMinute: value });
+    toast.success("Breastfeeding estimate updated successfully.");
+  };
+
+  return (
+    <div className="space-y-2">
+      <SoftCard className="space-y-2 py-3">
+        <p className="text-sm font-bold">Breastfeeding milk estimate</p>
+        <p className="text-xs text-muted-foreground">
+          Estimated breastmilk volume used for tracking. This is only an estimate.
+        </p>
+        <div className="flex items-center gap-3 pt-1">
+          <span className="flex-1 text-sm font-semibold">Milk per minute (ml/min)</span>
+          <Input
+            type="number"
+            inputMode="decimal"
+            step="0.1"
+            min={0.1}
+            value={draft}
+            onFocus={(e) => e.currentTarget.select()}
+            onChange={(e) => setDraft(e.target.value)}
+            className="h-10 w-20 rounded-2xl text-center"
+          />
+        </div>
+        <p className="text-[11px] text-muted-foreground">
+          This is an estimated value for tracking only, not a measurement of actual breastmilk intake.
+        </p>
+      </SoftCard>
+      <div className="grid grid-cols-2 gap-2">
+        <Button disabled={!dirty} className="h-11 rounded-2xl bb-gradient text-primary-foreground" onClick={save}>
+          Save
+        </Button>
+        <Button disabled={!dirty} variant="secondary" className="h-11 rounded-2xl" onClick={() => setDraft(saved)}>
+          Cancel
+        </Button>
+      </div>
     </div>
   );
 }
