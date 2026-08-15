@@ -900,6 +900,6 @@ export function useTodayStats() {
       nextFeedAt: lastFeed ? lastFeed.at + gapMs : now,
       ageDays: baby.bornAt ? Math.max(0, Math.floor((now - baby.bornAt) / 86400000)) : 0,
     };
-  }, [entries, now, baby.bornAt, settings.feedGapHours]);
+  }, [entries, now, baby.bornAt, settings.feedGapHours, settings.breastMlPerMinute]);
 }
 
