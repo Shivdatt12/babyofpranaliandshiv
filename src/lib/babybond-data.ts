@@ -166,11 +166,13 @@ export function normalizeRole(value: string | null | undefined, fallback: Parent
   return fallback;
 }
 
-/** App estimate only — 1 minute of breastfeeding ≈ 1 ml of breastmilk. */
+/** App estimate only — fallback rate when no family setting is available yet. */
 export const ESTIMATED_ML_PER_MINUTE = 1;
 
-export function estimatedBreastMl(minutes: number) {
-  return Math.round(Math.max(0, minutes) * ESTIMATED_ML_PER_MINUTE);
+/** Estimated breastmilk = duration (minutes) × the family's configured ml/min. */
+export function estimatedBreastMl(minutes: number, mlPerMinute: number = ESTIMATED_ML_PER_MINUTE) {
+  const rate = Number.isFinite(mlPerMinute) && mlPerMinute > 0 ? mlPerMinute : ESTIMATED_ML_PER_MINUTE;
+  return Math.round(Math.max(0, minutes) * rate);
 }
 
 export type SoundMode = "default" | "silent";
@@ -181,6 +183,8 @@ export type Settings = {
   vaccineReminders: boolean;
   doctorReminders: boolean;
   feedGapHours: number;
+  /** estimated breastmilk volume per minute of breastfeeding (ml/min) */
+  breastMlPerMinute: number;
   vaccineLeadDays: number;
   doctorLeadHours: number;
   /** minutes before the scheduled time that the first reminder fires */
