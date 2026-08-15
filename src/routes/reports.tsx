@@ -71,7 +71,7 @@ function emptyTotals(): Totals {
   };
 }
 
-function tally(list: Entry[]): Totals {
+function tally(list: Entry[], mlPerMinute: number): Totals {
   const t = emptyTotals();
   for (const e of list) {
     switch (e.type) {
@@ -110,7 +110,7 @@ function tally(list: Entry[]): Totals {
         break;
     }
   }
-  t.breastMl = estimatedBreastMl(t.breastMinutes);
+  t.breastMl = estimatedBreastMl(t.breastMinutes, mlPerMinute);
   t.weights.sort((a, b) => a.at - b.at);
   t.bili.sort((a, b) => a.at - b.at);
   return t;
@@ -166,7 +166,7 @@ function moduleLines(t: Totals, extras?: { vaccinesDone?: number; vaccinesPendin
 }
 
 function Reports() {
-  const { entries, baby, now, vaccines, appointments } = useBabyBond();
+  const { entries, baby, now, vaccines, appointments, settings } = useBabyBond();
   const [days, setDays] = useState<number>(7);
   const [busy, setBusy] = useState(false);
 
@@ -184,10 +184,10 @@ function Reports() {
     }
     return [...map.entries()]
       .sort((a, b) => (a[0] < b[0] ? 1 : -1))
-      .map(([key, list]) => ({ key, at: list[0]!.at, totals: tally(list) }));
+      .map(([key, list]) => ({ key, at: list[0]!.at, totals: tally(list, settings.breastMlPerMinute) }));
   }, [scoped]);
 
-  const total = useMemo(() => tally(scoped), [scoped]);
+  const total = useMemo(() => tally(scoped, settings.breastMlPerMinute), [scoped, settings.breastMlPerMinute]);
   const vaxDone = vaccines.filter((v) => v.doneAt).length;
   const vaxMissed = vaccines.filter((v) => !v.doneAt && v.dueAt < now).length;
   const vaxPending = vaccines.length - vaxDone - vaxMissed;

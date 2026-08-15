@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { useBabyBond, useTodayStats } from "@/lib/babybond-store";
+import { useBabyBond, useBreastEstimate, useTodayStats } from "@/lib/babybond-store";
 import {
   durationLabel,
   estimatedBreastMl,
@@ -141,7 +141,7 @@ function MilkTracker() {
                     : `timer · ${currentSide} side`}
                 </p>
                 <p className="mt-1 text-xs font-semibold">
-                  Estimated Breastmilk · {estimatedBreastMl(liveMinutes)} ml
+                  Estimated Breastmilk · {breastMl(liveMinutes)} ml
                 </p>
               </div>
 
@@ -153,7 +153,7 @@ function MilkTracker() {
                       onClick={() => {
                         stopTimer("breast");
                         toast.success("Breastfeed saved", {
-                          description: `Estimated Breastmilk · ${estimatedBreastMl(Math.max(1, liveMinutes))} ml`,
+                          description: `Estimated Breastmilk · ${breastMl(Math.max(1, liveMinutes))} ml`,
                         });
                       }}
                     >
@@ -253,7 +253,7 @@ function MilkTracker() {
                       : `${e.ml} ml formula`}
                   </p>
                   <p className="truncate text-xs text-muted-foreground">
-                    {e.type === "breast" ? `Estimated Breastmilk ${estimatedBreastMl(e.minutes)} ml · ` : ""}
+                    {e.type === "breast" ? `Estimated Breastmilk ${breastMl(e.minutes)} ml · ` : ""}
                     {formatTime(e.at)} · {timeAgo(e.at, now)} · {e.by}
                   </p>
                 </div>
@@ -374,7 +374,7 @@ function EditFeedSheet({ entry, onClose }: { entry: BreastEntry | FormulaEntry |
             />
             {entry.type === "breast" ? (
               <p className="text-xs text-muted-foreground">
-                Estimated Breastmilk · {estimatedBreastMl(Number(value) || 0)} ml
+                Estimated Breastmilk · {breastMl(Number(value) || 0)} ml
               </p>
             ) : null}
             <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Notes" className="rounded-2xl" />
@@ -466,7 +466,7 @@ function ManualFeed() {
       />
       <p className="text-xs opacity-70">
         Duration · {minutes > 0 ? durationLabel(minutes) : "—"} · Estimated Breastmilk{" "}
-        {minutes > 0 ? estimatedBreastMl(minutes) : 0} ml
+        {minutes > 0 ? breastMl(minutes) : 0} ml
       </p>
       <Button
         className="h-12 w-full rounded-2xl bb-gradient text-primary-foreground"
@@ -492,7 +492,7 @@ function ManualFeed() {
           setStartTime("");
           setEndTime("");
           toast.success(`Breastfeed saved · ${durationLabel(minutes)}`, {
-            description: `Estimated Breastmilk · ${estimatedBreastMl(minutes)} ml`,
+            description: `Estimated Breastmilk · ${breastMl(minutes)} ml`,
           });
         }}
       >
