@@ -105,7 +105,26 @@ export type Vaccine = {
   doneAt: number | null;
   doctorNote?: string;
   reminder: boolean;
+  /** set for rows generated from the default Indian NIS checklist */
+  code?: string;
+  /** stage label, e.g. "6 weeks" */
+  stage?: string;
+  /** end of the recommended window for range-based doses (9–12 months etc.) */
+  dueEndAt?: number | null;
+  /** true when the official schedule marks the dose as programme / region dependent */
+  conditional?: boolean;
+  /** short explanation for conditional doses */
+  scheduleNote?: string;
+  /** parent marked this dose as not applicable for their baby */
+  notApplicable?: boolean;
+  /* completion details */
+  completedBy?: string;
+  completedById?: string;
+  doctor?: string;
+  hospital?: string;
+  batch?: string;
 };
+
 
 export type Milestone = {
   id: string;
