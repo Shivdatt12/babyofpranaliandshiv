@@ -87,6 +87,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { name: "author", content: "BabyBond" },
       { name: "theme-color", content: "#f7d7e0" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: "चिमणी" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+      { name: "application-name", content: "माझी चिमणी" },
       { property: "og:title", content: "BabyBond — Track your newborn together" },
       {
         property: "og:description",
