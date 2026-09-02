@@ -206,7 +206,17 @@ export async function flushQueue(): Promise<number> {
           : op.kind === "deleteTimer"
             ? await table.delete().eq("family_id", op.familyId).eq("kind", op.timerKind)
             : await table.delete().eq("id", op.id);
-      if (res.error) break; // still offline / transient — keep the rest queued
+      if (res.error) {
+        // a duplicate name (same name added by both parents offline) must not wedge the queue
+        const code = (res.error as { code?: string }).code;
+        if (op.table === "name_ideas" && code === "23505") {
+          ops = ops.slice(1);
+          writeQueue(ops);
+          continue;
+        }
+        break; // still offline / transient — keep the rest queued
+      }
+
       ops = ops.slice(1);
       writeQueue(ops);
       done += 1;
