@@ -1,10 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import type { Appointment, Baby, Entry, Medicine, Milestone, Settings, Vaccine } from "./babybond-data";
+import { nameKey, type NameIdea, type NameVote } from "./babybond-names";
 
 
 export type DocTable = "medicines" | "appointments" | "vaccines" | "milestones";
-export type SyncTable = DocTable | "entries" | "babies" | "family_settings" | "active_timers";
+export type SyncTable = DocTable | "entries" | "babies" | "family_settings" | "active_timers" | "name_ideas";
+
 
 export type TimerKind = "breast" | "sleep";
 export type ActiveTimer = {
@@ -60,10 +62,31 @@ export type CloudSnapshot = {
   vaccines: Vaccine[];
   milestones: Milestone[];
   timers: ActiveTimer[];
+  nameIdeas: NameIdea[];
 };
 
+export function nameToRow(idea: NameIdea, familyId: string, userId: string | null) {
+  const { id, votes, ...rest } = idea;
+  return {
+    id,
+    family_id: familyId,
+    name_key: nameKey(idea.name),
+    data: rest as unknown as Json,
+    votes: (votes ?? {}) as unknown as Json,
+    created_by: idea.byId ?? userId,
+  };
+}
+
+export function rowToName(r: Row & { votes?: unknown }): NameIdea {
+  return {
+    id: r.id,
+    votes: (r.votes as Record<string, NameVote> | null) ?? {},
+    ...(r.data ?? {}),
+  } as NameIdea;
+}
+
 export async function loadFamilyData(familyId: string): Promise<CloudSnapshot> {
-  const [baby, settings, entries, medicines, appointments, vaccines, milestones, timers] = await Promise.all([
+  const [baby, settings, entries, medicines, appointments, vaccines, milestones, timers, names] = await Promise.all([
     supabase.from("babies").select("data").eq("family_id", familyId).maybeSingle(),
     supabase.from("family_settings").select("data").eq("family_id", familyId).maybeSingle(),
     supabase.from("entries").select("*").eq("family_id", familyId).order("at", { ascending: false }).limit(5000),
@@ -72,6 +95,7 @@ export async function loadFamilyData(familyId: string): Promise<CloudSnapshot> {
     supabase.from("vaccines").select("*").eq("family_id", familyId),
     supabase.from("milestones").select("*").eq("family_id", familyId),
     supabase.from("active_timers").select("*").eq("family_id", familyId),
+    supabase.from("name_ideas").select("*").eq("family_id", familyId),
   ]);
 
   return {
@@ -82,6 +106,7 @@ export async function loadFamilyData(familyId: string): Promise<CloudSnapshot> {
     appointments: ((appointments.data ?? []) as Row[]).map((r) => rowToDoc<Appointment>(r)),
     vaccines: ((vaccines.data ?? []) as Row[]).map((r) => rowToDoc<Vaccine>(r)),
     milestones: ((milestones.data ?? []) as Row[]).map((r) => rowToDoc<Milestone>(r)),
+    nameIdeas: ((names.data ?? []) as unknown as Row[]).map((r) => rowToName(r)),
     timers: ((timers.data ?? []) as unknown as {
       kind: TimerKind;
       started_at: string;
@@ -95,6 +120,7 @@ export async function loadFamilyData(familyId: string): Promise<CloudSnapshot> {
     })),
   };
 }
+
 
 export function timerToRow(timer: ActiveTimer, familyId: string, userId: string | null) {
   const { kind, startedAt, ...rest } = timer;
@@ -180,7 +206,17 @@ export async function flushQueue(): Promise<number> {
           : op.kind === "deleteTimer"
             ? await table.delete().eq("family_id", op.familyId).eq("kind", op.timerKind)
             : await table.delete().eq("id", op.id);
-      if (res.error) break; // still offline / transient — keep the rest queued
+      if (res.error) {
+        // a duplicate name (same name added by both parents offline) must not wedge the queue
+        const code = (res.error as { code?: string }).code;
+        if (op.table === "name_ideas" && code === "23505") {
+          ops = ops.slice(1);
+          writeQueue(ops);
+          continue;
+        }
+        break; // still offline / transient — keep the rest queued
+      }
+
       ops = ops.slice(1);
       writeQueue(ops);
       done += 1;

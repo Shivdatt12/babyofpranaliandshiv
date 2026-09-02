@@ -32,11 +32,13 @@ import {
   writeQueue,
   uuid,
   timerToRow,
+  nameToRow,
   type DocTable,
   type ActiveTimer,
   type TimerKind,
 } from "./babybond-cloud";
 import { clearAllReminders } from "./babybond-push";
+import { nameKey, type NameIdea, type NameVote } from "./babybond-names";
 import { buildDefaultVaccines } from "./babybond-vaccines";
 
 type Snapshot = {
@@ -50,6 +52,7 @@ type Snapshot = {
   parents?: Parent[];
   settings?: Settings;
   timers?: ActiveTimer[];
+  nameIdeas?: NameIdea[];
 };
 
 type Store = {
@@ -69,6 +72,8 @@ type Store = {
   milestones: Milestone[];
   /** live breastfeed / sleep sessions shared by the whole family */
   timers: ActiveTimer[];
+  /** shared baby-name shortlist */
+  nameIdeas: NameIdea[];
   online: boolean;
   lastSyncedAt: number;
   /* cloud account */
@@ -102,6 +107,14 @@ type Store = {
   completeVaccine: (id: string, at?: number) => void;
   /** add any missing rows from the default Indian NIS checklist (never touches existing ones) */
   syncDefaultVaccines: () => number;
+  /** returns the id of the stored idea; reuses the existing row for a duplicate name */
+  addNameIdea: (n: Omit<NameIdea, "id" | "by" | "byId" | "addedAt" | "votes">) => string | null;
+  updateNameIdea: (id: string, patch: Partial<NameIdea>) => void;
+  deleteNameIdea: (id: string) => void;
+  /** writes only this parent's vote — never touches the other parent's choice */
+  voteNameIdea: (id: string, vote: NameVote | null) => void;
+  chooseFinalName: (id: string) => void;
+  clearFinalName: () => void;
   toggleMilestone: (id: string) => void;
   switchParent: (id: string) => void;
   updateParent: (id: string, p: Partial<Parent>) => void;
@@ -150,6 +163,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
   const [vaccines, setVaccines] = useState<Vaccine[]>([]);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [timers, setTimers] = useState<ActiveTimer[]>([]);
+  const [nameIdeas, setNameIdeas] = useState<NameIdea[]>([]);
   const [meId, setMeId] = useState("");
   const [parents, setParents] = useState<Parent[]>([]);
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
@@ -191,6 +205,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     setVaccines([]);
     setMilestones([]);
     setTimers([]);
+    setNameIdeas([]);
     setParents([]);
     setSettings(DEFAULT_SETTINGS);
     setDataLoaded(false);
@@ -205,6 +220,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     setVaccines(s.vaccines ?? []);
     setMilestones(s.milestones ?? []);
     setTimers(s.timers ?? []);
+    setNameIdeas(s.nameIdeas ?? []);
     if (s.parents)
       setParents((prev) =>
         s.parents!.map((p) =>
@@ -318,6 +334,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     setVaccines(cloud.vaccines);
     setMilestones(cloud.milestones);
     setTimers(cloud.timers);
+    setNameIdeas(cloud.nameIdeas ?? []);
     setParents((prev) =>
       (profileRows ?? []).map((p) => {
         const local = prev.find((x) => x.id === p.id);
@@ -371,6 +388,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       "family_settings",
       "profiles",
       "active_timers",
+      "name_ideas",
     ]) {
       channel.on("postgres_changes", { event: "*", schema: "public", table, filter: `family_id=eq.${familyId}` }, bump);
     }
@@ -414,6 +432,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       parents,
       settings,
       timers,
+      nameIdeas,
     };
     try {
       window.localStorage.setItem(cacheKey(familyId), JSON.stringify(snapshot));
@@ -430,7 +449,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       ch.postMessage({ type: "snapshot", familyId, payload: snapshot });
       ch.close();
     }
-  }, [familyId, dataLoaded, baby, entries, medicines, appointments, vaccines, milestones, meId, parents, settings, timers]);
+  }, [familyId, dataLoaded, baby, entries, medicines, appointments, vaccines, milestones, meId, parents, settings, timers, nameIdeas]);
 
   const value = useMemo<Store>(() => {
     const me =
@@ -502,6 +521,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       vaccines: [...vaccines].sort((a, b) => a.dueAt - b.dueAt),
       milestones,
       timers,
+      nameIdeas,
       online,
       lastSyncedAt,
       authed: !!session,
@@ -685,6 +705,74 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
           });
         }
       },
+      addNameIdea: (n) => {
+        if (!fid) return null;
+        const key = nameKey(n.name);
+        if (!key) return null;
+        const existing = nameIdeas.find((x) => nameKey(x.name) === key);
+        if (existing) return existing.id; // same name added by both parents — one shared record
+        const doc: NameIdea = {
+          ...n,
+          id: uuid(),
+          by: me.role,
+          ...(uid ? { byId: uid } : {}),
+          addedAt: Date.now(),
+          votes: {},
+        };
+        setNameIdeas((prev) => [doc, ...prev]);
+        pushOp({ kind: "upsert", table: "name_ideas", row: nameToRow(doc, fid, uid) });
+        sync();
+        return doc.id;
+      },
+      updateNameIdea: (id, patch) => {
+        if (!fid) return;
+        const next = nameIdeas.map((x) => (x.id === id ? { ...x, ...patch } : x));
+        setNameIdeas(next);
+        const doc = next.find((x) => x.id === id);
+        if (doc) {
+          pushOp({ kind: "upsert", table: "name_ideas", row: nameToRow(doc, fid, uid) });
+          sync();
+        }
+      },
+      deleteNameIdea: (id) => {
+        if (!fid) return;
+        setNameIdeas((prev) => prev.filter((x) => x.id !== id));
+        pushOp({ kind: "delete", table: "name_ideas", id });
+        sync();
+      },
+      voteNameIdea: (id, vote) => {
+        if (!uid) return;
+        setNameIdeas((prev) =>
+          prev.map((x) => {
+            if (x.id !== id) return x;
+            const votes = { ...(x.votes ?? {}) };
+            if (vote) votes[uid] = vote;
+            else delete votes[uid];
+            return { ...x, votes };
+          }),
+        );
+        // server-side merge so the other parent's vote can never be overwritten
+        void supabase.rpc("set_name_vote", { _id: id, _vote: vote ?? "" });
+      },
+      chooseFinalName: (id) => {
+        const idea = nameIdeas.find((x) => x.id === id);
+        if (!idea) return;
+        const next: Baby = {
+          ...(baby ?? EMPTY_BABY),
+          name: idea.name,
+          chosenNameId: idea.id,
+          chosenAt: Date.now(),
+          chosenBy: me.role,
+          nameStatus: "final",
+        };
+        setBabyState(next);
+        saveBaby(next);
+      },
+      clearFinalName: () => {
+        const next: Baby = { ...(baby ?? EMPTY_BABY), nameStatus: "choosing", chosenNameId: null };
+        setBabyState(next);
+        saveBaby(next);
+      },
       toggleMilestone: (id) => {
         const m = milestones.find((x) => x.id === id);
         if (m) patchDoc("milestones", milestones, setMilestones, id, { achievedAt: m.achievedAt ? null : Date.now() });
@@ -774,6 +862,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     vaccines,
     milestones,
     timers,
+    nameIdeas,
     meId,
     parents,
     settings,
