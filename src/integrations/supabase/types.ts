@@ -262,6 +262,47 @@ export type Database = {
           },
         ]
       }
+      name_ideas: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          data: Json
+          family_id: string
+          id: string
+          name_key: string
+          updated_at: string
+          votes: Json
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          data?: Json
+          family_id: string
+          id: string
+          name_key: string
+          updated_at?: string
+          votes?: Json
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          data?: Json
+          family_id?: string
+          id?: string
+          name_key?: string
+          updated_at?: string
+          votes?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "name_ideas_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -342,6 +383,10 @@ export type Database = {
     Functions: {
       join_family_by_code: { Args: { _code: string }; Returns: string }
       my_family_id: { Args: never; Returns: string }
+      set_name_vote: {
+        Args: { _id: string; _vote: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
