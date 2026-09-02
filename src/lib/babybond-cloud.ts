@@ -1,10 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import type { Appointment, Baby, Entry, Medicine, Milestone, Settings, Vaccine } from "./babybond-data";
+import { nameKey, type NameIdea, type NameVote } from "./babybond-names";
 
 
 export type DocTable = "medicines" | "appointments" | "vaccines" | "milestones";
-export type SyncTable = DocTable | "entries" | "babies" | "family_settings" | "active_timers";
+export type SyncTable = DocTable | "entries" | "babies" | "family_settings" | "active_timers" | "name_ideas";
+
 
 export type TimerKind = "breast" | "sleep";
 export type ActiveTimer = {
