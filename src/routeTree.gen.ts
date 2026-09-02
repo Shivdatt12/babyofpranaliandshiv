@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as NamesRouteImport } from './routes/names'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -34,6 +35,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NamesRoute = NamesRouteImport.update({
+  id: '/names',
+  path: '/names',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -110,6 +116,7 @@ const TrackWeightRoute = TrackWeightRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/names': typeof NamesRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
@@ -128,6 +135,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/names': typeof NamesRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
@@ -147,6 +155,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/names': typeof NamesRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
@@ -167,6 +176,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/names'
     | '/profile'
     | '/reports'
     | '/settings'
@@ -185,6 +195,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/names'
     | '/profile'
     | '/reports'
     | '/settings'
@@ -203,6 +214,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/auth'
+    | '/names'
     | '/profile'
     | '/reports'
     | '/settings'
@@ -222,6 +234,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  NamesRoute: typeof NamesRoute
   ProfileRoute: typeof ProfileRoute
   ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
@@ -252,6 +265,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/names': {
+      id: '/names'
+      path: '/names'
+      fullPath: '/names'
+      preLoaderRoute: typeof NamesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -358,6 +378,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  NamesRoute: NamesRoute,
   ProfileRoute: ProfileRoute,
   ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,
