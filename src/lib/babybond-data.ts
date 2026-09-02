@@ -141,7 +141,13 @@ export type Baby = {
   bloodGroup: string;
   birthWeightGrams?: number | null;
   photo?: string | null;
+  /** name journey: still choosing vs an officially confirmed name */
+  nameStatus?: "choosing" | "final";
+  chosenNameId?: string | null;
+  chosenAt?: number | null;
+  chosenBy?: string | null;
 };
+
 
 export type Parent = {
   id: string;
