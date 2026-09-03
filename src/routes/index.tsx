@@ -36,6 +36,7 @@ const TRACKERS = [
   { to: "/track/doctor", label: "Doctor", emoji: "🩺", icon: Stethoscope },
   { to: "/track/album", label: "Album", emoji: "📸", icon: Images },
   { to: "/track/milestones", label: "Milestones", emoji: "✨", icon: Sparkles },
+  { to: "/names", label: "Baby Names", emoji: "💕", icon: Sparkles },
 ] as const;
 
 function Countdown({ target, now }: { target: number; now: number }) {

@@ -20,7 +20,7 @@ export const Route = createFileRoute("/profile")({
 });
 
 function Profile() {
-  const { baby, setBaby, parents, me, switchParent, authed, signOut } = useBabyBond();
+  const { baby, setBaby, parents, me, switchParent, authed, signOut, nameIdeas } = useBabyBond();
   const s = useTodayStats();
 
   return (
@@ -104,6 +104,24 @@ function Profile() {
           <p className="mt-2 px-1 text-[11px] text-muted-foreground">
             Entries are cached on your phone and upload automatically when you're back online.
           </p>
+        </div>
+
+        <div>
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Baby name</h2>
+          <Link to="/names" className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow">
+            <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">💕</span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold">
+                {baby.nameStatus === "final" ? "Final name selected" : "Temporary / Choosing"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {baby.nameStatus === "final"
+                  ? "Tap to change her name (needs confirmation)"
+                  : `${nameIdeas.length} name ideas so far`}
+              </p>
+            </div>
+            <ChevronRight className="size-4 text-muted-foreground" />
+          </Link>
         </div>
 
         <Link
