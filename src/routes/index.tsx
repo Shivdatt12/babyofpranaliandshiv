@@ -153,6 +153,9 @@ function Dashboard() {
 
       <ActiveTimerBanner />
 
+      <NameJourneyCard />
+
+
       <section className="px-5 py-5">
         <div className="grid grid-cols-2 gap-3">
           <button
