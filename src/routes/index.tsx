@@ -36,6 +36,7 @@ const TRACKERS = [
   { to: "/track/doctor", label: "Doctor", emoji: "🩺", icon: Stethoscope },
   { to: "/track/album", label: "Album", emoji: "📸", icon: Images },
   { to: "/track/milestones", label: "Milestones", emoji: "✨", icon: Sparkles },
+  { to: "/names", label: "Baby Names", emoji: "💕", icon: Sparkles },
 ] as const;
 
 function Countdown({ target, now }: { target: number; now: number }) {
@@ -91,7 +92,29 @@ function ActiveTimerBanner() {
   );
 }
 
+function NameJourneyCard() {
+  const { baby, nameIdeas } = useBabyBond();
+  if (baby.nameStatus === "final") return null;
+  return (
+    <div className="px-5 pt-4">
+      <Link to="/names" className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow active:scale-95">
+        <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">💕</span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold">Still choosing her name? 💕</p>
+          <p className="text-xs text-muted-foreground">
+            {nameIdeas.length ? `${nameIdeas.length} names shortlisted` : "Start the name journey together"}
+          </p>
+        </div>
+        <span className="rounded-2xl bb-gradient px-3 py-1.5 text-[11px] font-bold text-primary-foreground">
+          Continue
+        </span>
+      </Link>
+    </div>
+  );
+}
+
 function Dashboard() {
+
   const { baby, parents, me, addEntry, now } = useBabyBond();
   const s = useTodayStats();
   const { vaccines, appointments } = useBabyBond();
@@ -152,6 +175,9 @@ function Dashboard() {
       </div>
 
       <ActiveTimerBanner />
+
+      <NameJourneyCard />
+
 
       <section className="px-5 py-5">
         <div className="grid grid-cols-2 gap-3">
