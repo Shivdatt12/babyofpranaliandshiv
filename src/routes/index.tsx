@@ -4,7 +4,7 @@ import { Droplets, Baby as BabyIcon, Moon, Scale, Activity, Pill, Syringe, Steth
 import { AppShell, SoftCard, StatTile, ThemeToggle, BabyAvatar } from "@/components/babybond/shell";
 import { VACCINE_STATUS_LABEL, vaccineStatus } from "@/lib/babybond-vaccines";
 import { useBabyBond, useTodayDoses, useTodayStats } from "@/lib/babybond-store";
-import { durationLabel, formatTime, timeAgo } from "@/lib/babybond-data";
+import { durationLabel, formatTime, timeAgo, type Entry } from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/")({
   ssr: false,
@@ -92,6 +92,72 @@ function ActiveTimerBanner() {
   );
 }
 
+function RightNow() {
+  const { timers, entries, now } = useBabyBond();
+  const breast = timers.find((t) => t.kind === "breast");
+  const sleep = timers.find((t) => t.kind === "sleep");
+  const latest = (type: "pee" | "potty" | "formula") => entries.find((e) => e.type === type);
+
+  const elapsed = (start: number) => {
+    const mins = Math.max(0, Math.floor((now - start) / 60000));
+    const secs = Math.max(0, Math.floor((now - start) / 1000) % 60);
+    return `${mins}m ${String(secs).padStart(2, "0")}s`;
+  };
+
+  const pee = latest("pee");
+  const potty = latest("potty");
+  const formula = latest("formula") as Extract<Entry, { type: "formula" }> | undefined;
+
+  const rows = [
+    {
+      emoji: "🤱",
+      label: "Breastfeeding",
+      value: breast ? "In progress" : "Not active",
+      hint: breast ? `${elapsed(breast.startedAt)} · by ${breast.by}` : "tap 🤱 on the milk page to start",
+      live: !!breast,
+    },
+    {
+      emoji: "😴",
+      label: "Sleep",
+      value: sleep ? "In progress" : "Not sleeping",
+      hint: sleep ? `${elapsed(sleep.startedAt)} · by ${sleep.by}` : "no active nap",
+      live: !!sleep,
+    },
+    { emoji: "💧", label: "Last pee", value: pee ? timeAgo(pee.at, now) : "Not yet", hint: pee ? formatTime(pee.at) : "nothing recorded yet", live: false },
+    { emoji: "💩", label: "Last potty", value: potty ? timeAgo(potty.at, now) : "Not yet", hint: potty ? formatTime(potty.at) : "nothing recorded yet", live: false },
+    {
+      emoji: "🍼",
+      label: "Formula",
+      value: formula ? `${formula.ml} ml` : "—",
+      hint: formula ? `${timeAgo(formula.at, now)} · by ${formula.by}` : "no bottle feed recorded yet",
+      live: false,
+    },
+  ];
+
+  return (
+    <section className="px-5 pt-4">
+      <h2 className="mb-3 font-display text-base font-bold">Right now</h2>
+      <div className="grid grid-cols-2 gap-3">
+        {rows.map((r) => (
+          <div key={r.label} className="rounded-3xl bg-card p-4 bb-shadow">
+            <div className="flex items-center justify-between">
+              <span className="text-xl leading-none">{r.emoji}</span>
+              {r.live ? (
+                <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-health-foreground">
+                  <span className="size-1.5 animate-pulse rounded-full bg-health-foreground" /> live
+                </span>
+              ) : null}
+            </div>
+            <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{r.label}</p>
+            <p className="font-display text-sm font-bold leading-tight">{r.value}</p>
+            <p className="text-[11px] text-muted-foreground">{r.hint}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function NameJourneyCard() {
   const { baby, nameIdeas } = useBabyBond();
   if (baby.nameStatus === "final") return null;
@@ -173,6 +239,8 @@ function Dashboard() {
         </SoftCard>
 
       </div>
+
+      <RightNow />
 
       <ActiveTimerBanner />
 
