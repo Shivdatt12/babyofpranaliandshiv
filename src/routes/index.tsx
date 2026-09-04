@@ -4,7 +4,7 @@ import { Droplets, Baby as BabyIcon, Moon, Scale, Activity, Pill, Syringe, Steth
 import { AppShell, SoftCard, StatTile, ThemeToggle, BabyAvatar } from "@/components/babybond/shell";
 import { VACCINE_STATUS_LABEL, vaccineStatus } from "@/lib/babybond-vaccines";
 import { useBabyBond, useTodayDoses, useTodayStats } from "@/lib/babybond-store";
-import { durationLabel, formatTime, timeAgo } from "@/lib/babybond-data";
+import { durationLabel, formatTime, timeAgo, type Entry } from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/")({
   ssr: false,
