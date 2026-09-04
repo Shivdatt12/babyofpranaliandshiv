@@ -54,49 +54,11 @@ function Countdown({ target, now }: { target: number; now: number }) {
   );
 }
 
-function ActiveTimerBanner() {
-  const { timers, now, stopTimer } = useBabyBond();
-  if (!timers.length) return null;
-  return (
-    <div className="space-y-2 px-5 pt-4">
-      {timers.map((t) => {
-        const mins = Math.max(0, Math.floor((now - t.startedAt) / 60000));
-        const secs = Math.max(0, Math.floor((now - t.startedAt) / 1000) % 60);
-        return (
-          <div
-            key={t.kind}
-            className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow"
-          >
-            <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">
-              {t.kind === "breast" ? "🤱" : "😴"}
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold">
-                {t.kind === "breast" ? "Breastfeeding in progress" : "Sleep in progress"}
-              </p>
-              <p className="text-xs text-muted-foreground tabular-nums">
-                {mins}m {String(secs).padStart(2, "0")}s · started {formatTime(t.startedAt)} by {t.by}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => stopTimer(t.kind)}
-              className="rounded-2xl bb-gradient px-4 py-2 text-xs font-bold text-primary-foreground active:scale-95"
-            >
-              Stop
-            </button>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
 function RightNow() {
-  const { timers, entries, now } = useBabyBond();
+  const { timers, entries, now, stopTimer } = useBabyBond();
   const breast = timers.find((t) => t.kind === "breast");
   const sleep = timers.find((t) => t.kind === "sleep");
-  const latest = (type: "pee" | "potty" | "formula") => entries.find((e) => e.type === type);
+  const latest = (type: Entry["type"]) => entries.find((e) => e.type === type);
 
   const elapsed = (start: number) => {
     const mins = Math.max(0, Math.floor((now - start) / 60000));
@@ -104,55 +66,102 @@ function RightNow() {
     return `${mins}m ${String(secs).padStart(2, "0")}s`;
   };
 
-  const pee = latest("pee");
-  const potty = latest("potty");
+  const pee = latest("pee") as Extract<Entry, { type: "pee" }> | undefined;
+  const potty = latest("potty") as Extract<Entry, { type: "potty" }> | undefined;
   const formula = latest("formula") as Extract<Entry, { type: "formula" }> | undefined;
-
-  const rows = [
-    {
-      emoji: "🤱",
-      label: "Breastfeeding",
-      value: breast ? "In progress" : "Not active",
-      hint: breast ? `${elapsed(breast.startedAt)} · by ${breast.by}` : "tap 🤱 on the milk page to start",
-      live: !!breast,
-    },
-    {
-      emoji: "😴",
-      label: "Sleep",
-      value: sleep ? "In progress" : "Not sleeping",
-      hint: sleep ? `${elapsed(sleep.startedAt)} · by ${sleep.by}` : "no active nap",
-      live: !!sleep,
-    },
-    { emoji: "💧", label: "Last pee", value: pee ? timeAgo(pee.at, now) : "Not yet", hint: pee ? formatTime(pee.at) : "nothing recorded yet", live: false },
-    { emoji: "💩", label: "Last potty", value: potty ? timeAgo(potty.at, now) : "Not yet", hint: potty ? formatTime(potty.at) : "nothing recorded yet", live: false },
-    {
-      emoji: "🍼",
-      label: "Formula",
-      value: formula ? `${formula.ml} ml` : "—",
-      hint: formula ? `${timeAgo(formula.at, now)} · by ${formula.by}` : "no bottle feed recorded yet",
-      live: false,
-    },
-  ];
+  const lastBreast = latest("breast") as Extract<Entry, { type: "breast" }> | undefined;
+  const lastSleep = latest("sleep") as Extract<Entry, { type: "sleep" }> | undefined;
 
   return (
-    <section className="px-5 pt-4">
+    <section className="px-5 pt-4 pb-2">
       <h2 className="mb-3 font-display text-base font-bold">Right now</h2>
-      <div className="grid grid-cols-2 gap-3">
-        {rows.map((r) => (
-          <div key={r.label} className="rounded-3xl bg-card p-4 bb-shadow">
-            <div className="flex items-center justify-between">
-              <span className="text-xl leading-none">{r.emoji}</span>
-              {r.live ? (
-                <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-health-foreground">
-                  <span className="size-1.5 animate-pulse rounded-full bg-health-foreground" /> live
-                </span>
-              ) : null}
+      <div className="grid grid-cols-2 gap-2">
+        {breast ? (
+          <div className="rounded-3xl bg-milk p-4 bb-shadow">
+            <div className="flex items-start justify-between">
+              <span className="text-2xl leading-none">🤱</span>
+              <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-milk-foreground/80">
+                <span className="size-1.5 animate-pulse rounded-full bg-milk-foreground" /> live
+              </span>
             </div>
-            <p className="mt-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{r.label}</p>
-            <p className="font-display text-sm font-bold leading-tight">{r.value}</p>
-            <p className="text-[11px] text-muted-foreground">{r.hint}</p>
+            <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-milk-foreground/80">Breastfeeding</p>
+            <p className="font-display text-sm font-bold leading-tight text-milk-foreground">In progress</p>
+            <p className="text-[11px] text-milk-foreground/80 tabular-nums">{elapsed(breast.startedAt)} · by {breast.by}</p>
+            <button
+              type="button"
+              onClick={() => stopTimer("breast")}
+              className="mt-2 w-full rounded-2xl bg-card px-3 py-1.5 text-[11px] font-bold text-card-foreground transition-transform active:scale-95"
+            >
+              Stop
+            </button>
           </div>
-        ))}
+        ) : (
+          <div className="rounded-3xl bg-card/60 p-3 bb-shadow">
+            <span className="text-xl leading-none">🤱</span>
+            <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Breastfeeding</p>
+            <p className="font-display text-sm font-bold leading-tight text-foreground/80">Not active</p>
+            {lastBreast ? (
+              <p className="text-[10px] text-muted-foreground">Last feed {timeAgo(lastBreast.at, now)}</p>
+            ) : null}
+          </div>
+        )}
+
+        {sleep ? (
+          <div className="rounded-3xl bg-sleep p-4 bb-shadow">
+            <div className="flex items-start justify-between">
+              <span className="text-2xl leading-none">😴</span>
+              <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-sleep-foreground/80">
+                <span className="size-1.5 animate-pulse rounded-full bg-sleep-foreground" /> live
+              </span>
+            </div>
+            <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-sleep-foreground/80">Sleep</p>
+            <p className="font-display text-sm font-bold leading-tight text-sleep-foreground">In progress</p>
+            <p className="text-[11px] text-sleep-foreground/80 tabular-nums">{elapsed(sleep.startedAt)} · by {sleep.by}</p>
+            <button
+              type="button"
+              onClick={() => stopTimer("sleep")}
+              className="mt-2 w-full rounded-2xl bg-card px-3 py-1.5 text-[11px] font-bold text-card-foreground transition-transform active:scale-95"
+            >
+              Stop
+            </button>
+          </div>
+        ) : (
+          <div className="rounded-3xl bg-card/60 p-3 bb-shadow">
+            <span className="text-xl leading-none">😴</span>
+            <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Sleep</p>
+            <p className="font-display text-sm font-bold leading-tight text-foreground/80">Not sleeping</p>
+            {lastSleep ? (
+              <p className="text-[10px] text-muted-foreground">Last sleep {timeAgo(lastSleep.at, now)}</p>
+            ) : null}
+          </div>
+        )}
+
+        <div className="rounded-3xl bg-card p-3 bb-shadow">
+          <span className="text-xl leading-none">💧</span>
+          <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Last pee</p>
+          <p className="font-display text-sm font-bold leading-tight">{pee ? timeAgo(pee.at, now) : "Not yet"}</p>
+          <p className="text-[10px] text-muted-foreground">{pee ? formatTime(pee.at) : "nothing recorded"}</p>
+        </div>
+
+        <div className="rounded-3xl bg-card p-3 bb-shadow">
+          <span className="text-xl leading-none">💩</span>
+          <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Last potty</p>
+          <p className="font-display text-sm font-bold leading-tight">{potty ? timeAgo(potty.at, now) : "Not yet"}</p>
+          <p className="text-[10px] text-muted-foreground">{potty ? formatTime(potty.at) : "nothing recorded"}</p>
+        </div>
+
+        <div className="col-span-2 rounded-3xl bg-card p-3 bb-shadow">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl leading-none">🍼</span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">Formula</p>
+              <p className="font-display text-sm font-bold leading-tight">{formula ? `${formula.ml} ml` : "—"}</p>
+              <p className="text-[10px] text-muted-foreground">
+                {formula ? `${timeAgo(formula.at, now)} · by ${formula.by}` : "no bottle feed recorded"}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
@@ -241,8 +250,6 @@ function Dashboard() {
       </div>
 
       <RightNow />
-
-      <ActiveTimerBanner />
 
       <NameJourneyCard />
 
