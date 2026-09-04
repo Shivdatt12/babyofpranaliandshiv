@@ -240,6 +240,8 @@ function Dashboard() {
 
       </div>
 
+      <RightNow />
+
       <ActiveTimerBanner />
 
       <NameJourneyCard />
