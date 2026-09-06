@@ -105,8 +105,13 @@ type Store = {
   updateVaccine: (id: string, v: Partial<Vaccine>) => void;
   deleteVaccine: (id: string) => void;
   completeVaccine: (id: string, at?: number) => void;
-  /** add any missing rows from the default Indian NIS checklist (never touches existing ones) */
+  /** explicit parent confirmation — records the actual given date, notes and who confirmed */
+  markVaccineGiven: (id: string, givenAt: number, note?: string) => void;
+  /** returns a dose to its pending status without losing the recommended due date */
+  undoVaccineGiven: (id: string) => void;
+  /** add any missing doses from the default IAP-ACVIP checklist (never touches existing ones) */
   syncDefaultVaccines: () => number;
+
   /** returns the id of the stored idea; reuses the existing row for a duplicate name */
   addNameIdea: (n: Omit<NameIdea, "id" | "by" | "byId" | "addedAt" | "votes">) => string | null;
   updateNameIdea: (id: string, patch: Partial<NameIdea>) => void;
