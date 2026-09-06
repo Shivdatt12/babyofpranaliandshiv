@@ -14,7 +14,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { AppShell, SoftCard, StatTile, ThemeToggle, BabyAvatar } from "@/components/babybond/shell";
-import { VACCINE_STATUS_LABEL, vaccineStatus } from "@/lib/babybond-vaccines";
+import { VACCINE_STATUS_LABEL, vaccineFullName, vaccineStatus } from "@/lib/babybond-vaccines";
 import { useBabyBond, useTodayDoses, useTodayStats } from "@/lib/babybond-store";
 import { durationLabel, formatTime, timeAgo, type Entry } from "@/lib/babybond-data";
 
@@ -254,10 +254,12 @@ function Dashboard() {
   const { vaccines, appointments } = useBabyBond();
   const doses = useTodayDoses();
   const nextDose = doses.find((d) => d.status === "upcoming" || d.status === "due");
-  const nextVaccine = vaccines.filter((v) => !v.doneAt && !v.notApplicable)[0];
-  const vaccineStatusLabel = nextVaccine
-    ? VACCINE_STATUS_LABEL[vaccineStatus(nextVaccine, now)]
-    : null;
+  const pendingVaccines = vaccines
+    .filter((v) => !v.doneAt && !v.notApplicable)
+    .sort((a, b) => a.dueAt - b.dueAt);
+  const overdueVaccine = pendingVaccines.find((v) => vaccineStatus(v, now) === "overdue");
+  const nextVaccine = overdueVaccine ?? pendingVaccines[0];
+  const vaccineStatusLabel = nextVaccine ? VACCINE_STATUS_LABEL[vaccineStatus(nextVaccine, now)] : null;
   const vaccineDays = nextVaccine ? Math.round((nextVaccine.dueAt - now) / 86400_000) : 0;
   const nextVisit = appointments.find((a) => a.at >= now);
 
@@ -416,16 +418,20 @@ function Dashboard() {
             className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow"
           >
             <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">
-              🛡️
+              {overdueVaccine ? "⚠️" : "💉"}
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold">
-                {nextVaccine ? nextVaccine.name : "All vaccines done"}
+                {nextVaccine ? vaccineFullName(nextVaccine) : "✅ Vaccines up to date"}
               </p>
               <p className="text-xs text-muted-foreground">
                 {nextVaccine
-                  ? `${vaccineStatusLabel} · Due ${new Date(nextVaccine.dueAt).toLocaleDateString([], { day: "numeric", month: "short" })} · ${
-                      vaccineDays >= 0 ? `in ${vaccineDays}d` : `${Math.abs(vaccineDays)}d overdue`
+                  ? `${vaccineStatusLabel} · ${
+                      vaccineDays > 0
+                        ? `due in ${vaccineDays} day${vaccineDays === 1 ? "" : "s"}`
+                        : vaccineDays === 0
+                          ? "due today"
+                          : `due ${Math.abs(vaccineDays)} day${Math.abs(vaccineDays) === 1 ? "" : "s"} ago`
                     }`
                   : "Nothing pending"}
               </p>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { useBabyBond, useTodayDoses } from "@/lib/babybond-store";
 import { formatDate, formatTime, todayOccurrence, isMedicineActiveOn } from "@/lib/babybond-data";
+import { vaccineFullName } from "@/lib/babybond-vaccines";
 import {
   checkDueNow,
   clearAllReminders,
@@ -21,6 +22,12 @@ const MED_ACTIONS = [
   { action: "skip", title: "Skip" },
 ];
 
+const VACCINE_ACTIONS = [
+  { action: "given", title: "Mark as Given" },
+  { action: "snooze", title: "Snooze 10m" },
+  { action: "dismiss", title: "Dismiss" },
+];
+
 const DAY = 86400000;
 const HOUR = 3600_000;
 
@@ -31,7 +38,7 @@ const HOUR = 3600_000;
  * swipe, snooze, and stop on Given/Skip). Nothing is notified twice.
  */
 export function MedicineReminders() {
-  const { logMedicine, now, entries, medicines, vaccines, appointments, settings, authed, familyId, hasBaby } =
+  const { logMedicine, markVaccineGiven, now, entries, medicines, vaccines, appointments, settings, authed, familyId, hasBaby } =
     useBabyBond();
   const doses = useTodayDoses();
   const toasted = useRef<Set<string>>(new Set());
@@ -68,17 +75,20 @@ export function MedicineReminders() {
       const msg = event.data as {
         type?: string;
         action?: string;
-        data?: { medicineId?: string; id?: string; doseKey?: string };
+        data?: { medicineId?: string; vaccineId?: string; id?: string; doseKey?: string };
       };
       if (msg?.type !== "reminder-action") return;
       const medicineId = msg.data?.medicineId;
+      const vaccineId = msg.data?.vaccineId;
       if (msg.action === "given" && medicineId) logMedicine(medicineId, "given");
       if (msg.action === "skip" && medicineId) logMedicine(medicineId, "skipped");
+      // a vaccine only ever becomes "Given" through an explicit parent action
+      if (msg.action === "given" && vaccineId) markVaccineGiven(vaccineId, Date.now());
       if (msg.data?.id && (msg.action === "given" || msg.action === "skip")) toasted.current.add(msg.data.id);
     };
     navigator.serviceWorker.addEventListener("message", handler);
     return () => navigator.serviceWorker.removeEventListener("message", handler);
-  }, [logMedicine]);
+  }, [logMedicine, markVaccineGiven]);
 
   /* -------- one schedule, one lifecycle owner -------- */
   const items = useMemo<ScheduledReminder[]>(() => {
@@ -115,7 +125,8 @@ export function MedicineReminders() {
     if (settings.vaccineReminders) {
       for (const v of vaccines) {
         if (v.doneAt || v.notApplicable || !v.reminder) continue;
-        const dueAt = v.dueAt - settings.vaccineLeadDays * DAY;
+        const overdue = (v.dueEndAt ?? v.dueAt) < base;
+        const dueAt = overdue ? base : v.dueAt - settings.vaccineLeadDays * DAY;
         const at = dueAt - lead;
         if (at < base - 5 * 60_000) continue;
         list.push({
@@ -123,10 +134,11 @@ export function MedicineReminders() {
           at,
           dueAt,
           familyId,
-          title: `🛡️ ${v.name}`,
-          body: `Vaccine due ${formatDate(v.dueAt)}`,
+          title: overdue ? `⚠️ Vaccine overdue` : `💉 Vaccine due today`,
+          body: `${vaccineFullName(v)} · due ${formatDate(v.dueAt)}`,
           kind: "vaccine",
-          actions: [{ action: "snooze", title: `Snooze ${settings.snoozeMinutes}m` }],
+          vaccineId: v.id,
+          actions: VACCINE_ACTIONS,
         });
       }
     }
@@ -234,8 +246,8 @@ export function MedicineReminders() {
         const key = `vaccine-${v.id}`;
         if (toasted.current.has(key)) continue;
         toasted.current.add(key);
-        toast(`🛡️ ${v.name}`, {
-          description: v.dueAt < now ? `Missed — was due ${formatDate(v.dueAt)}` : `Due ${formatDate(v.dueAt)}`,
+        toast(v.dueAt < now ? `⚠️ Vaccine overdue` : `💉 Vaccine due today`, {
+          description: `${vaccineFullName(v)} · due ${formatDate(v.dueAt)}`,
           duration: 20_000,
         });
       }

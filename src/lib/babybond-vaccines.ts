@@ -239,12 +239,11 @@ export const DEFAULT_VACCINE_SCHEDULE: VaccineTemplate[] = [
     dose: "As advised",
     stage: "Special situations",
     group: 17,
-    year: undefined,
     months: 12,
     endMonths: 60,
     conditional: true,
     scheduleNote: `Only for endemic areas or outbreaks. ${PED}`,
-  } as VaccineTemplate,
+  },
 ];
 
 export const VACCINE_SCHEDULE_NOTE =
