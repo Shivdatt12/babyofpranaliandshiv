@@ -685,13 +685,29 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       syncDefaultVaccines: () => {
         const bornAt = baby?.bornAt;
         if (!bornAt) return 0;
+        // every code a dose may already be stored under, including older ones
         const have = new Set(vaccines.map((v) => v.code).filter(Boolean));
+        const aliasOf = new Map<string, string[]>();
+        for (const t of DEFAULT_VACCINE_SCHEDULE) aliasOf.set(t.code, templateCodes(t));
         const docs = buildDefaultVaccines(bornAt)
-          .filter((t) => !have.has(t.code))
+          .filter((t) => !(aliasOf.get(t.code ?? "") ?? [t.code ?? ""]).some((c) => have.has(c)))
           .map((t) => ({ ...t, id: uuid() }));
-        if (!docs.length) return 0;
-        setVaccines((prev) => [...prev, ...docs]);
-        for (const d of docs) saveDoc("vaccines", d);
+
+        // give older rows their dose / age-group labels without touching their history
+        const upgraded: Vaccine[] = [];
+        for (const v of vaccines) {
+          if (!v.code || v.dose) continue;
+          const t = DEFAULT_VACCINE_SCHEDULE.find((x) => templateCodes(x).includes(v.code!));
+          if (!t) continue;
+          upgraded.push({ ...v, code: t.code, dose: t.dose, stage: t.stage, group: t.group });
+        }
+
+        if (!docs.length && !upgraded.length) return 0;
+        setVaccines((prev) => [
+          ...prev.map((v) => upgraded.find((u) => u.id === v.id) ?? v),
+          ...docs,
+        ]);
+        for (const d of [...upgraded, ...docs]) saveDoc("vaccines", d);
         return docs.length;
       },
       completeVaccine: (id, at) => {
@@ -710,6 +726,54 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
           });
         }
       },
+      markVaccineGiven: (id, givenAt, note) => {
+        const v = vaccines.find((x) => x.id === id);
+        if (!v) return;
+        // the recommended due date is never replaced by the actual given date
+        patchDoc("vaccines", vaccines, setVaccines, id, {
+          doneAt: givenAt,
+          completedAt: Date.now(),
+          completedBy: me.name,
+          completedById: me.id,
+          notApplicable: false,
+          ...(note !== undefined ? { doctorNote: note } : {}),
+        });
+
+        const entryId = `vax-${id}`;
+        const label = v.dose ? `${v.name} — ${v.dose}` : v.name;
+        const detail = [
+          `due ${formatDate(v.dueAt)}`,
+          `given by ${me.name}`,
+          ...(note?.trim() ? [note.trim()] : []),
+        ].join(" · ");
+        const existing = entries.find((e) => e.id === entryId);
+        const entry: Entry = { id: entryId, type: "vaccine", at: givenAt, name: label, note: detail, by: me.role };
+        if (existing) {
+          setEntries(entries.map((e) => (e.id === entryId ? entry : e)));
+          saveEntry(entry);
+        } else {
+          push(entry);
+        }
+      },
+      undoVaccineGiven: (id) => {
+        const v = vaccines.find((x) => x.id === id);
+        if (!v) return;
+        patchDoc("vaccines", vaccines, setVaccines, id, {
+          doneAt: null,
+          completedBy: "",
+          completedById: "",
+          completedAt: 0,
+        });
+        const entryId = `vax-${id}`;
+        if (entries.some((e) => e.id === entryId)) {
+          setEntries((prev) => prev.filter((e) => e.id !== entryId));
+          if (fid) {
+            pushOp({ kind: "delete", table: "entries", id: entryId });
+            sync();
+          }
+        }
+      },
+
       addNameIdea: (n) => {
         if (!fid) return null;
         const key = nameKey(n.name);
