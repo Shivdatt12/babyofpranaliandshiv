@@ -105,10 +105,14 @@ export type Vaccine = {
   doneAt: number | null;
   doctorNote?: string;
   reminder: boolean;
-  /** set for rows generated from the default Indian NIS checklist */
+  /** set for rows generated from the default IAP-ACVIP checklist */
   code?: string;
+  /** dose number / label, e.g. "Dose 1" or "Booster 1" */
+  dose?: string;
   /** stage label, e.g. "6 weeks" */
   stage?: string;
+  /** sort weight of the age group */
+  group?: number;
   /** end of the recommended window for range-based doses (9–12 months etc.) */
   dueEndAt?: number | null;
   /** true when the official schedule marks the dose as programme / region dependent */
@@ -120,9 +124,12 @@ export type Vaccine = {
   /* completion details */
   completedBy?: string;
   completedById?: string;
+  /** when the "Given" confirmation was recorded (not the given date itself) */
+  completedAt?: number;
   doctor?: string;
   hospital?: string;
   batch?: string;
+
 };
 
 
