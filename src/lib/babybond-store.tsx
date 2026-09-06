@@ -8,6 +8,7 @@ import {
   defaultMilestones,
   EMPTY_BABY,
   estimatedBreastMl,
+  formatDate,
 
   type Appointment,
   type Baby,
@@ -39,7 +40,7 @@ import {
 } from "./babybond-cloud";
 import { clearAllReminders } from "./babybond-push";
 import { nameKey, type NameIdea, type NameVote } from "./babybond-names";
-import { buildDefaultVaccines } from "./babybond-vaccines";
+import { buildDefaultVaccines, DEFAULT_VACCINE_SCHEDULE, templateCodes } from "./babybond-vaccines";
 
 type Snapshot = {
   baby: Baby | null;
