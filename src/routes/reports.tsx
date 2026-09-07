@@ -5,6 +5,7 @@ import { FileDown, Share2 } from "lucide-react";
 import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
 import { Button } from "@/components/ui/button";
 import { useBabyBond } from "@/lib/babybond-store";
+import { vaccineFullName, vaccineStatus } from "@/lib/babybond-vaccines";
 import {
   dayKey,
   durationLabel,
@@ -189,7 +190,7 @@ function Reports() {
 
   const total = useMemo(() => tally(scoped, settings.breastMlPerMinute), [scoped, settings.breastMlPerMinute]);
   const vaxDone = vaccines.filter((v) => v.doneAt).length;
-  const vaxMissed = vaccines.filter((v) => !v.doneAt && v.dueAt < now).length;
+  const vaxMissed = vaccines.filter((v) => vaccineStatus(v, now) === "overdue").length;
   const vaxPending = vaccines.length - vaxDone - vaxMissed;
   const summaryRows = moduleLines(total, {
     vaccinesDone: vaxDone,
@@ -251,7 +252,16 @@ function Reports() {
     }
 
     heading("Vaccines");
-    for (const v of vaccines) line(`${v.name} — ${v.doneAt ? `done ${formatDate(v.doneAt)}` : `due ${formatDate(v.dueAt)}`}`);
+    for (const v of vaccines)
+      line(
+        `${vaccineFullName(v)} — recommended ${formatDate(v.dueAt)}${
+          v.doneAt
+            ? ` · given ${formatDate(v.doneAt)}${v.completedBy ? ` by ${v.completedBy}` : ""}`
+            : v.notApplicable
+              ? " · not applicable"
+              : " · pending"
+        }`,
+      );
     y += 12;
 
     heading("Doctor visits");

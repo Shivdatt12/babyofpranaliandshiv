@@ -225,6 +225,10 @@ self.addEventListener("notificationclick", (event) => {
         await snoozeItem(item.id, prefs.snoozeMs);
       } else if (action === "given" || action === "skip") {
         await resolveItem(item.id);
+      } else if (action === "dismiss") {
+        // dismiss never changes a dose status — it only stops this reminder
+        await resolveItem(item.id);
+        return;
       } else {
         // body tap — treat as handled by the user opening the app
         await resolveItem(item.id);
