@@ -36,10 +36,14 @@ export const Route = createFileRoute("/track/vaccines")({
       { title: "Vaccination tracker — BabyBond" },
       {
         name: "description",
-        content: "Track every vaccine dose from the IAP-ACVIP schedule with due dates, reminders and given records.",
+        content:
+          "Track every vaccine dose from the IAP-ACVIP schedule with due dates, reminders and given records.",
       },
       { property: "og:title", content: "Vaccination tracker — BabyBond" },
-      { property: "og:description", content: "Age-wise vaccine doses, due dates and reminders for your baby." },
+      {
+        property: "og:description",
+        content: "Age-wise vaccine doses, due dates and reminders for your baby.",
+      },
     ],
   }),
   component: Vaccines,
@@ -55,15 +59,25 @@ const STATUS_CLASS: Record<VaccineStatus, string> = {
 };
 
 function dueLabel(v: Vaccine) {
-  if (v.dueEndAt && v.dueEndAt > v.dueAt) return `Due ${formatDate(v.dueAt)} – ${formatDate(v.dueEndAt)}`;
+  if (v.dueEndAt && v.dueEndAt > v.dueAt)
+    return `Due ${formatDate(v.dueAt)} – ${formatDate(v.dueEndAt)}`;
   return `Due ${formatFullDate(v.dueAt)}`;
 }
 
 type Row = { v: Vaccine; status: VaccineStatus };
 
 function Vaccines() {
-  const { vaccines, addVaccine, updateVaccine, deleteVaccine, markVaccineGiven, undoVaccineGiven, syncDefaultVaccines, baby, now } =
-    useBabyBond();
+  const {
+    vaccines,
+    addVaccine,
+    updateVaccine,
+    deleteVaccine,
+    markVaccineGiven,
+    undoVaccineGiven,
+    syncDefaultVaccines,
+    baby,
+    now,
+  } = useBabyBond();
   const [name, setName] = useState("");
   const [dose, setDose] = useState("");
   const [due, setDue] = useState("");
@@ -91,7 +105,10 @@ function Vaccines() {
   const overdueCount = pending.filter((v) => vaccineStatus(v, now) === "overdue").length;
 
   const isOpen = (stage: string, rows: Row[]) =>
-    open[stage] ?? rows.some((r) => r.status !== "given" && r.status !== "not-applicable" && r.status !== "upcoming");
+    open[stage] ??
+    rows.some(
+      (r) => r.status !== "given" && r.status !== "not-applicable" && r.status !== "upcoming",
+    );
 
   return (
     <AppShell>
@@ -102,7 +119,9 @@ function Vaccines() {
             {pending.length ? `${pending.length} doses pending` : "✅ Vaccines up to date"}
             {overdueCount ? ` · ${overdueCount} overdue` : ""}
           </p>
-          <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">{VACCINE_SCHEDULE_NOTE}</p>
+          <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
+            {VACCINE_SCHEDULE_NOTE}
+          </p>
           <Button
             variant="secondary"
             className="mt-3 h-10 w-full rounded-2xl"
@@ -112,7 +131,9 @@ function Vaccines() {
                 return;
               }
               const added = syncDefaultVaccines();
-              toast.success(added ? `${added} doses added to the schedule` : "Schedule already up to date");
+              toast.success(
+                added ? `${added} doses added to the schedule` : "Schedule already up to date",
+              );
             }}
           >
             <CalendarPlus className="mr-2 size-4" /> Load IAP-ACVIP schedule
@@ -143,17 +164,23 @@ function Vaccines() {
                     {doneCount}/{g.rows.length} given
                   </span>
                 </span>
-                <ChevronDown className={`size-4 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`} />
+                <ChevronDown
+                  className={`size-4 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`}
+                />
               </button>
               {expanded ? (
                 <div className="mt-2 space-y-2">
                   {g.rows.map(({ v, status }) => (
                     <SoftCard key={v.id} className="flex items-start gap-3">
-                      <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">💉</span>
+                      <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">
+                        💉
+                      </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="truncate text-sm font-bold">{vaccineFullName(v)}</p>
-                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${STATUS_CLASS[status]}`}>
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${STATUS_CLASS[status]}`}
+                          >
                             {VACCINE_STATUS_DOT[status]} {VACCINE_STATUS_LABEL[status]}
                           </span>
                         </div>
@@ -169,7 +196,9 @@ function Vaccines() {
                         ) : null}
                         {v.doctor || v.hospital || v.batch ? (
                           <p className="text-[11px] text-muted-foreground">
-                            {[v.doctor, v.hospital, v.batch ? `Batch ${v.batch}` : ""].filter(Boolean).join(" · ")}
+                            {[v.doctor, v.hospital, v.batch ? `Batch ${v.batch}` : ""]
+                              .filter(Boolean)
+                              .join(" · ")}
                           </p>
                         ) : null}
                         {v.conditional ? (
@@ -177,8 +206,14 @@ function Vaccines() {
                             🤔 {VACCINE_PEDIATRICIAN_NOTE}
                           </p>
                         ) : null}
-                        {v.scheduleNote ? <p className="text-[11px] text-muted-foreground">{v.scheduleNote}</p> : null}
-                        {v.doctorNote ? <p className="mt-1 text-[11px] text-muted-foreground">📝 {v.doctorNote}</p> : null}
+                        {v.scheduleNote ? (
+                          <p className="text-[11px] text-muted-foreground">{v.scheduleNote}</p>
+                        ) : null}
+                        {v.doctorNote ? (
+                          <p className="mt-1 text-[11px] text-muted-foreground">
+                            📝 {v.doctorNote}
+                          </p>
+                        ) : null}
                       </div>
                       <div className="flex flex-col items-end gap-2">
                         <button
@@ -226,9 +261,24 @@ function Vaccines() {
         <SoftCard tone="health">
           <p className="text-sm font-bold">Add another dose</p>
           <div className="mt-3 space-y-2">
-            <Input placeholder="Vaccine name" value={name} onChange={(e) => setName(e.target.value)} className="h-11 rounded-2xl bg-card/80" />
-            <Input placeholder="Dose label (optional)" value={dose} onChange={(e) => setDose(e.target.value)} className="h-11 rounded-2xl bg-card/80" />
-            <Input type="date" value={due} onChange={(e) => setDue(e.target.value)} className="h-11 rounded-2xl bg-card/80" />
+            <Input
+              placeholder="Vaccine name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="h-11 rounded-2xl bg-card/80"
+            />
+            <Input
+              placeholder="Dose label (optional)"
+              value={dose}
+              onChange={(e) => setDose(e.target.value)}
+              className="h-11 rounded-2xl bg-card/80"
+            />
+            <Input
+              type="date"
+              value={due}
+              onChange={(e) => setDue(e.target.value)}
+              className="h-11 rounded-2xl bg-card/80"
+            />
             <Button
               className="h-11 w-full rounded-2xl bb-gradient text-primary-foreground"
               onClick={() => {
@@ -359,20 +409,49 @@ function GivenSheet({
     <Sheet open={!!vaccine} onOpenChange={(o) => (!o ? onClose() : undefined)}>
       <SheetContent side="bottom" className="max-h-[88vh] overflow-y-auto rounded-t-3xl">
         <SheetHeader>
-          <SheetTitle>{vaccine?.doneAt ? "Edit vaccination record" : "Given date & notes"}</SheetTitle>
+          <SheetTitle>
+            {vaccine?.doneAt ? "Edit vaccination record" : "Given date & notes"}
+          </SheetTitle>
         </SheetHeader>
         {vaccine ? (
           <div className="space-y-3 pb-6">
             <p className="text-sm font-bold">{vaccineFullName(vaccine)}</p>
-            <p className="text-xs text-muted-foreground">{dueLabel(vaccine)} · recommended date is kept as it is</p>
+            <p className="text-xs text-muted-foreground">
+              {dueLabel(vaccine)} · recommended date is kept as it is
+            </p>
             <label className="block text-[11px] font-semibold text-muted-foreground">
               Actual given date
-              <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="mt-1 h-11 rounded-2xl bg-card/80" />
+              <Input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="mt-1 h-11 rounded-2xl bg-card/80"
+              />
             </label>
-            <Input placeholder="Doctor (optional)" value={doctor} onChange={(e) => setDoctor(e.target.value)} className="h-11 rounded-2xl bg-card/80" />
-            <Input placeholder="Hospital / clinic (optional)" value={hospital} onChange={(e) => setHospital(e.target.value)} className="h-11 rounded-2xl bg-card/80" />
-            <Input placeholder="Batch number (optional)" value={batch} onChange={(e) => setBatch(e.target.value)} className="h-11 rounded-2xl bg-card/80" />
-            <Textarea placeholder="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} className="rounded-2xl bg-card/80" />
+            <Input
+              placeholder="Doctor (optional)"
+              value={doctor}
+              onChange={(e) => setDoctor(e.target.value)}
+              className="h-11 rounded-2xl bg-card/80"
+            />
+            <Input
+              placeholder="Hospital / clinic (optional)"
+              value={hospital}
+              onChange={(e) => setHospital(e.target.value)}
+              className="h-11 rounded-2xl bg-card/80"
+            />
+            <Input
+              placeholder="Batch number (optional)"
+              value={batch}
+              onChange={(e) => setBatch(e.target.value)}
+              className="h-11 rounded-2xl bg-card/80"
+            />
+            <Textarea
+              placeholder="Notes (optional)"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="rounded-2xl bg-card/80"
+            />
             <Button
               className="h-11 w-full rounded-2xl bb-gradient text-primary-foreground"
               onClick={() => {

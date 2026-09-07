@@ -38,8 +38,19 @@ const HOUR = 3600_000;
  * swipe, snooze, and stop on Given/Skip). Nothing is notified twice.
  */
 export function MedicineReminders() {
-  const { logMedicine, markVaccineGiven, now, entries, medicines, vaccines, appointments, settings, authed, familyId, hasBaby } =
-    useBabyBond();
+  const {
+    logMedicine,
+    markVaccineGiven,
+    now,
+    entries,
+    medicines,
+    vaccines,
+    appointments,
+    settings,
+    authed,
+    familyId,
+    hasBaby,
+  } = useBabyBond();
   const doses = useTodayDoses();
   const toasted = useRef<Set<string>>(new Set());
   const active = authed && !!familyId && hasBaby;
@@ -84,7 +95,8 @@ export function MedicineReminders() {
       if (msg.action === "skip" && medicineId) logMedicine(medicineId, "skipped");
       // a vaccine only ever becomes "Given" through an explicit parent action
       if (msg.action === "given" && vaccineId) markVaccineGiven(vaccineId, Date.now());
-      if (msg.data?.id && (msg.action === "given" || msg.action === "skip")) toasted.current.add(msg.data.id);
+      if (msg.data?.id && (msg.action === "given" || msg.action === "skip"))
+        toasted.current.add(msg.data.id);
     };
     navigator.serviceWorker.addEventListener("message", handler);
     return () => navigator.serviceWorker.removeEventListener("message", handler);

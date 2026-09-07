@@ -1,4 +1,13 @@
-import { createContext, useContext, useMemo, useState, useEffect, useRef, useCallback, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  type ReactNode,
+} from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -9,7 +18,6 @@ import {
   EMPTY_BABY,
   estimatedBreastMl,
   formatDate,
-
   type Appointment,
   type Baby,
   type Entry,
@@ -194,8 +202,8 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
   const localSettingsAt = useRef(0);
   const localParentAt = useRef<Map<string, number>>(new Map());
   const settingsGuarded = () => Date.now() - localSettingsAt.current < GUARD_MS;
-  const parentGuarded = (id: string) => Date.now() - (localParentAt.current.get(id) ?? 0) < GUARD_MS;
-
+  const parentGuarded = (id: string) =>
+    Date.now() - (localParentAt.current.get(id) ?? 0) < GUARD_MS;
 
   useEffect(() => {
     const i = setInterval(() => setNow(Date.now()), 1000);
@@ -230,12 +238,13 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     if (s.parents)
       setParents((prev) =>
         s.parents!.map((p) =>
-          Date.now() - (localParentAt.current.get(p.id) ?? 0) < 30_000 ? (prev.find((x) => x.id === p.id) ?? p) : p,
+          Date.now() - (localParentAt.current.get(p.id) ?? 0) < 30_000
+            ? (prev.find((x) => x.id === p.id) ?? p)
+            : p,
         ),
       );
     if (s.settings && Date.now() - localSettingsAt.current >= 30_000)
       setSettings({ ...DEFAULT_SETTINGS, ...s.settings });
-
 
     setLastSyncedAt(Date.now());
   }, []);
@@ -289,15 +298,24 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     void (async () => {
       const uid = session.user.id;
-      const meta = session.user.user_metadata as { name?: string; role?: string; full_name?: string };
-      let { data: profile } = await supabase.from("profiles").select("*").eq("id", uid).maybeSingle();
+      const meta = session.user.user_metadata as {
+        name?: string;
+        role?: string;
+        full_name?: string;
+      };
+      let { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", uid)
+        .maybeSingle();
       if (!profile) {
         const role = normalizeRole(meta.role);
         const insert = await supabase
           .from("profiles")
           .insert({
             id: uid,
-            display_name: meta.name || meta.full_name || session.user.email?.split("@")[0] || "Parent",
+            display_name:
+              meta.name || meta.full_name || session.user.email?.split("@")[0] || "Parent",
             role,
             emoji: roleEmoji(role),
           })
@@ -309,14 +327,22 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
 
       let fid = profile.family_id;
       if (!fid) {
-        const fam = await supabase.from("families").insert({ created_by: uid }).select("*").maybeSingle();
+        const fam = await supabase
+          .from("families")
+          .insert({ created_by: uid })
+          .select("*")
+          .maybeSingle();
         if (!fam.data) return;
         fid = fam.data.id;
         await supabase.from("profiles").update({ family_id: fid }).eq("id", uid);
       }
       if (cancelled || !fid) return;
 
-      const famRow = await supabase.from("families").select("invite_code").eq("id", fid).maybeSingle();
+      const famRow = await supabase
+        .from("families")
+        .select("invite_code")
+        .eq("id", fid)
+        .maybeSingle();
       if (!cancelled) setInviteCode(famRow.data?.invite_code ?? null);
       if (!cancelled) setFamilyId(fid);
     })();
@@ -396,7 +422,11 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       "active_timers",
       "name_ideas",
     ]) {
-      channel.on("postgres_changes", { event: "*", schema: "public", table, filter: `family_id=eq.${familyId}` }, bump);
+      channel.on(
+        "postgres_changes",
+        { event: "*", schema: "public", table, filter: `family_id=eq.${familyId}` },
+        bump,
+      );
     }
     channel.subscribe();
 
@@ -455,11 +485,26 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       ch.postMessage({ type: "snapshot", familyId, payload: snapshot });
       ch.close();
     }
-  }, [familyId, dataLoaded, baby, entries, medicines, appointments, vaccines, milestones, meId, parents, settings, timers, nameIdeas]);
+  }, [
+    familyId,
+    dataLoaded,
+    baby,
+    entries,
+    medicines,
+    appointments,
+    vaccines,
+    milestones,
+    meId,
+    parents,
+    settings,
+    timers,
+    nameIdeas,
+  ]);
 
   const value = useMemo<Store>(() => {
     const me =
-      (parents.find((p) => p.id === meId) ?? parents[0]) ??
+      parents.find((p) => p.id === meId) ??
+      parents[0] ??
       ({ id: meId || "me", name: "Parent", role: "Mother", emoji: "👩", online: true } as Parent);
 
     const fid = familyRef.current;
@@ -556,7 +601,9 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
         if (!fid) return;
         setBabyState(b);
         setDataLoaded(true);
-        await supabase.from("babies").upsert({ family_id: fid, data: b }, { onConflict: "family_id" });
+        await supabase
+          .from("babies")
+          .upsert({ family_id: fid, data: b }, { onConflict: "family_id" });
         if (!milestones.length) {
           const seeded = defaultMilestones();
           setMilestones(seeded);
@@ -616,10 +663,22 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
         const minutes = Math.max(1, Math.round((endedAt - current.startedAt) / 60000));
         setTimers((prev) => prev.filter((t) => t.kind !== kind));
         pushOp({ kind: "deleteTimer", table: "active_timers", familyId: fid, timerKind: kind });
-        const base = { id: uuid(), at: endedAt, startedAt: current.startedAt, endedAt, minutes, by: me.role };
+        const base = {
+          id: uuid(),
+          at: endedAt,
+          startedAt: current.startedAt,
+          endedAt,
+          minutes,
+          by: me.role,
+        };
         const entry = (
           kind === "breast"
-            ? { ...base, type: "breast", side: (current.side ?? "both") as never, ...(current.note ? { note: current.note } : {}) }
+            ? {
+                ...base,
+                type: "breast",
+                side: (current.side ?? "both") as never,
+                ...(current.note ? { note: current.note } : {}),
+              }
             : { ...base, type: "sleep", ...(current.note ? { note: current.note } : {}) }
         ) as Entry;
         push(entry);
@@ -668,7 +727,8 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
         setAppointments((prev) => [...prev, doc]);
         saveDoc("appointments", doc);
       },
-      updateAppointment: (id, patch) => patchDoc("appointments", appointments, setAppointments, id, patch),
+      updateAppointment: (id, patch) =>
+        patchDoc("appointments", appointments, setAppointments, id, patch),
       deleteAppointment: (id) => {
         setAppointments((prev) => prev.filter((a) => a.id !== id));
         removeDoc("appointments", id);
@@ -748,7 +808,14 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
           ...(note?.trim() ? [note.trim()] : []),
         ].join(" · ");
         const existing = entries.find((e) => e.id === entryId);
-        const entry: Entry = { id: entryId, type: "vaccine", at: givenAt, name: label, note: detail, by: me.role };
+        const entry: Entry = {
+          id: entryId,
+          type: "vaccine",
+          at: givenAt,
+          name: label,
+          note: detail,
+          by: me.role,
+        };
         if (existing) {
           setEntries(entries.map((e) => (e.id === entryId ? entry : e)));
           saveEntry(entry);
@@ -845,7 +912,10 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       },
       toggleMilestone: (id) => {
         const m = milestones.find((x) => x.id === id);
-        if (m) patchDoc("milestones", milestones, setMilestones, id, { achievedAt: m.achievedAt ? null : Date.now() });
+        if (m)
+          patchDoc("milestones", milestones, setMilestones, id, {
+            achievedAt: m.achievedAt ? null : Date.now(),
+          });
       },
       switchParent: (id) => {
         if (session) return; // signed in — you are always yourself
@@ -879,7 +949,22 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       },
 
       exportData: () =>
-        JSON.stringify({ baby, entries, medicines, appointments, vaccines, milestones, meId, parents, settings, timers }, null, 2),
+        JSON.stringify(
+          {
+            baby,
+            entries,
+            medicines,
+            appointments,
+            vaccines,
+            milestones,
+            meId,
+            parents,
+            settings,
+            timers,
+          },
+          null,
+          2,
+        ),
       importData: (json) => {
         try {
           const parsed = JSON.parse(json) as Snapshot;
@@ -887,8 +972,12 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
           applySnapshot(parsed);
           if (fid && uid) {
             void (async () => {
-              await supabase.from("babies").upsert({ family_id: fid, data: parsed.baby }, { onConflict: "family_id" });
-              const rows = parsed.entries.map((e) => entryToRow({ ...e, id: asUuid(e.id) }, fid, uid));
+              await supabase
+                .from("babies")
+                .upsert({ family_id: fid, data: parsed.baby }, { onConflict: "family_id" });
+              const rows = parsed.entries.map((e) =>
+                entryToRow({ ...e, id: asUuid(e.id) }, fid, uid),
+              );
               if (rows.length) await supabase.from("entries").upsert(rows, { onConflict: "id" });
               const docs: [DocTable, { id: string }[]][] = [
                 ["medicines", parsed.medicines ?? []],
@@ -980,8 +1069,6 @@ export function useBreastEstimate() {
   }, [rate]);
 }
 
-
-
 export type MedicineDose = {
   key: string;
   medicine: Medicine;
@@ -1028,10 +1115,19 @@ export function useTodayStats() {
     const from = startOfToday(now);
     const today = entries.filter((e) => e.at >= from);
     const breast = today.filter((e) => e.type === "breast") as Extract<Entry, { type: "breast" }>[];
-    const formula = today.filter((e) => e.type === "formula") as Extract<Entry, { type: "formula" }>[];
+    const formula = today.filter((e) => e.type === "formula") as Extract<
+      Entry,
+      { type: "formula" }
+    >[];
     const sleep = today.filter((e) => e.type === "sleep") as Extract<Entry, { type: "sleep" }>[];
-    const weights = entries.filter((e) => e.type === "weight") as Extract<Entry, { type: "weight" }>[];
-    const bili = entries.filter((e) => e.type === "bilirubin") as Extract<Entry, { type: "bilirubin" }>[];
+    const weights = entries.filter((e) => e.type === "weight") as Extract<
+      Entry,
+      { type: "weight" }
+    >[];
+    const bili = entries.filter((e) => e.type === "bilirubin") as Extract<
+      Entry,
+      { type: "bilirubin" }
+    >[];
     const feeds = entries.filter((e) => e.type === "breast" || e.type === "formula");
     const lastFeed = feeds[0] ?? null;
 
@@ -1061,4 +1157,3 @@ export function useTodayStats() {
     };
   }, [entries, now, baby.bornAt, settings.feedGapHours, settings.breastMlPerMinute]);
 }
-

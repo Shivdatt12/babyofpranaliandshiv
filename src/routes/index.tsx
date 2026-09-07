@@ -259,7 +259,9 @@ function Dashboard() {
     .sort((a, b) => a.dueAt - b.dueAt);
   const overdueVaccine = pendingVaccines.find((v) => vaccineStatus(v, now) === "overdue");
   const nextVaccine = overdueVaccine ?? pendingVaccines[0];
-  const vaccineStatusLabel = nextVaccine ? VACCINE_STATUS_LABEL[vaccineStatus(nextVaccine, now)] : null;
+  const vaccineStatusLabel = nextVaccine
+    ? VACCINE_STATUS_LABEL[vaccineStatus(nextVaccine, now)]
+    : null;
   const vaccineDays = nextVaccine ? Math.round((nextVaccine.dueAt - now) / 86400_000) : 0;
   const nextVisit = appointments.find((a) => a.at >= now);
 
