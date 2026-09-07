@@ -10,6 +10,13 @@ import { startOfToday } from "./babybond-data";
  * availability, a medical condition or the pediatrician's advice — those are
  * shown with a "Check with your pediatrician" note and can be switched to
  * "Not applicable" by a parent.
+ *
+ * Age-wise grouping and display order follow the family's vaccination chart:
+ * At Birth · 6 Weeks · 10 Weeks · 14 Weeks · 6 Months · 7 Months ·
+ * 6–9 Months · 9 Months · 12 Months · 13 Months · 12–18 Months ·
+ * 15 Months · 16–18 Months · 18–24 Months · 2 Years · 4–5 Years ·
+ * 10 Years · 9–14 Years. Only the `stage`/`group` fields drive that
+ * presentation — the underlying DOB-based due dates are unchanged.
  */
 export type VaccineTemplate = {
   code: string;
@@ -37,36 +44,36 @@ export type VaccineTemplate = {
 const PED = "Check with your pediatrician.";
 
 export const DEFAULT_VACCINE_SCHEDULE: VaccineTemplate[] = [
-  /* ---------- Birth ---------- */
-  { code: "bcg", name: "BCG", dose: "Birth dose", stage: "Birth", group: 0, weeks: 0 },
+  /* ---------- At Birth ---------- */
+  { code: "bcg", name: "BCG", dose: "Birth dose", stage: "At Birth", group: 0, weeks: 0 },
+  {
+    code: "opv0",
+    name: "OPV",
+    dose: "Dose 0 (birth)",
+    stage: "At Birth",
+    group: 0,
+    weeks: 0,
+    endWeeks: 2,
+  },
   {
     code: "hepb1",
     aliases: ["hepb0"],
     name: "Hepatitis B",
     dose: "Dose 1 (birth)",
-    stage: "Birth",
+    stage: "At Birth",
     group: 0,
     weeks: 0,
     endWeeks: 3,
     scheduleNote: "Ideally within 24 hours of birth.",
   },
-  {
-    code: "opv0",
-    name: "OPV",
-    dose: "Dose 0 (birth)",
-    stage: "Birth",
-    group: 0,
-    weeks: 0,
-    endWeeks: 2,
-  },
 
-  /* ---------- 6 weeks ---------- */
+  /* ---------- 6 Weeks ---------- */
   {
     code: "dtp1",
     aliases: ["penta1"],
     name: "DTwP / DTaP",
     dose: "Dose 1",
-    stage: "6 weeks",
+    stage: "6 Weeks",
     group: 1,
     weeks: 6,
   },
@@ -75,38 +82,38 @@ export const DEFAULT_VACCINE_SCHEDULE: VaccineTemplate[] = [
     aliases: ["fipv1"],
     name: "IPV",
     dose: "Dose 1",
-    stage: "6 weeks",
+    stage: "6 Weeks",
     group: 1,
     weeks: 6,
   },
-  { code: "hib1", name: "Hib", dose: "Dose 1", stage: "6 weeks", group: 1, weeks: 6 },
-  { code: "hepb2", name: "Hepatitis B", dose: "Dose 2", stage: "6 weeks", group: 1, weeks: 6 },
-  { code: "rota1", name: "Rotavirus", dose: "Dose 1", stage: "6 weeks", group: 1, weeks: 6 },
-  { code: "pcv1", name: "PCV", dose: "Dose 1", stage: "6 weeks", group: 1, weeks: 6 },
+  { code: "hib1", name: "Hib", dose: "Dose 1", stage: "6 Weeks", group: 1, weeks: 6 },
+  { code: "hepb2", name: "Hepatitis B", dose: "Dose 2", stage: "6 Weeks", group: 1, weeks: 6 },
+  { code: "rota1", name: "Rotavirus", dose: "Dose 1", stage: "6 Weeks", group: 1, weeks: 6 },
+  { code: "pcv1", name: "PCV", dose: "Dose 1", stage: "6 Weeks", group: 1, weeks: 6 },
 
-  /* ---------- 10 weeks ---------- */
+  /* ---------- 10 Weeks ---------- */
   {
     code: "dtp2",
     aliases: ["penta2"],
     name: "DTwP / DTaP",
     dose: "Dose 2",
-    stage: "10 weeks",
+    stage: "10 Weeks",
     group: 2,
     weeks: 10,
   },
-  { code: "ipv2", name: "IPV", dose: "Dose 2", stage: "10 weeks", group: 2, weeks: 10 },
-  { code: "hib2", name: "Hib", dose: "Dose 2", stage: "10 weeks", group: 2, weeks: 10 },
-  { code: "hepb3", name: "Hepatitis B", dose: "Dose 3", stage: "10 weeks", group: 2, weeks: 10 },
-  { code: "rota2", name: "Rotavirus", dose: "Dose 2", stage: "10 weeks", group: 2, weeks: 10 },
-  { code: "pcv2", name: "PCV", dose: "Dose 2", stage: "10 weeks", group: 2, weeks: 10 },
+  { code: "ipv2", name: "IPV", dose: "Dose 2", stage: "10 Weeks", group: 2, weeks: 10 },
+  { code: "hib2", name: "Hib", dose: "Dose 2", stage: "10 Weeks", group: 2, weeks: 10 },
+  { code: "hepb3", name: "Hepatitis B", dose: "Dose 3", stage: "10 Weeks", group: 2, weeks: 10 },
+  { code: "rota2", name: "Rotavirus", dose: "Dose 2", stage: "10 Weeks", group: 2, weeks: 10 },
+  { code: "pcv2", name: "PCV", dose: "Dose 2", stage: "10 Weeks", group: 2, weeks: 10 },
 
-  /* ---------- 14 weeks ---------- */
+  /* ---------- 14 Weeks ---------- */
   {
     code: "dtp3",
     aliases: ["penta3"],
     name: "DTwP / DTaP",
     dose: "Dose 3",
-    stage: "14 weeks",
+    stage: "14 Weeks",
     group: 3,
     weeks: 14,
   },
@@ -115,42 +122,44 @@ export const DEFAULT_VACCINE_SCHEDULE: VaccineTemplate[] = [
     aliases: ["fipv2"],
     name: "IPV",
     dose: "Dose 3",
-    stage: "14 weeks",
+    stage: "14 Weeks",
     group: 3,
     weeks: 14,
   },
-  { code: "hib3", name: "Hib", dose: "Dose 3", stage: "14 weeks", group: 3, weeks: 14 },
-  { code: "hepb4", name: "Hepatitis B", dose: "Dose 4", stage: "14 weeks", group: 3, weeks: 14 },
+  { code: "hib3", name: "Hib", dose: "Dose 3", stage: "14 Weeks", group: 3, weeks: 14 },
+  { code: "hepb4", name: "Hepatitis B", dose: "Dose 4", stage: "14 Weeks", group: 3, weeks: 14 },
   {
     code: "rota3",
     name: "Rotavirus",
     dose: "Dose 3",
-    stage: "14 weeks",
+    stage: "14 Weeks",
     group: 3,
     weeks: 14,
     conditional: true,
     scheduleNote: `A third dose applies only to the pentavalent rotavirus vaccine. ${PED}`,
   },
-  { code: "pcv3", name: "PCV", dose: "Dose 3", stage: "14 weeks", group: 3, weeks: 14 },
+  { code: "pcv3", name: "PCV", dose: "Dose 3", stage: "14 Weeks", group: 3, weeks: 14 },
 
-  /* ---------- 6 months ---------- */
+  /* ---------- 6 Months ---------- */
   {
     code: "flu1",
     name: "Influenza (annual)",
     dose: "Dose 1",
-    stage: "6 months",
+    stage: "6 Months",
     group: 4,
     months: 6,
     endMonths: 7,
     conditional: true,
     scheduleNote: `Seasonal vaccine — timing depends on the flu season. ${PED}`,
   },
-  { code: "opv1", name: "OPV", dose: "Dose 1", stage: "6 months", group: 4, months: 6 },
+  { code: "opv1", name: "OPV", dose: "Dose 1", stage: "6 Months", group: 4, months: 6 },
+
+  /* ---------- 7 Months ---------- */
   {
     code: "flu2",
     name: "Influenza (annual)",
     dose: "Dose 2",
-    stage: "7 months",
+    stage: "7 Months",
     group: 5,
     months: 7,
     endMonths: 8,
@@ -158,53 +167,72 @@ export const DEFAULT_VACCINE_SCHEDULE: VaccineTemplate[] = [
     scheduleNote: `Second dose four weeks after the first, in the first year of vaccination. ${PED}`,
   },
 
-  /* ---------- 9 months ---------- */
+  /* ---------- 6–9 Months ---------- */
+  {
+    code: "tcv",
+    name: "Typhoid conjugate (TCV)",
+    dose: "Dose 1",
+    stage: "6–9 Months",
+    group: 6,
+    months: 9,
+    endMonths: 12,
+  },
+
+  /* ---------- 9 Months ---------- */
   {
     code: "mmr1",
     aliases: ["mr1"],
     name: "MMR",
     dose: "Dose 1",
-    stage: "9 months",
-    group: 6,
-    months: 9,
-    endMonths: 12,
-  },
-  { code: "opv2", name: "OPV", dose: "Dose 2", stage: "9 months", group: 6, months: 9 },
-  {
-    code: "tcv",
-    name: "Typhoid conjugate (TCV)",
-    dose: "Dose 1",
-    stage: "9–12 months",
+    stage: "9 Months",
     group: 7,
     months: 9,
     endMonths: 12,
   },
+  { code: "opv2", name: "OPV", dose: "Dose 2", stage: "9 Months", group: 7, months: 9 },
 
-  /* ---------- 12 months onwards ---------- */
+  /* ---------- 12 Months ---------- */
   {
     code: "hepa1",
     name: "Hepatitis A",
     dose: "Dose 1",
-    stage: "12 months",
+    stage: "12 Months",
     group: 8,
     months: 12,
     endMonths: 15,
   },
+
+  /* ---------- 13 Months ---------- */
   {
     code: "pcvb",
     name: "PCV",
     dose: "Booster",
-    stage: "12–15 months",
+    stage: "13 Months",
     group: 9,
     months: 12,
     endMonths: 15,
   },
+
+  /* ---------- 12–18 Months ---------- */
+  {
+    code: "hepa2",
+    name: "Hepatitis A",
+    dose: "Dose 2",
+    stage: "12–18 Months",
+    group: 10,
+    months: 18,
+    endMonths: 21,
+    conditional: true,
+    scheduleNote: `A second dose is needed for the killed vaccine only. ${PED}`,
+  },
+
+  /* ---------- 15 Months ---------- */
   {
     code: "mmr2",
     name: "MMR",
     dose: "Dose 2",
-    stage: "15 months",
-    group: 10,
+    stage: "15 Months",
+    group: 11,
     months: 15,
     endMonths: 18,
   },
@@ -212,19 +240,20 @@ export const DEFAULT_VACCINE_SCHEDULE: VaccineTemplate[] = [
     code: "var1",
     name: "Varicella",
     dose: "Dose 1",
-    stage: "15 months",
-    group: 10,
+    stage: "15 Months",
+    group: 11,
     months: 15,
     endMonths: 18,
   },
 
+  /* ---------- 16–18 Months ---------- */
   {
     code: "dtpb1",
     aliases: ["dptb1"],
     name: "DTwP / DTaP",
     dose: "Booster 1",
-    stage: "16–18 months",
-    group: 11,
+    stage: "16–18 Months",
+    group: 12,
     months: 16,
     endMonths: 18,
   },
@@ -232,8 +261,8 @@ export const DEFAULT_VACCINE_SCHEDULE: VaccineTemplate[] = [
     code: "ipvb1",
     name: "IPV",
     dose: "Booster 1",
-    stage: "16–18 months",
-    group: 11,
+    stage: "16–18 Months",
+    group: 12,
     months: 16,
     endMonths: 18,
   },
@@ -241,29 +270,21 @@ export const DEFAULT_VACCINE_SCHEDULE: VaccineTemplate[] = [
     code: "hibb1",
     name: "Hib",
     dose: "Booster 1",
-    stage: "16–18 months",
-    group: 11,
+    stage: "16–18 Months",
+    group: 12,
     months: 16,
     endMonths: 18,
   },
-  {
-    code: "hepa2",
-    name: "Hepatitis A",
-    dose: "Dose 2",
-    stage: "18 months",
-    group: 12,
-    months: 18,
-    endMonths: 21,
-    conditional: true,
-    scheduleNote: `A second dose is needed for the killed vaccine only. ${PED}`,
-  },
 
-  /* ---------- 2 years ---------- */
+  /* ---------- 18–24 Months ---------- */
+  // (no additional doses beyond those already listed above)
+
+  /* ---------- 2 Years ---------- */
   {
     code: "tcvb",
     name: "Typhoid conjugate (TCV)",
     dose: "Booster",
-    stage: "2 years",
+    stage: "2 Years",
     group: 13,
     years: 2,
     endYears: 3,
@@ -271,12 +292,12 @@ export const DEFAULT_VACCINE_SCHEDULE: VaccineTemplate[] = [
     scheduleNote: `A booster is advised in some situations. ${PED}`,
   },
 
-  /* ---------- 4–6 years ---------- */
+  /* ---------- 4–5 Years ---------- */
   {
     code: "dtpb2",
     name: "DTwP / DTaP",
     dose: "Booster 2",
-    stage: "4–6 years",
+    stage: "4–5 Years",
     group: 14,
     years: 4,
     endYears: 6,
@@ -285,7 +306,7 @@ export const DEFAULT_VACCINE_SCHEDULE: VaccineTemplate[] = [
     code: "ipvb2",
     name: "IPV",
     dose: "Booster 2",
-    stage: "4–6 years",
+    stage: "4–5 Years",
     group: 14,
     years: 4,
     endYears: 6,
@@ -295,7 +316,7 @@ export const DEFAULT_VACCINE_SCHEDULE: VaccineTemplate[] = [
     aliases: ["mr2"],
     name: "MMR",
     dose: "Dose 3",
-    stage: "4–6 years",
+    stage: "4–5 Years",
     group: 14,
     years: 4,
     endYears: 6,
@@ -304,19 +325,30 @@ export const DEFAULT_VACCINE_SCHEDULE: VaccineTemplate[] = [
     code: "var2",
     name: "Varicella",
     dose: "Dose 2",
-    stage: "4–6 years",
+    stage: "4–5 Years",
     group: 14,
     years: 4,
     endYears: 6,
   },
 
-  /* ---------- 9–15 years ---------- */
+  /* ---------- 10 Years ---------- */
+  {
+    code: "tdap",
+    name: "Tdap / Td",
+    dose: "Booster",
+    stage: "10 Years",
+    group: 15,
+    years: 10,
+    endYears: 12,
+  },
+
+  /* ---------- 9–14 Years ---------- */
   {
     code: "hpv1",
     name: "HPV",
     dose: "Dose 1",
-    stage: "9–14 years",
-    group: 15,
+    stage: "9–14 Years",
+    group: 16,
     years: 9,
     endYears: 14,
     conditional: true,
@@ -326,21 +358,12 @@ export const DEFAULT_VACCINE_SCHEDULE: VaccineTemplate[] = [
     code: "hpv2",
     name: "HPV",
     dose: "Dose 2",
-    stage: "9–15 years",
-    group: 15,
+    stage: "9–14 Years",
+    group: 16,
     years: 9,
     endYears: 15,
     conditional: true,
     scheduleNote: `Given 6–12 months after the first dose. ${PED}`,
-  },
-  {
-    code: "tdap",
-    name: "Tdap / Td",
-    dose: "Booster",
-    stage: "10–12 years",
-    group: 16,
-    years: 10,
-    endYears: 12,
   },
 
   /* ---------- Special situations ---------- */
