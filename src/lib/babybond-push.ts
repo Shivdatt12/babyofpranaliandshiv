@@ -15,6 +15,8 @@ export type ScheduledReminder = {
   /** family the reminder belongs to — never fires for another/signed-out session */
   familyId: string;
   medicineId?: string;
+  vaccineId?: string;
+
   doseKey?: string;
   actions?: { action: string; title: string }[];
 };
