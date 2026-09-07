@@ -22,9 +22,15 @@ export const Route = createFileRoute("/reports")({
   head: () => ({
     meta: [
       { title: "Reports — BabyBond" },
-      { name: "description", content: "Summarise feeds, nappies, sleep, weight and health into a shareable baby report." },
+      {
+        name: "description",
+        content: "Summarise feeds, nappies, sleep, weight and health into a shareable baby report.",
+      },
       { property: "og:title", content: "Reports — BabyBond" },
-      { property: "og:description", content: "Beautiful summaries of your newborn's week, ready to share with your doctor." },
+      {
+        property: "og:description",
+        content: "Beautiful summaries of your newborn's week, ready to share with your doctor.",
+      },
     ],
   }),
   component: Reports,
@@ -117,7 +123,10 @@ function tally(list: Entry[], mlPerMinute: number): Totals {
   return t;
 }
 
-function moduleLines(t: Totals, extras?: { vaccinesDone?: number; vaccinesPending?: number; vaccinesMissed?: number }) {
+function moduleLines(
+  t: Totals,
+  extras?: { vaccinesDone?: number; vaccinesPending?: number; vaccinesMissed?: number },
+) {
   const first = t.weights[0];
   const last = t.weights[t.weights.length - 1];
   const lastBili = t.bili[t.bili.length - 1];
@@ -185,10 +194,17 @@ function Reports() {
     }
     return [...map.entries()]
       .sort((a, b) => (a[0] < b[0] ? 1 : -1))
-      .map(([key, list]) => ({ key, at: list[0]!.at, totals: tally(list, settings.breastMlPerMinute) }));
+      .map(([key, list]) => ({
+        key,
+        at: list[0]!.at,
+        totals: tally(list, settings.breastMlPerMinute),
+      }));
   }, [scoped]);
 
-  const total = useMemo(() => tally(scoped, settings.breastMlPerMinute), [scoped, settings.breastMlPerMinute]);
+  const total = useMemo(
+    () => tally(scoped, settings.breastMlPerMinute),
+    [scoped, settings.breastMlPerMinute],
+  );
   const vaxDone = vaccines.filter((v) => v.doneAt).length;
   const vaxMissed = vaccines.filter((v) => vaccineStatus(v, now) === "overdue").length;
   const vaxPending = vaccines.length - vaxDone - vaxMissed;
@@ -266,7 +282,9 @@ function Reports() {
 
     heading("Doctor visits");
     for (const a of appointments)
-      line(`${formatDate(a.at)} ${formatTime(a.at)} — ${a.doctor}, ${a.hospital}${a.diagnosis ? ` · ${a.diagnosis}` : ""}`);
+      line(
+        `${formatDate(a.at)} ${formatTime(a.at)} — ${a.doctor}, ${a.hospital}${a.diagnosis ? ` · ${a.diagnosis}` : ""}`,
+      );
 
     return doc;
   };
@@ -290,7 +308,9 @@ function Reports() {
       const doc = await buildPdf();
       if (!doc) return;
       const blob = doc.output("blob");
-      const file = new File([blob], `${baby.name}-report-${days}d.pdf`, { type: "application/pdf" });
+      const file = new File([blob], `${baby.name}-report-${days}d.pdf`, {
+        type: "application/pdf",
+      });
       const nav = navigator as Navigator & { canShare?: (d: { files: File[] }) => boolean };
       if (nav.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: `${baby.name}'s care report` });
@@ -316,7 +336,9 @@ function Reports() {
               type="button"
               onClick={() => setDays(r.key)}
               className={`flex-1 rounded-2xl px-3 py-2 text-sm font-semibold transition-colors ${
-                days === r.key ? "bb-gradient text-primary-foreground" : "bg-card text-muted-foreground bb-shadow"
+                days === r.key
+                  ? "bb-gradient text-primary-foreground"
+                  : "bg-card text-muted-foreground bb-shadow"
               }`}
             >
               {r.label}
@@ -330,7 +352,9 @@ function Reports() {
         <div className="space-y-2">
           {summaryRows.map((r) => (
             <SoftCard key={r.label} className="flex items-center gap-3 py-3">
-              <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">{r.emoji}</span>
+              <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">
+                {r.emoji}
+              </span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold">{r.label}</p>
                 <p className="text-xs text-muted-foreground">{r.sub}</p>
@@ -340,9 +364,13 @@ function Reports() {
           ))}
         </div>
 
-        <h2 className="mb-2 mt-6 text-xs font-bold uppercase tracking-wider text-muted-foreground">Day by day</h2>
+        <h2 className="mb-2 mt-6 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Day by day
+        </h2>
         {groups.length === 0 ? (
-          <SoftCard className="text-center text-sm text-muted-foreground">Nothing logged in this range yet.</SoftCard>
+          <SoftCard className="text-center text-sm text-muted-foreground">
+            Nothing logged in this range yet.
+          </SoftCard>
         ) : null}
         <div className="space-y-3">
           {groups.map((g) => (
@@ -368,7 +396,12 @@ function Reports() {
           >
             <FileDown className="mr-2 size-4" /> PDF
           </Button>
-          <Button disabled={busy} variant="secondary" className="h-12 rounded-2xl" onClick={() => void share()}>
+          <Button
+            disabled={busy}
+            variant="secondary"
+            className="h-12 rounded-2xl"
+            onClick={() => void share()}
+          >
             <Share2 className="mr-2 size-4" /> Share
           </Button>
         </div>
