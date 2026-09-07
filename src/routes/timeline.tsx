@@ -47,7 +47,7 @@ export function describe(
     case "photo":
       return { emoji: "📸", title: "Photo", detail: e.caption || "added to the album" };
     case "vaccine":
-      return { emoji: "💉", title: e.name, detail: e.note ? `vaccine · ${e.note}` : "vaccine given" };
+      return { emoji: "🛡️", title: e.name, detail: e.note ? `vaccine · ${e.note}` : "vaccine given" };
   }
 
 }
@@ -62,7 +62,7 @@ const FILTERS = [
   { key: "medicine", label: "Medicine", emoji: "💊" },
   { key: "weight", label: "Weight", emoji: "⚖️" },
   { key: "bilirubin", label: "Bilirubin", emoji: "🩸" },
-  { key: "vaccine", label: "Vaccine", emoji: "💉" },
+  { key: "vaccine", label: "Vaccine", emoji: "🛡️" },
   { key: "visit", label: "Doctor", emoji: "🩺" },
 ] as const;
 
