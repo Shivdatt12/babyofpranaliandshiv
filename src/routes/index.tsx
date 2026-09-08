@@ -17,6 +17,7 @@ import { AppShell, SoftCard, StatTile, ThemeToggle, BabyAvatar } from "@/compone
 import { VACCINE_STATUS_LABEL, vaccineFullName, vaccineStatus } from "@/lib/babybond-vaccines";
 import { useBabyBond, useTodayDoses, useTodayStats } from "@/lib/babybond-store";
 import { durationLabel, formatTime, timeAgo, type Entry } from "@/lib/babybond-data";
+import { useInsights } from "@/lib/use-insights";
 
 export const Route = createFileRoute("/")({
   ssr: false,
