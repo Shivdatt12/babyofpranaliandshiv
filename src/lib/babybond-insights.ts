@@ -367,7 +367,7 @@ export function buildInsights({
       bucket: "today",
       icon: "💊",
       text: `${given} medicine dose${given === 1 ? "" : "s"} recorded as given today.`,
-      detail: skipped ? `${skipped} recorded as skipped` : undefined,
+      ...(skipped ? { detail: `${skipped} recorded as skipped` } : {}),
       priority: 11,
     });
   }
