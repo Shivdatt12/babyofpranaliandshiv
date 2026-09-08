@@ -50,7 +50,10 @@ function InsightsPage() {
 
   return (
     <AppShell>
-      <PageHeader title="🧠 Smart Baby Insights" subtitle="Simple observations from your baby's recorded data" />
+      <PageHeader
+        title="🧠 Smart Baby Insights"
+        subtitle="Simple observations from your baby's recorded data"
+      />
 
       <div className="-mx-5 mb-4 flex gap-2 overflow-x-auto px-5 pb-1">
         {(["all", ...CATEGORIES] as const).map((c) => (
@@ -105,7 +108,9 @@ function InsightsPage() {
         </div>
       )}
 
-      <p className="mt-5 text-[11px] leading-relaxed text-muted-foreground">{INSIGHTS_DISCLAIMER}</p>
+      <p className="mt-5 text-[11px] leading-relaxed text-muted-foreground">
+        {INSIGHTS_DISCLAIMER}
+      </p>
     </AppShell>
   );
 }

@@ -1,15 +1,15 @@
 import type { Entry, Medicine, Vaccine } from "./babybond-data";
-import { durationLabel, estimatedBreastMl, formatDate, formatTime, startOfToday } from "./babybond-data";
+import {
+  durationLabel,
+  estimatedBreastMl,
+  formatDate,
+  formatTime,
+  startOfToday,
+} from "./babybond-data";
 import { vaccineFullName, vaccineStatus } from "./babybond-vaccines";
 
 export type InsightCategory =
-  | "feeding"
-  | "sleep"
-  | "pee"
-  | "weight"
-  | "bilirubin"
-  | "medicines"
-  | "vaccines";
+  "feeding" | "sleep" | "pee" | "weight" | "bilirubin" | "medicines" | "vaccines";
 
 export type InsightBucket = "today" | "week" | "trend";
 
@@ -242,7 +242,9 @@ export function buildInsights({
       priority: 5,
     });
   }
-  const sleepWeek = sleep.filter((e) => e.at >= todayFrom - 6 * DAY).reduce((s, e) => s + e.minutes, 0);
+  const sleepWeek = sleep
+    .filter((e) => e.at >= todayFrom - 6 * DAY)
+    .reduce((s, e) => s + e.minutes, 0);
   const sleepPrevWeek = sleep
     .filter((e) => e.at >= todayFrom - 13 * DAY && e.at < todayFrom - 6 * DAY)
     .reduce((s, e) => s + e.minutes, 0);
@@ -260,7 +262,11 @@ export function buildInsights({
 
   /* ---------------- pee / potty ---------------- */
   const peeToday = today(pee);
-  const peeAvg = dailyAverage(bucketByDay(pee, () => 1), todayFrom, 7);
+  const peeAvg = dailyAverage(
+    bucketByDay(pee, () => 1),
+    todayFrom,
+    7,
+  );
   if (peeToday.length || peeAvg) {
     out.push({
       id: "pee-today",
@@ -275,7 +281,11 @@ export function buildInsights({
     });
   }
   const pottyToday = today(potty);
-  const pottyAvg = dailyAverage(bucketByDay(potty, () => 1), todayFrom, 7);
+  const pottyAvg = dailyAverage(
+    bucketByDay(potty, () => 1),
+    todayFrom,
+    7,
+  );
   if (pottyToday.length || pottyAvg) {
     out.push({
       id: "potty-today",
