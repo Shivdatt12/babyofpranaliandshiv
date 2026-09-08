@@ -317,6 +317,8 @@ function Dashboard() {
 
       <RightNow />
 
+      <SmartInsights />
+
       <NameJourneyCard />
 
       <section className="px-5 py-5">
