@@ -17,6 +17,7 @@ import { AppShell, SoftCard, StatTile, ThemeToggle, BabyAvatar } from "@/compone
 import { VACCINE_STATUS_LABEL, vaccineFullName, vaccineStatus } from "@/lib/babybond-vaccines";
 import { useBabyBond, useTodayDoses, useTodayStats } from "@/lib/babybond-store";
 import { durationLabel, formatTime, timeAgo, type Entry } from "@/lib/babybond-data";
+import { useInsights } from "@/lib/use-insights";
 
 export const Route = createFileRoute("/")({
   ssr: false,
@@ -222,6 +223,50 @@ function RightNow() {
   );
 }
 
+function SmartInsights() {
+  const insights = useInsights();
+  const top = insights.slice(0, 5);
+  return (
+    <section className="px-5 pt-4">
+      <div className="rounded-3xl bg-card p-4 bb-shadow">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <h2 className="font-display text-base font-bold">🧠 Smart Baby Insights</h2>
+            <p className="text-[11px] text-muted-foreground">
+              Simple observations from your baby's recorded data
+            </p>
+          </div>
+        </div>
+        <div className="mt-3 space-y-2">
+          {top.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Not enough data yet — keep recording for better insights.
+            </p>
+          ) : (
+            top.map((i) => (
+              <div key={i.id} className="flex gap-2.5 rounded-2xl bg-secondary/50 p-3">
+                <span className="text-base leading-none">{i.icon}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[13px] font-semibold leading-snug">{i.text}</p>
+                  {i.detail ? (
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">{i.detail}</p>
+                  ) : null}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+        <Link
+          to="/insights"
+          className="mt-3 flex items-center justify-center gap-1 rounded-2xl bb-gradient px-3 py-2 text-xs font-bold text-primary-foreground active:scale-95"
+        >
+          View all insights <ChevronRight className="size-3.5" />
+        </Link>
+      </div>
+    </section>
+  );
+}
+
 function NameJourneyCard() {
   const { baby, nameIdeas } = useBabyBond();
   if (baby.nameStatus === "final") return null;
@@ -316,6 +361,8 @@ function Dashboard() {
       </div>
 
       <RightNow />
+
+      <SmartInsights />
 
       <NameJourneyCard />
 
