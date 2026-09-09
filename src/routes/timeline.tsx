@@ -6,6 +6,12 @@ import { dayKey, durationLabel, estimatedBreastMl, formatFullDate, formatTime, t
 
 export const Route = createFileRoute("/timeline")({
   ssr: false,
+  validateSearch: (search: Record<string, unknown>) => ({
+    days: [0, 1, 7, 30].includes(Number(search.days)) ? Number(search.days) : 7,
+    type: FILTERS.some((filter) => filter.key === search.type)
+      ? (search.type as (typeof FILTERS)[number]["key"])
+      : "all",
+  }),
   head: () => ({
     meta: [
       { title: "Timeline — BabyBond" },
@@ -75,8 +81,9 @@ const RANGES = [
 
 function Timeline() {
   const { entries, now, settings } = useBabyBond();
-  const [type, setType] = useState<(typeof FILTERS)[number]["key"]>("all");
-  const [days, setDays] = useState<number>(7);
+  const search = Route.useSearch();
+  const [type, setType] = useState<(typeof FILTERS)[number]["key"]>(search.type);
+  const [days, setDays] = useState<number>(search.days);
 
   const filtered = useMemo(() => {
     const from = days ? new Date(new Date(now).setHours(0, 0, 0, 0)).getTime() - (days - 1) * 86400000 : 0;

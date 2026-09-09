@@ -14,6 +14,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { AppShell, SoftCard, StatTile, ThemeToggle, BabyAvatar } from "@/components/babybond/shell";
+import { BabyDayJourney } from "@/components/babybond/day-journey";
 import { VACCINE_STATUS_LABEL, vaccineFullName, vaccineStatus } from "@/lib/babybond-vaccines";
 import { useBabyBond, useTodayDoses, useTodayStats } from "@/lib/babybond-store";
 import { durationLabel, formatTime, timeAgo, type Entry } from "@/lib/babybond-data";
@@ -361,6 +362,8 @@ function Dashboard() {
       </div>
 
       <RightNow />
+
+      <BabyDayJourney />
 
       <SmartInsights />
 

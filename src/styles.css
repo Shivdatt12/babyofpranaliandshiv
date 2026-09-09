@@ -207,3 +207,10 @@
 @utility bb-shadow-float {
   box-shadow: var(--shadow-float);
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-pulse {
+    animation: none;
+  }
+}
