@@ -86,8 +86,8 @@ function InsightsPage() {
                 <h2 className="mb-2 font-display text-base font-bold">{b.label}</h2>
                 <div className="space-y-2">
                   {list.map((i) => (
-                    <div key={i.id} className="flex gap-3 rounded-3xl bg-card p-4 bb-shadow">
-                      <span className="text-xl leading-none">{i.icon}</span>
+                    <div key={i.id} className="flex gap-3 rounded-2xl bg-card p-4 bb-shadow">
+                      <span className="bb-icon-well text-xl leading-none">{i.icon}</span>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold leading-snug">{i.text}</p>
                         {i.detail ? (

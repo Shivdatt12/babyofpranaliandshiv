@@ -182,7 +182,7 @@ export function BabyDayJourney() {
 
   return (
     <section className="px-5 pt-4" aria-labelledby="baby-day-journey-title">
-      <div className="overflow-hidden rounded-3xl bg-card bb-shadow">
+      <div className="overflow-hidden rounded-2xl bg-card bb-shadow">
         <div className="border-b border-border/60 px-4 py-4">
           <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Today</p>
           <h2 id="baby-day-journey-title" className="mt-0.5 font-display text-lg font-bold">
@@ -199,8 +199,8 @@ export function BabyDayJourney() {
         {timers.length ? (
           <div className="space-y-2 border-b border-border/60 bg-secondary/35 p-3">
             {timers.map((timer) => (
-              <div key={timer.kind} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl bg-card p-3 bb-shadow animate-fade-in">
-                <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-secondary text-lg">
+              <div key={timer.kind} className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl bg-card p-3 bb-shadow bb-live-card animate-fade-in">
+                <span className="bb-icon-well text-lg">
                   {timer.kind === "breast" ? "🤱" : "😴"}
                 </span>
                 <Link to={timer.kind === "breast" ? "/track/milk" : "/track/sleep"} className="min-w-0 active:opacity-70">
@@ -235,9 +235,9 @@ export function BabyDayJourney() {
                       <time className="pt-2 text-right text-[10px] font-semibold tabular-nums text-muted-foreground">{formatTime(item.at)}</time>
                       <div className="relative flex justify-center">
                         {index < items.length - 1 ? <span className="absolute bottom-0 top-7 w-px bg-border" /> : null}
-                        <span className="relative z-10 mt-1 grid size-7 place-items-center rounded-full bg-secondary text-sm ring-4 ring-card">{item.emoji}</span>
+                         <span className="relative z-10 mt-1 grid size-7 place-items-center rounded-lg border border-border/70 bg-secondary text-sm ring-4 ring-card">{item.emoji}</span>
                       </div>
-                      <Link to={item.to} className="mb-1.5 grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-2xl bg-muted/55 px-3 py-2 transition-transform active:scale-[0.98]">
+                       <Link to={item.to} className="mb-1.5 grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-xl border border-border/50 bg-muted/45 px-3 py-2 transition-all active:scale-[0.98]">
                         <div className="min-w-0">
                           <p className="truncate text-xs font-bold">{item.title}</p>
                           <p className="truncate text-[10px] capitalize text-muted-foreground">

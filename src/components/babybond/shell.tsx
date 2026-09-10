@@ -29,7 +29,7 @@ export function ThemeToggle() {
         setDark(next);
         document.documentElement.classList.toggle("dark", next);
       }}
-      className="grid size-10 place-items-center rounded-full bg-card/70 text-foreground bb-shadow transition-transform active:scale-90"
+      className="grid size-10 place-items-center rounded-full bg-card/80 text-foreground bb-shadow transition-transform active:scale-90"
     >
       {dark ? <Sun className="size-5" /> : <Moon className="size-5" />}
     </button>
@@ -40,7 +40,7 @@ export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-md px-3 pb-3">
-      <div className="flex items-center justify-between rounded-3xl border border-border/60 bg-card/95 p-1.5 backdrop-blur bb-shadow-float">
+      <div className="flex items-center justify-between rounded-2xl bg-card/90 p-1.5 bb-shadow-float">
         {NAV.map(({ to, label, icon: Icon }) => {
           const active = pathname === to;
           return (
@@ -48,7 +48,7 @@ export function BottomNav() {
               key={to}
               to={to}
               className={cn(
-                "flex flex-1 flex-col items-center gap-0.5 rounded-2xl py-2 text-[11px] font-semibold transition-all duration-300",
+                "flex flex-1 flex-col items-center gap-0.5 rounded-xl py-2 text-[11px] font-semibold transition-all duration-300",
                 active
                   ? "bb-gradient text-primary-foreground scale-[1.02]"
                   : "text-muted-foreground hover:text-foreground",
@@ -85,7 +85,7 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
     <header className="sticky top-0 z-30 flex items-center gap-3 bg-background/85 px-5 py-4 backdrop-blur">
       <Link
         to="/"
-        className="grid size-10 place-items-center rounded-full bg-card text-foreground bb-shadow transition-transform active:scale-90"
+        className="grid size-10 place-items-center rounded-full bg-card/90 text-foreground bb-shadow transition-transform active:scale-90"
         aria-label="Back home"
       >
         <ArrowLeft className="size-5" />
@@ -120,7 +120,7 @@ export function SoftCard({
     card: "bg-card text-card-foreground",
   };
   return (
-    <div className={cn("rounded-3xl p-4 bb-shadow", tones[tone ?? "card"], className)}>{children}</div>
+    <div className={cn("rounded-2xl p-4 bb-shadow", tones[tone ?? "card"], className)}>{children}</div>
   );
 }
 
@@ -139,9 +139,9 @@ export function StatTile({
 }) {
   return (
     <SoftCard tone={tone} className="flex flex-col gap-1">
-      <span className="text-xl leading-none">{emoji}</span>
+      <span className="bb-icon-well text-xl leading-none">{emoji}</span>
       <span className="text-[11px] font-semibold uppercase tracking-wide opacity-70">{label}</span>
-      <span className="font-display text-xl font-bold leading-tight">{value}</span>
+      <span className="font-display text-xl font-bold leading-tight text-foreground">{value}</span>
       {hint ? <span className="text-[11px] opacity-70">{hint}</span> : null}
     </SoftCard>
   );

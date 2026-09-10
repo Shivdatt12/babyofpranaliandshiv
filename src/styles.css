@@ -61,10 +61,10 @@
 }
 
 :root {
-  --radius: 1.25rem;
+  --radius: 1rem;
   --background: oklch(0.985 0.012 40);
   --foreground: oklch(0.32 0.045 340);
-  --card: oklch(1 0 0);
+  --card: oklch(1 0 0 / 88%);
   --card-foreground: oklch(0.32 0.045 340);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.32 0.045 340);
@@ -78,7 +78,7 @@
   --accent-foreground: oklch(0.35 0.06 220);
   --destructive: oklch(0.63 0.19 25);
   --destructive-foreground: oklch(0.99 0.005 340);
-  --border: oklch(0.92 0.018 340);
+  --border: oklch(0.89 0.025 340 / 72%);
   --input: oklch(0.93 0.018 340);
   --ring: oklch(0.74 0.115 355);
 
@@ -112,14 +112,16 @@
 
   --gradient-hero: linear-gradient(150deg, oklch(0.93 0.055 350), oklch(0.92 0.05 290) 55%, oklch(0.93 0.05 210));
   --gradient-primary: linear-gradient(135deg, oklch(0.78 0.11 350), oklch(0.74 0.1 300));
-  --shadow-soft: 0 10px 30px -18px oklch(0.5 0.09 340 / 0.5);
-  --shadow-float: 0 18px 40px -20px oklch(0.5 0.09 340 / 0.55);
+  --glass-highlight: oklch(1 0 0 / 70%);
+  --glass-sheen: linear-gradient(145deg, oklch(1 0 0 / 24%), oklch(1 0 0 / 3%) 55%, oklch(0.92 0.045 315 / 7%));
+  --shadow-soft: 0 1px 2px oklch(0.42 0.06 340 / 5%), 0 10px 28px -20px oklch(0.42 0.07 340 / 34%);
+  --shadow-float: 0 2px 5px oklch(0.42 0.06 340 / 7%), 0 18px 38px -24px oklch(0.42 0.08 340 / 42%);
 }
 
 .dark {
   --background: oklch(0.19 0.024 300);
   --foreground: oklch(0.95 0.012 330);
-  --card: oklch(0.235 0.028 300);
+  --card: oklch(0.255 0.028 300 / 88%);
   --card-foreground: oklch(0.95 0.012 330);
   --popover: oklch(0.235 0.028 300);
   --popover-foreground: oklch(0.95 0.012 330);
@@ -133,7 +135,7 @@
   --accent-foreground: oklch(0.93 0.02 210);
   --destructive: oklch(0.68 0.17 25);
   --destructive-foreground: oklch(0.98 0.01 340);
-  --border: oklch(1 0 0 / 12%);
+  --border: oklch(0.92 0.025 320 / 15%);
   --input: oklch(1 0 0 / 16%);
   --ring: oklch(0.78 0.1 350);
 
@@ -167,8 +169,10 @@
 
   --gradient-hero: linear-gradient(150deg, oklch(0.33 0.055 340), oklch(0.29 0.05 295) 55%, oklch(0.3 0.05 220));
   --gradient-primary: linear-gradient(135deg, oklch(0.7 0.1 350), oklch(0.62 0.1 300));
-  --shadow-soft: 0 10px 30px -18px oklch(0 0 0 / 0.6);
-  --shadow-float: 0 18px 40px -20px oklch(0 0 0 / 0.7);
+  --glass-highlight: oklch(1 0 0 / 10%);
+  --glass-sheen: linear-gradient(145deg, oklch(1 0 0 / 7%), transparent 58%, oklch(0.68 0.07 300 / 5%));
+  --shadow-soft: 0 1px 1px oklch(0 0 0 / 18%), 0 12px 30px -22px oklch(0 0 0 / 68%);
+  --shadow-float: 0 2px 3px oklch(0 0 0 / 22%), 0 18px 38px -24px oklch(0 0 0 / 76%);
 }
 
 @layer base {
@@ -201,16 +205,59 @@
 }
 
 @utility bb-shadow {
+  border: 1px solid var(--border);
+  background-image: var(--glass-sheen);
+  backdrop-filter: blur(10px) saturate(112%);
   box-shadow: var(--shadow-soft);
+  transition-property: transform, box-shadow, border-color, background-color;
+  transition-duration: 180ms;
+  transition-timing-function: ease-out;
+
+  &:is(a, button):active,
+  &:has(> a):active {
+    transform: scale(0.985);
+  }
 }
 
 @utility bb-shadow-float {
+  border: 1px solid var(--border);
+  background-image: var(--glass-sheen);
+  backdrop-filter: blur(12px) saturate(115%);
   box-shadow: var(--shadow-float);
+}
+
+@utility bb-live-card {
+  border-color: color-mix(in oklab, var(--primary) 26%, var(--border));
+  box-shadow: 0 1px 2px color-mix(in oklab, var(--primary) 8%, transparent), 0 14px 32px -22px color-mix(in oklab, var(--primary) 42%, transparent);
+}
+
+@utility bb-icon-well {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  place-items: center;
+  border: 1px solid color-mix(in oklab, var(--border) 74%, transparent);
+  border-radius: 0.75rem;
+  background-color: color-mix(in oklab, var(--secondary) 82%, transparent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  :is(a, button).bb-shadow:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in oklab, var(--primary) 18%, var(--border));
+    box-shadow: var(--shadow-float);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in,
   .animate-pulse {
     animation: none;
+  }
+
+  .bb-shadow,
+  .bb-shadow-float {
+    transition: none;
   }
 }
