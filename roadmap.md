@@ -3,3 +3,5 @@
 - [ ] Add Baby Day Journey dashboard visualization from existing synced activity
 - [ ] Link journey moments to their existing tracker pages and today-filtered Timeline
 - [ ] Verify chronological ordering, live timers, realtime-derived updates, and mobile layout
+- [ ] Apply the approved premium floating-glass card system across all existing screens
+- [ ] Verify card consistency, light/dark mode, mobile layout, and interaction states
