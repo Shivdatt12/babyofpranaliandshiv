@@ -7,9 +7,9 @@ import { dayKey, durationLabel, estimatedBreastMl, formatFullDate, formatTime, t
 export const Route = createFileRoute("/timeline")({
   ssr: false,
   validateSearch: (search: Record<string, unknown>) => ({
-    days: [0, 1, 7, 30].includes(Number(search.days)) ? Number(search.days) : 7,
-    type: FILTERS.some((filter) => filter.key === search.type)
-      ? (search.type as (typeof FILTERS)[number]["key"])
+    days: [0, 1, 7, 30].includes(Number(search["days"])) ? Number(search["days"]) : 7,
+    type: FILTERS.some((filter) => filter.key === search["type"])
+      ? (search["type"] as (typeof FILTERS)[number]["key"])
       : "all",
   }),
   head: () => ({

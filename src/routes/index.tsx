@@ -92,7 +92,7 @@ function RightNow() {
       <h2 className="mb-3 font-display text-base font-bold">Right now</h2>
       <div className="grid grid-cols-2 gap-2">
         {breast ? (
-          <div className="rounded-3xl bg-milk p-4 bb-shadow">
+          <div className="rounded-2xl bg-milk p-4 bb-shadow bb-live-card">
             <div className="flex items-start justify-between">
               <span className="text-2xl leading-none">🤱</span>
               <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-milk-foreground/80">
@@ -117,8 +117,8 @@ function RightNow() {
             </button>
           </div>
         ) : (
-          <div className="rounded-3xl bg-card/60 p-3 bb-shadow">
-            <span className="text-xl leading-none">🤱</span>
+          <div className="rounded-2xl bg-card/60 p-3 bb-shadow">
+            <span className="bb-icon-well text-xl leading-none">🤱</span>
             <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               Breastfeeding
             </p>
@@ -134,7 +134,7 @@ function RightNow() {
         )}
 
         {sleep ? (
-          <div className="rounded-3xl bg-sleep p-4 bb-shadow">
+          <div className="rounded-2xl bg-sleep p-4 bb-shadow bb-live-card">
             <div className="flex items-start justify-between">
               <span className="text-2xl leading-none">😴</span>
               <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-sleep-foreground/80">
@@ -159,8 +159,8 @@ function RightNow() {
             </button>
           </div>
         ) : (
-          <div className="rounded-3xl bg-card/60 p-3 bb-shadow">
-            <span className="text-xl leading-none">😴</span>
+          <div className="rounded-2xl bg-card/60 p-3 bb-shadow">
+            <span className="bb-icon-well text-xl leading-none">😴</span>
             <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               Sleep
             </p>
@@ -175,8 +175,8 @@ function RightNow() {
           </div>
         )}
 
-        <div className="rounded-3xl bg-card p-3 bb-shadow">
-          <span className="text-xl leading-none">💧</span>
+        <div className="rounded-2xl bg-card p-3 bb-shadow">
+          <span className="bb-icon-well text-xl leading-none">💧</span>
           <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
             Last pee
           </p>
@@ -188,8 +188,8 @@ function RightNow() {
           </p>
         </div>
 
-        <div className="rounded-3xl bg-card p-3 bb-shadow">
-          <span className="text-xl leading-none">💩</span>
+        <div className="rounded-2xl bg-card p-3 bb-shadow">
+          <span className="bb-icon-well text-xl leading-none">💩</span>
           <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
             Last potty
           </p>
@@ -201,9 +201,9 @@ function RightNow() {
           </p>
         </div>
 
-        <div className="col-span-2 rounded-3xl bg-card p-3 bb-shadow">
+        <div className="col-span-2 rounded-2xl bg-card p-3 bb-shadow">
           <div className="flex items-center gap-3">
-            <span className="text-2xl leading-none">🍼</span>
+            <span className="bb-icon-well text-xl leading-none">🍼</span>
             <div className="min-w-0 flex-1">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                 Formula
@@ -229,7 +229,7 @@ function SmartInsights() {
   const top = insights.slice(0, 5);
   return (
     <section className="px-5 pt-4">
-      <div className="rounded-3xl bg-card p-4 bb-shadow">
+      <div className="rounded-2xl bg-card p-4 bb-shadow">
         <div className="flex items-start justify-between gap-2">
           <div>
             <h2 className="font-display text-base font-bold">🧠 Smart Baby Insights</h2>
@@ -245,8 +245,8 @@ function SmartInsights() {
             </p>
           ) : (
             top.map((i) => (
-              <div key={i.id} className="flex gap-2.5 rounded-2xl bg-secondary/50 p-3">
-                <span className="text-base leading-none">{i.icon}</span>
+              <div key={i.id} className="flex gap-2.5 rounded-xl border border-border/50 bg-secondary/45 p-3">
+                <span className="bb-icon-well size-8 text-base leading-none">{i.icon}</span>
                 <div className="min-w-0 flex-1">
                   <p className="text-[13px] font-semibold leading-snug">{i.text}</p>
                   {i.detail ? (
@@ -275,9 +275,9 @@ function NameJourneyCard() {
     <div className="px-5 pt-4">
       <Link
         to="/names"
-        className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow active:scale-95"
+        className="flex items-center gap-3 rounded-2xl bg-card p-4 bb-shadow active:scale-95"
       >
-        <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">💕</span>
+        <span className="bb-icon-well text-lg">💕</span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold">Still choosing her name? 💕</p>
           <p className="text-xs text-muted-foreground">
@@ -377,7 +377,7 @@ function Dashboard() {
               addEntry({ type: "pee" } as never);
               toast.success("Pee logged 💛", { description: formatTime(Date.now()) });
             }}
-            className="rounded-3xl bg-pee p-5 text-left text-pee-foreground bb-shadow transition-transform active:scale-95"
+            className="rounded-2xl bg-pee p-5 text-left text-pee-foreground bb-shadow transition-transform active:scale-95"
           >
             <span className="text-3xl">💛</span>
             <p className="mt-2 font-display text-xl font-bold">+ Pee</p>
@@ -385,7 +385,7 @@ function Dashboard() {
           </button>
           <Link
             to="/track/potty"
-            className="rounded-3xl bg-potty p-5 text-left text-potty-foreground bb-shadow transition-transform active:scale-95"
+            className="rounded-2xl bg-potty p-5 text-left text-potty-foreground bb-shadow transition-transform active:scale-95"
           >
             <span className="text-3xl">💩</span>
             <p className="mt-2 font-display text-xl font-bold">+ Potty</p>
@@ -448,9 +448,9 @@ function Dashboard() {
         <div className="space-y-2">
           <Link
             to="/track/medicines"
-            className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow"
+            className="flex items-center gap-3 rounded-2xl bg-card p-4 bb-shadow"
           >
-            <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">
+            <span className="bb-icon-well text-lg">
               💊
             </span>
             <div className="min-w-0 flex-1">
@@ -467,9 +467,9 @@ function Dashboard() {
           </Link>
           <Link
             to="/track/vaccines"
-            className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow"
+            className="flex items-center gap-3 rounded-2xl bg-card p-4 bb-shadow"
           >
-            <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">
+            <span className="bb-icon-well text-lg">
               {overdueVaccine ? "⚠️" : "💉"}
             </span>
             <div className="min-w-0 flex-1">
@@ -492,9 +492,9 @@ function Dashboard() {
           </Link>
           <Link
             to="/track/doctor"
-            className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow"
+            className="flex items-center gap-3 rounded-2xl bg-card p-4 bb-shadow"
           >
-            <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">
+            <span className="bb-icon-well text-lg">
               🩺
             </span>
             <div className="min-w-0 flex-1">
@@ -517,9 +517,9 @@ function Dashboard() {
             <Link
               key={t.to}
               to={t.to}
-              className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow transition-transform active:scale-95"
+              className="flex items-center gap-3 rounded-2xl bg-card p-4 bb-shadow transition-transform active:scale-95"
             >
-              <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">
+              <span className="bb-icon-well text-lg">
                 {t.emoji}
               </span>
               <span className="flex-1 text-sm font-semibold">{t.label}</span>
@@ -530,7 +530,8 @@ function Dashboard() {
 
         <Link
           to="/timeline"
-          className="mt-4 flex items-center gap-3 rounded-3xl bg-secondary p-4 text-secondary-foreground bb-shadow"
+          search={{ days: 7, type: "all" }}
+          className="mt-4 flex items-center gap-3 rounded-2xl bg-secondary p-4 text-secondary-foreground bb-shadow"
         >
           <BabyIcon className="size-5" />
           <span className="flex-1 text-sm font-semibold">See the full day timeline</span>
