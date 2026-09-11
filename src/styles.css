@@ -206,6 +206,7 @@
 
 @utility bb-shadow {
   border: 1px solid var(--border);
+  border-radius: var(--radius);
   background-image: var(--glass-sheen);
   backdrop-filter: blur(10px) saturate(112%);
   box-shadow: var(--shadow-soft);
@@ -221,6 +222,7 @@
 
 @utility bb-shadow-float {
   border: 1px solid var(--border);
+  border-radius: var(--radius);
   background-image: var(--glass-sheen);
   backdrop-filter: blur(12px) saturate(115%);
   box-shadow: var(--shadow-float);
