@@ -2,7 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
 import { useBabyBond } from "@/lib/babybond-store";
-import { dayKey, durationLabel, estimatedBreastMl, formatFullDate, formatTime, type Entry } from "@/lib/babybond-data";
+import {
+  dayKey,
+  durationLabel,
+  estimatedBreastMl,
+  formatFullDate,
+  formatTime,
+  type Entry,
+} from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/timeline")({
   ssr: false,
@@ -15,9 +22,15 @@ export const Route = createFileRoute("/timeline")({
   head: () => ({
     meta: [
       { title: "Timeline — BabyBond" },
-      { name: "description", content: "Every feed, nappy, nap and check-up in one gentle chronological baby timeline." },
+      {
+        name: "description",
+        content: "Every feed, nappy, nap and check-up in one gentle chronological baby timeline.",
+      },
       { property: "og:title", content: "Timeline — BabyBond" },
-      { property: "og:description", content: "A chronological record of your newborn's day, logged by both parents." },
+      {
+        property: "og:description",
+        content: "A chronological record of your newborn's day, logged by both parents.",
+      },
     ],
   }),
   component: Timeline,
@@ -43,19 +56,30 @@ export function describe(
     case "sleep":
       return { emoji: "🌙", title: "Sleep", detail: durationLabel(e.minutes) };
     case "weight":
-      return { emoji: "⚖️", title: "Weight", detail: `${(e.grams / 1000).toFixed(2)} kg${e.note ? ` · ${e.note}` : ""}` };
+      return {
+        emoji: "⚖️",
+        title: "Weight",
+        detail: `${(e.grams / 1000).toFixed(2)} kg${e.note ? ` · ${e.note}` : ""}`,
+      };
     case "bilirubin":
       return { emoji: "🩸", title: "Bilirubin", detail: `${e.value} · ${e.method} test` };
     case "medicine":
       return { emoji: "💊", title: e.name, detail: `${e.dose}${e.status ? ` · ${e.status}` : ""}` };
     case "visit":
-      return { emoji: "🩺", title: e.doctor, detail: `${e.hospital}${e.note ? ` · ${e.note}` : ""}` };
+      return {
+        emoji: "🩺",
+        title: e.doctor,
+        detail: `${e.hospital}${e.note ? ` · ${e.note}` : ""}`,
+      };
     case "photo":
       return { emoji: "📸", title: "Photo", detail: e.caption || "added to the album" };
     case "vaccine":
-      return { emoji: "🛡️", title: e.name, detail: e.note ? `vaccine · ${e.note}` : "vaccine given" };
+      return {
+        emoji: "🛡️",
+        title: e.name,
+        detail: e.note ? `vaccine · ${e.note}` : "vaccine given",
+      };
   }
-
 }
 
 const FILTERS = [
@@ -86,7 +110,9 @@ function Timeline() {
   const [days, setDays] = useState<number>(search.days);
 
   const filtered = useMemo(() => {
-    const from = days ? new Date(new Date(now).setHours(0, 0, 0, 0)).getTime() - (days - 1) * 86400000 : 0;
+    const from = days
+      ? new Date(new Date(now).setHours(0, 0, 0, 0)).getTime() - (days - 1) * 86400000
+      : 0;
     return entries.filter((e) => e.at >= from && (type === "all" || e.type === type));
   }, [entries, type, days, now]);
 
@@ -115,7 +141,9 @@ function Timeline() {
               type="button"
               onClick={() => setDays(r.key)}
               className={`flex-1 rounded-2xl px-3 py-2 text-xs font-semibold transition-colors ${
-                days === r.key ? "bb-gradient text-primary-foreground" : "bg-card text-muted-foreground bb-shadow"
+                days === r.key
+                  ? "bb-gradient text-primary-foreground"
+                  : "bg-card text-muted-foreground bb-shadow"
               }`}
             >
               {r.label}
@@ -130,7 +158,9 @@ function Timeline() {
               type="button"
               onClick={() => setType(f.key)}
               className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
-                type === f.key ? "bb-gradient text-primary-foreground" : "bg-secondary text-secondary-foreground"
+                type === f.key
+                  ? "bb-gradient text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground"
               }`}
             >
               {f.emoji} {f.label}
@@ -139,13 +169,17 @@ function Timeline() {
         </div>
 
         {groups.length === 0 ? (
-          <SoftCard className="text-center text-sm text-muted-foreground">Nothing logged for this filter yet.</SoftCard>
+          <SoftCard className="text-center text-sm text-muted-foreground">
+            Nothing logged for this filter yet.
+          </SoftCard>
         ) : null}
 
         {groups.map(([day, list]) => (
           <section key={day}>
             <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              {day === dayKey(now) ? `Today · ${formatFullDate(list[0]!.at)}` : formatFullDate(list[0]!.at)}
+              {day === dayKey(now)
+                ? `Today · ${formatFullDate(list[0]!.at)}`
+                : formatFullDate(list[0]!.at)}
             </h2>
             <div className="space-y-2">
               {list.map((e) => {
@@ -157,7 +191,9 @@ function Timeline() {
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-bold">{d.title}</p>
-                      <p className="truncate text-xs capitalize text-muted-foreground">{d.detail}</p>
+                      <p className="truncate text-xs capitalize text-muted-foreground">
+                        {d.detail}
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className="text-xs font-semibold">{formatTime(e.at)}</p>

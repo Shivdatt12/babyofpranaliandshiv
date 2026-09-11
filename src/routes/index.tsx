@@ -245,7 +245,10 @@ function SmartInsights() {
             </p>
           ) : (
             top.map((i) => (
-              <div key={i.id} className="flex gap-2.5 rounded-xl border border-border/50 bg-secondary/45 p-3">
+              <div
+                key={i.id}
+                className="flex gap-2.5 rounded-xl border border-border/50 bg-secondary/45 p-3"
+              >
                 <span className="bb-icon-well size-8 text-base leading-none">{i.icon}</span>
                 <div className="min-w-0 flex-1">
                   <p className="text-[13px] font-semibold leading-snug">{i.text}</p>
@@ -450,9 +453,7 @@ function Dashboard() {
             to="/track/medicines"
             className="flex items-center gap-3 rounded-2xl bg-card p-4 bb-shadow"
           >
-            <span className="bb-icon-well text-lg">
-              💊
-            </span>
+            <span className="bb-icon-well text-lg">💊</span>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold">
                 {nextDose ? nextDose.medicine.name : "No medicine left today"}
@@ -469,9 +470,7 @@ function Dashboard() {
             to="/track/vaccines"
             className="flex items-center gap-3 rounded-2xl bg-card p-4 bb-shadow"
           >
-            <span className="bb-icon-well text-lg">
-              {overdueVaccine ? "⚠️" : "💉"}
-            </span>
+            <span className="bb-icon-well text-lg">{overdueVaccine ? "⚠️" : "💉"}</span>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold">
                 {nextVaccine ? vaccineFullName(nextVaccine) : "✅ Vaccines up to date"}
@@ -494,9 +493,7 @@ function Dashboard() {
             to="/track/doctor"
             className="flex items-center gap-3 rounded-2xl bg-card p-4 bb-shadow"
           >
-            <span className="bb-icon-well text-lg">
-              🩺
-            </span>
+            <span className="bb-icon-well text-lg">🩺</span>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold">
                 {nextVisit ? nextVisit.doctor : "No upcoming visit"}
@@ -519,9 +516,7 @@ function Dashboard() {
               to={t.to}
               className="flex items-center gap-3 rounded-2xl bg-card p-4 bb-shadow transition-transform active:scale-95"
             >
-              <span className="bb-icon-well text-lg">
-                {t.emoji}
-              </span>
+              <span className="bb-icon-well text-lg">{t.emoji}</span>
               <span className="flex-1 text-sm font-semibold">{t.label}</span>
               <ChevronRight className="size-4 text-muted-foreground" />
             </Link>

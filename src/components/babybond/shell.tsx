@@ -66,7 +66,13 @@ export function BottomNav() {
 
 export function AppShell({ children, nav = true }: { children: ReactNode; nav?: boolean }) {
   const { loading, authed, hasBaby } = useBabyBond();
-  const gate = loading ? <LoadingScreen /> : !authed ? <SignInPrompt /> : !hasBaby ? <CreateBabyProfile /> : null;
+  const gate = loading ? (
+    <LoadingScreen />
+  ) : !authed ? (
+    <SignInPrompt />
+  ) : !hasBaby ? (
+    <CreateBabyProfile />
+  ) : null;
   const showNav = nav && !gate;
   return (
     <div className="mx-auto min-h-screen w-full max-w-md bg-background pb-28">
@@ -77,7 +83,6 @@ export function AppShell({ children, nav = true }: { children: ReactNode; nav?: 
     </div>
   );
 }
-
 
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   const { me } = useBabyBond();
@@ -120,7 +125,9 @@ export function SoftCard({
     card: "bg-card text-card-foreground",
   };
   return (
-    <div className={cn("rounded-2xl p-4 bb-shadow", tones[tone ?? "card"], className)}>{children}</div>
+    <div className={cn("rounded-2xl p-4 bb-shadow", tones[tone ?? "card"], className)}>
+      {children}
+    </div>
   );
 }
 
@@ -152,10 +159,22 @@ export function BabyAvatar({ className, alt }: { className?: string; alt?: strin
   const { baby } = useBabyBond();
   const url = useMediaUrl(baby.photo);
   if (url) {
-    return <img src={url} alt={alt ?? baby.name} loading="lazy" className={cn("object-cover", className)} />;
+    return (
+      <img
+        src={url}
+        alt={alt ?? baby.name}
+        loading="lazy"
+        className={cn("object-cover", className)}
+      />
+    );
   }
   return (
-    <div className={cn("grid place-items-center bg-secondary font-display font-bold text-secondary-foreground", className)}>
+    <div
+      className={cn(
+        "grid place-items-center bg-secondary font-display font-bold text-secondary-foreground",
+        className,
+      )}
+    >
       {baby.name ? baby.name.slice(0, 1).toUpperCase() : "🐦"}
     </div>
   );
