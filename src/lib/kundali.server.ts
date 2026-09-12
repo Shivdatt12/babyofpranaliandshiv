@@ -23,25 +23,6 @@ function lahiriAyanamsa(date: Date) {
   return 23.8530556 + (year - 2000) * 0.013968878;
 }
 
-function zonedBirthInstant(date: string, time: string, timezone: string) {
-  const [y, mo, d] = date.split("-").map(Number);
-  const [h, mi] = time.split(":").map(Number);
-  if (![y, mo, d, h, mi].every(Number.isFinite)) throw new Error("Invalid birth date or time");
-  const target = Date.UTC(y!, mo! - 1, d!, h!, mi!, 0);
-  let guess = target;
-  const formatter = new Intl.DateTimeFormat("en-CA", {
-    timeZone: timezone,
-    year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit",
-    hourCycle: "h23",
-  });
-  for (let i = 0; i < 3; i += 1) {
-    const parts = Object.fromEntries(formatter.formatToParts(new Date(guess)).map((p) => [p.type, p.value]));
-    const represented = Date.UTC(Number(parts['year']), Number(parts['month']) - 1, Number(parts['day']), Number(parts['hour']), Number(parts['minute']), Number(parts['second']));
-    guess += target - represented;
-  }
-  return new Date(guess);
-}
-
 function buildDasha(birthAt: number, moonLongitude: number): DashaPeriod[] {
   const nakIndex = Math.floor(mod(moonLongitude) / NAK_SPAN);
   const firstLord = NAKSHATRAS[nakIndex]?.lord ?? "Ketu";
@@ -72,12 +53,12 @@ function buildDasha(birthAt: number, moonLongitude: number): DashaPeriod[] {
 }
 
 export async function calculateKundali(input: {
-  birthDate: string;
-  birthTime: string;
+  bornAt: number;
   place: BirthPlace;
 }): Promise<Kundali> {
   const Astronomy = await import("astronomy-engine");
-  const instant = zonedBirthInstant(input.birthDate, input.birthTime, input.place.timezone);
+  const instant = new Date(input.bornAt);
+  if (!Number.isFinite(instant.getTime())) throw new Error("Invalid birth date or time");
   const birthAt = instant.getTime();
   const ayanamsa = lahiriAyanamsa(instant);
   const bodies = [
@@ -124,7 +105,9 @@ export async function calculateKundali(input: {
     signIndex: mod(lagnaSignIndex + i, 12),
     planets: planets.filter((p) => p.house === i + 1).map((p) => p.name),
   }));
-  const utcOffsetMinutes = Math.round((Date.UTC(...([Number(input.birthDate.slice(0,4)), Number(input.birthDate.slice(5,7))-1, Number(input.birthDate.slice(8,10)), Number(input.birthTime.slice(0,2)), Number(input.birthTime.slice(3,5))] as [number,number,number,number,number])) - birthAt) / 60000);
+  const parts = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: input.place.timezone, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(instant).map((p) => [p.type, p.value]));
+  const localAsUtc = Date.UTC(Number(parts['year']), Number(parts['month']) - 1, Number(parts['day']), Number(parts['hour']), Number(parts['minute']));
+  const utcOffsetMinutes = Math.round((localAsUtc - birthAt) / 60000);
   return {
     signature: kundaliSignature(birthAt, input.place), generatedAt: Date.now(),
     config: { ayanamsa: "Lahiri (Chitrapaksha)", ayanamsaValue: ayanamsa, houseSystem: "Whole sign", engine: "Astronomy Engine VSOP87" },

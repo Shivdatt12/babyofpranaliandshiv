@@ -48,5 +48,5 @@ export const resolveBirthPlace = createServerFn({ method: "POST" })
 
 export const generateKundali = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ birthDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), birthTime: z.string().regex(/^\d{2}:\d{2}$/), place: placeSchema }).parse(input))
+  .inputValidator((input) => z.object({ bornAt: z.number().positive(), place: placeSchema }).parse(input))
   .handler(async ({ data }) => calculateKundali(data));
