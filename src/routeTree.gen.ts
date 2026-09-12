@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as InsightsRouteImport } from './routes/insights'
+import { Route as KundaliRouteImport } from './routes/kundali'
 import { Route as NamesRouteImport } from './routes/names'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ReportsRouteImport } from './routes/reports'
@@ -41,6 +42,11 @@ const AuthRoute = AuthRouteImport.update({
 const InsightsRoute = InsightsRouteImport.update({
   id: '/insights',
   path: '/insights',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KundaliRoute = KundaliRouteImport.update({
+  id: '/kundali',
+  path: '/kundali',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NamesRoute = NamesRouteImport.update({
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/insights': typeof InsightsRoute
+  '/kundali': typeof KundaliRoute
   '/names': typeof NamesRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
@@ -143,6 +150,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/insights': typeof InsightsRoute
+  '/kundali': typeof KundaliRoute
   '/names': typeof NamesRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
@@ -164,6 +172,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/insights': typeof InsightsRoute
+  '/kundali': typeof KundaliRoute
   '/names': typeof NamesRoute
   '/profile': typeof ProfileRoute
   '/reports': typeof ReportsRoute
@@ -186,6 +195,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/insights'
+    | '/kundali'
     | '/names'
     | '/profile'
     | '/reports'
@@ -206,6 +216,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/insights'
+    | '/kundali'
     | '/names'
     | '/profile'
     | '/reports'
@@ -226,6 +237,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/insights'
+    | '/kundali'
     | '/names'
     | '/profile'
     | '/reports'
@@ -247,6 +259,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   InsightsRoute: typeof InsightsRoute
+  KundaliRoute: typeof KundaliRoute
   NamesRoute: typeof NamesRoute
   ProfileRoute: typeof ProfileRoute
   ReportsRoute: typeof ReportsRoute
@@ -285,6 +298,13 @@ declare module '@tanstack/react-router' {
       path: '/insights'
       fullPath: '/insights'
       preLoaderRoute: typeof InsightsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kundali': {
+      id: '/kundali'
+      path: '/kundali'
+      fullPath: '/kundali'
+      preLoaderRoute: typeof KundaliRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/names': {
@@ -399,6 +419,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   InsightsRoute: InsightsRoute,
+  KundaliRoute: KundaliRoute,
   NamesRoute: NamesRoute,
   ProfileRoute: ProfileRoute,
   ReportsRoute: ReportsRoute,
