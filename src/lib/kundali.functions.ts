@@ -27,7 +27,7 @@ export const searchBirthPlaces = createServerFn({ method: "POST" })
       if (!coordinates) return [];
       const p = feature.properties ?? {};
       return [{
-        name: [p.name, p.city, p.state, p.country].filter((v, i, a) => v && a.indexOf(v) === i).join(", "),
+        name: [p['name'], p['city'], p['state'], p['country']].filter((v, i, a) => v && a.indexOf(v) === i).join(", "),
         latitude: coordinates[1],
         longitude: coordinates[0],
       }];

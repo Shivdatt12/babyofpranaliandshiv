@@ -1,4 +1,5 @@
-import { createFileRoute, Link, useServerFn } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Bell, Download, Upload, Camera, RotateCcw, Info, LogIn, LogOut, UserPlus, Copy, MapPin, Search } from "lucide-react";

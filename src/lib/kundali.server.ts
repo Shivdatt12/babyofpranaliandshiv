@@ -36,7 +36,7 @@ function zonedBirthInstant(date: string, time: string, timezone: string) {
   });
   for (let i = 0; i < 3; i += 1) {
     const parts = Object.fromEntries(formatter.formatToParts(new Date(guess)).map((p) => [p.type, p.value]));
-    const represented = Date.UTC(Number(parts.year), Number(parts.month) - 1, Number(parts.day), Number(parts.hour), Number(parts.minute), Number(parts.second));
+    const represented = Date.UTC(Number(parts['year']), Number(parts['month']) - 1, Number(parts['day']), Number(parts['hour']), Number(parts['minute']), Number(parts['second']));
     guess += target - represented;
   }
   return new Date(guess);
@@ -85,7 +85,7 @@ export async function calculateKundali(input: {
     ["Mercury", Astronomy.Body.Mercury], ["Jupiter", Astronomy.Body.Jupiter], ["Venus", Astronomy.Body.Venus],
     ["Saturn", Astronomy.Body.Saturn],
   ] as const;
-  const positions = bodies.map(([name, body]) => {
+  const positions: { name: string; longitude: number }[] = bodies.map(([name, body]) => {
     const tropical = Astronomy.Ecliptic(Astronomy.GeoVector(body, instant, true)).elon;
     const sidereal = mod(tropical - ayanamsa);
     return { name, longitude: sidereal };
