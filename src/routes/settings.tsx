@@ -1,13 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Bell, Download, Upload, Camera, RotateCcw, Info, LogIn, LogOut, UserPlus, Copy } from "lucide-react";
+import { Bell, Download, Upload, Camera, RotateCcw, Info, LogIn, LogOut, UserPlus, Copy, MapPin, Search } from "lucide-react";
 import { AppShell, PageHeader, SoftCard, ThemeToggle, BabyAvatar } from "@/components/babybond/shell";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useBabyBond } from "@/lib/babybond-store";
-import { PARENT_ROLES, roleEmoji, toDateInput, type ParentRole } from "@/lib/babybond-data";
+import { PARENT_ROLES, roleEmoji, toDateInput, toTimeInput, fromDateTimeInputs, type ParentRole } from "@/lib/babybond-data";
+import { searchBirthPlaces, resolveBirthPlace } from "@/lib/kundali.functions";
 import { ACCEPTED_IMAGE_TYPES, MediaError, removeMedia, uploadMedia } from "@/lib/babybond-media";
 import { notifyNow, pushPrefs, requestNotificationPermission } from "@/lib/babybond-push";
 
@@ -33,6 +35,15 @@ function Settings() {
   const restoreRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const searchPlaces = useServerFn(searchBirthPlaces);
+  const resolvePlace = useServerFn(resolveBirthPlace);
+  const [placeQuery, setPlaceQuery] = useState("");
+  const [placeResults, setPlaceResults] = useState<{ name: string; latitude: number; longitude: number }[]>([]);
+  const [placeBusy, setPlaceBusy] = useState(false);
+  const updateBirth = (date: string, time: string) => {
+    const bornAt = fromDateTimeInputs(date, time);
+    if (bornAt) setBaby({ bornAt, kundaliCache: null });
+  };
 
   const pickPhoto = async (file: File | undefined) => {
     if (!file) return;
@@ -147,12 +158,53 @@ function Settings() {
               />
             </div>
             <Input value={baby.name} onChange={(e) => setBaby({ name: e.target.value })} className="h-11 rounded-2xl" />
-            <Input
-              type="date"
-              value={toDateInput(baby.bornAt)}
-              onChange={(e) => setBaby({ bornAt: new Date(e.target.value).getTime() })}
-              className="h-11 rounded-2xl"
-            />
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="mb-1 block text-[11px] font-semibold text-muted-foreground">Date of birth</label>
+                <Input
+                  type="date"
+                  value={baby.bornAt ? toDateInput(baby.bornAt) : ""}
+                  onChange={(e) => updateBirth(e.target.value, baby.bornAt ? toTimeInput(baby.bornAt) : "")}
+                  className="h-11 rounded-2xl"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-[11px] font-semibold text-muted-foreground">Exact birth time</label>
+                <Input
+                  type="time"
+                  value={baby.bornAt ? toTimeInput(baby.bornAt) : ""}
+                  onChange={(e) => updateBirth(baby.bornAt ? toDateInput(baby.bornAt) : "", e.target.value)}
+                  className="h-11 rounded-2xl"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="block text-[11px] font-semibold text-muted-foreground">Birth place</label>
+              {baby.birthPlace ? (
+                <div className="flex items-center gap-2 rounded-2xl bg-secondary p-3">
+                  <MapPin className="size-4 shrink-0" />
+                  <span className="min-w-0 flex-1 text-xs font-semibold">{baby.birthPlace.name}</span>
+                  <button type="button" onClick={() => { setBaby({ birthPlace: null, kundaliCache: null }); setPlaceQuery(""); }} className="text-xs font-bold text-primary">Change</button>
+                </div>
+              ) : (
+                <>
+                  <div className="flex gap-2">
+                    <Input value={placeQuery} onChange={(e) => setPlaceQuery(e.target.value)} placeholder="Search city, town or hospital area" className="h-11 rounded-2xl" />
+                    <Button type="button" size="icon" disabled={placeBusy || placeQuery.trim().length < 3} onClick={() => {
+                      setPlaceBusy(true);
+                      void searchPlaces({ data: { query: placeQuery } }).then(setPlaceResults).catch(() => toast.error("Place search unavailable")).finally(() => setPlaceBusy(false));
+                    }} aria-label="Search birth place"><Search className="size-4" /></Button>
+                  </div>
+                  {placeResults.length ? <div className="space-y-1 rounded-2xl bg-secondary p-2">{placeResults.map((place) => (
+                    <button type="button" key={`${place.latitude}-${place.longitude}`} className="flex w-full items-start gap-2 rounded-xl p-2 text-left text-xs hover:bg-card" onClick={() => {
+                      setPlaceBusy(true);
+                      void resolvePlace({ data: place }).then((resolved) => { setBaby({ birthPlace: resolved, kundaliCache: null }); setPlaceResults([]); toast.success("Birth place saved"); }).catch(() => toast.error("Timezone lookup unavailable")).finally(() => setPlaceBusy(false));
+                    }}><MapPin className="mt-0.5 size-3.5 shrink-0" /><span>{place.name}</span></button>
+                  ))}</div> : null}
+                  <p className="text-[10px] text-muted-foreground">Select the exact result; coordinates and timezone are saved for astrology only.</p>
+                </>
+              )}
+            </div>
             <div className="flex gap-2">
               {(["girl", "boy"] as const).map((g) => (
                 <button

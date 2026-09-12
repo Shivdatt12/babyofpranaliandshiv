@@ -153,6 +153,10 @@ export type Baby = {
   chosenNameId?: string | null;
   chosenAt?: number | null;
   chosenBy?: string | null;
+  /** Resolved once through birth-place search; used only for astrology calculations. */
+  birthPlace?: import("./kundali-data").BirthPlace | null;
+  /** Family-shared offline cache. Replaced whenever exact birth details change. */
+  kundaliCache?: import("./kundali-data").Kundali | null;
 };
 
 

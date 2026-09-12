@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Bell, UserPlus, LogOut, ChevronRight, Wifi, RefreshCw, Settings as SettingsIcon } from "lucide-react";
+import { Bell, UserPlus, LogOut, ChevronRight, Wifi, RefreshCw, Settings as SettingsIcon, Sparkles } from "lucide-react";
 import { AppShell, PageHeader, SoftCard, ThemeToggle, BabyAvatar } from "@/components/babybond/shell";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -120,6 +120,19 @@ function Profile() {
                   : `${nameIdeas.length} name ideas so far`}
               </p>
             </div>
+            <ChevronRight className="size-4 text-muted-foreground" />
+          </Link>
+        </div>
+
+        <div>
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Baby / More</h2>
+          <Link to="/kundali" className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow active:scale-95">
+            <span className="bb-icon-well text-lg">🔮</span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-bold">जन्मकुंडली & ज्योतिष</p>
+              <p className="text-xs text-muted-foreground">View Janma Kundali</p>
+            </div>
+            <Sparkles className="size-4 text-muted-foreground" />
             <ChevronRight className="size-4 text-muted-foreground" />
           </Link>
         </div>
