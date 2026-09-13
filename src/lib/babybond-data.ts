@@ -31,7 +31,15 @@ export type Entry =
       by: string;
     }
   | { id: string; type: "weight"; at: number; grams: number; note?: string; by: string }
-  | { id: string; type: "bilirubin"; at: number; value: number; method: "skin" | "blood"; note?: string; by: string }
+  | {
+      id: string;
+      type: "bilirubin";
+      at: number;
+      value: number;
+      method: "skin" | "blood";
+      note?: string;
+      by: string;
+    }
   | {
       id: string;
       type: "medicine";
@@ -42,10 +50,17 @@ export type Entry =
       status?: MedicineStatus;
       by: string;
     }
-  | { id: string; type: "visit"; at: number; doctor: string; hospital: string; note?: string; by: string }
+  | {
+      id: string;
+      type: "visit";
+      at: number;
+      doctor: string;
+      hospital: string;
+      note?: string;
+      by: string;
+    }
   | { id: string; type: "photo"; at: number; path: string; caption?: string; by: string }
   | { id: string; type: "vaccine"; at: number; name: string; note?: string; by: string };
-
 
 export type PottyKind = "normal" | "loose" | "green" | "yellow" | "black";
 
@@ -57,10 +72,23 @@ export const POTTY_KINDS: { key: PottyKind; label: string }[] = [
   { key: "black", label: "Black" },
 ];
 
-export const MEDICINE_TYPES = ["Drops", "Syrup", "Tablet", "Injection", "Ointment", "Other"] as const;
+export const MEDICINE_TYPES = [
+  "Drops",
+  "Syrup",
+  "Tablet",
+  "Injection",
+  "Ointment",
+  "Other",
+] as const;
 export type MedicineType = (typeof MEDICINE_TYPES)[number];
 
-export const MEDICINE_FREQUENCIES = ["Once daily", "Twice daily", "Thrice daily", "Every 6 hours", "As needed"] as const;
+export const MEDICINE_FREQUENCIES = [
+  "Once daily",
+  "Twice daily",
+  "Thrice daily",
+  "Every 6 hours",
+  "As needed",
+] as const;
 export type MedicineFrequency = (typeof MEDICINE_FREQUENCIES)[number];
 
 export type Medicine = {
@@ -129,9 +157,7 @@ export type Vaccine = {
   doctor?: string;
   hospital?: string;
   batch?: string;
-
 };
-
 
 export type Milestone = {
   id: string;
@@ -159,7 +185,6 @@ export type Baby = {
   kundaliCache?: import("./kundali-data").Kundali | null;
 };
 
-
 export type Parent = {
   id: string;
   name: string;
@@ -176,7 +201,10 @@ export function roleEmoji(role: ParentRole) {
 }
 
 /** Only ever falls back for a brand-new profile with no role saved yet. */
-export function normalizeRole(value: string | null | undefined, fallback: ParentRole = "Mother"): ParentRole {
+export function normalizeRole(
+  value: string | null | undefined,
+  fallback: ParentRole = "Mother",
+): ParentRole {
   if (value === "Father") return "Father";
   if (value === "Mother") return "Mother";
   if (value === "Parent") return "Parent";
@@ -188,7 +216,8 @@ export const ESTIMATED_ML_PER_MINUTE = 1;
 
 /** Estimated breastmilk = duration (minutes) × the family's configured ml/min. */
 export function estimatedBreastMl(minutes: number, mlPerMinute: number = ESTIMATED_ML_PER_MINUTE) {
-  const rate = Number.isFinite(mlPerMinute) && mlPerMinute > 0 ? mlPerMinute : ESTIMATED_ML_PER_MINUTE;
+  const rate =
+    Number.isFinite(mlPerMinute) && mlPerMinute > 0 ? mlPerMinute : ESTIMATED_ML_PER_MINUTE;
   return Math.round(Math.max(0, minutes) * rate);
 }
 
@@ -227,7 +256,6 @@ export const DEFAULT_SETTINGS: Settings = {
   vibrate: true,
 };
 
-
 /** Rough newborn jaundice bands (mg/dL) used only to highlight readings. */
 export function bilirubinLevel(value: number): "normal" | "watch" | "high" {
   if (value >= 15) return "high";
@@ -240,7 +268,13 @@ const uid = () => Math.random().toString(36).slice(2, 10);
 const HOUR = 3600_000;
 
 /** A brand-new family starts completely empty — no demo or seeded records, ever. */
-export const EMPTY_BABY: Baby = { name: "", bornAt: 0, gender: "girl", bloodGroup: "", photo: null };
+export const EMPTY_BABY: Baby = {
+  name: "",
+  bornAt: 0,
+  gender: "girl",
+  bloodGroup: "",
+  photo: null,
+};
 
 /** Milestone checklist template used when a baby profile is first created. */
 export function defaultMilestones(): Milestone[] {
@@ -282,7 +316,6 @@ export function dayKey(ts: number) {
   const p = (n: number) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }
-
 
 export function timeAgo(ts: number, now: number) {
   const mins = Math.max(0, Math.round((now - ts) / 60000));

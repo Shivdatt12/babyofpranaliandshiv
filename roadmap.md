@@ -1,4 +1,5 @@
 # Roadmap
+
 - [x] Add RIGHT NOW live status section to Dashboard (timers + latest pee/potty/formula)
 - [x] Add Baby Day Journey dashboard visualization from existing synced activity
 - [x] Link journey moments to their existing tracker pages and today-filtered Timeline

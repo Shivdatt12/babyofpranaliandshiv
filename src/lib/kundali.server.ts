@@ -43,7 +43,12 @@ function buildDasha(birthAt: number, moonLongitude: number): DashaPeriod[] {
       const antarLord = VIMSHOTTARI_ORDER[(lordIndex + j) % 9] ?? "Ketu";
       const antarYears = (years * (VIMSHOTTARI_YEARS[antarLord] ?? 7)) / 120;
       const antarEnd = antarCursor + antarYears * YEAR_DAYS * DAY;
-      antar.push({ lord: antarLord, lordMr: PLANET_LABELS[antarLord]?.mr ?? antarLord, startAt: antarCursor, endAt: antarEnd });
+      antar.push({
+        lord: antarLord,
+        lordMr: PLANET_LABELS[antarLord]?.mr ?? antarLord,
+        startAt: antarCursor,
+        endAt: antarEnd,
+      });
       antarCursor = antarEnd;
     }
     periods.push({ lord, lordMr: PLANET_LABELS[lord]?.mr ?? lord, startAt, endAt, antar });
@@ -62,8 +67,12 @@ export async function calculateKundali(input: {
   const birthAt = instant.getTime();
   const ayanamsa = lahiriAyanamsa(instant);
   const bodies = [
-    ["Sun", Astronomy.Body.Sun], ["Moon", Astronomy.Body.Moon], ["Mars", Astronomy.Body.Mars],
-    ["Mercury", Astronomy.Body.Mercury], ["Jupiter", Astronomy.Body.Jupiter], ["Venus", Astronomy.Body.Venus],
+    ["Sun", Astronomy.Body.Sun],
+    ["Moon", Astronomy.Body.Moon],
+    ["Mars", Astronomy.Body.Mars],
+    ["Mercury", Astronomy.Body.Mercury],
+    ["Jupiter", Astronomy.Body.Jupiter],
+    ["Venus", Astronomy.Body.Venus],
     ["Saturn", Astronomy.Body.Saturn],
   ] as const;
   const positions: { name: string; longitude: number }[] = bodies.map(([name, body]) => {
@@ -73,16 +82,22 @@ export async function calculateKundali(input: {
   });
   // Mean lunar node, Meeus polynomial. Rahu and Ketu are always opposite.
   const t = (birthAt / DAY + 2440587.5 - 2451545.0) / 36525;
-  const meanNodeTropical = mod(125.044555 - 1934.1361849 * t + 0.0020762 * t * t + (t * t * t) / 467410);
+  const meanNodeTropical = mod(
+    125.044555 - 1934.1361849 * t + 0.0020762 * t * t + (t * t * t) / 467410,
+  );
   const rahu = mod(meanNodeTropical - ayanamsa);
   positions.push({ name: "Rahu", longitude: rahu }, { name: "Ketu", longitude: mod(rahu + 180) });
 
   // Local sidereal time gives the tropical ascendant; convert to Lahiri sidereal.
   const lst = mod(Astronomy.SiderealTime(instant) * 15 + input.place.longitude);
-  const eps = (23.439291 - 0.0130042 * t) * Math.PI / 180;
-  const theta = lst * Math.PI / 180;
-  const phi = input.place.latitude * Math.PI / 180;
-  const ascTropical = mod(Math.atan2(-Math.cos(theta), Math.sin(theta) * Math.cos(eps) + Math.tan(phi) * Math.sin(eps)) * 180 / Math.PI);
+  const eps = ((23.439291 - 0.0130042 * t) * Math.PI) / 180;
+  const theta = (lst * Math.PI) / 180;
+  const phi = (input.place.latitude * Math.PI) / 180;
+  const ascTropical = mod(
+    (Math.atan2(-Math.cos(theta), Math.sin(theta) * Math.cos(eps) + Math.tan(phi) * Math.sin(eps)) *
+      180) /
+      Math.PI,
+  );
   const lagnaLongitude = mod(ascTropical - ayanamsa);
   const lagnaSignIndex = Math.floor(lagnaLongitude / SIGN_SPAN);
 
@@ -90,10 +105,15 @@ export async function calculateKundali(input: {
     const signIndex = Math.floor(longitude / SIGN_SPAN);
     const nakshatraIndex = Math.floor(longitude / NAK_SPAN);
     return {
-      key: name.toLowerCase(), name, nameMr: PLANET_LABELS[name]?.mr ?? name, longitude,
-      signIndex, degreeInSign: mod(longitude, SIGN_SPAN),
+      key: name.toLowerCase(),
+      name,
+      nameMr: PLANET_LABELS[name]?.mr ?? name,
+      longitude,
+      signIndex,
+      degreeInSign: mod(longitude, SIGN_SPAN),
       house: mod(signIndex - lagnaSignIndex, 12) + 1,
-      nakshatraIndex, pada: Math.floor(mod(longitude, NAK_SPAN) / (NAK_SPAN / 4)) + 1,
+      nakshatraIndex,
+      pada: Math.floor(mod(longitude, NAK_SPAN) / (NAK_SPAN / 4)) + 1,
       retrograde: false,
     };
   });
@@ -105,15 +125,45 @@ export async function calculateKundali(input: {
     signIndex: mod(lagnaSignIndex + i, 12),
     planets: planets.filter((p) => p.house === i + 1).map((p) => p.name),
   }));
-  const parts = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: input.place.timezone, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(instant).map((p) => [p.type, p.value]));
-  const localAsUtc = Date.UTC(Number(parts['year']), Number(parts['month']) - 1, Number(parts['day']), Number(parts['hour']), Number(parts['minute']));
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: input.place.timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      hourCycle: "h23",
+    })
+      .formatToParts(instant)
+      .map((p) => [p.type, p.value]),
+  );
+  const localAsUtc = Date.UTC(
+    Number(parts["year"]),
+    Number(parts["month"]) - 1,
+    Number(parts["day"]),
+    Number(parts["hour"]),
+    Number(parts["minute"]),
+  );
   const utcOffsetMinutes = Math.round((localAsUtc - birthAt) / 60000);
   return {
-    signature: kundaliSignature(birthAt, input.place), generatedAt: Date.now(),
-    config: { ayanamsa: "Lahiri (Chitrapaksha)", ayanamsaValue: ayanamsa, houseSystem: "Whole sign", engine: "Astronomy Engine VSOP87" },
+    signature: kundaliSignature(birthAt, input.place),
+    generatedAt: Date.now(),
+    config: {
+      ayanamsa: "Lahiri (Chitrapaksha)",
+      ayanamsaValue: ayanamsa,
+      houseSystem: "Whole sign",
+      engine: "Astronomy Engine VSOP87",
+    },
     birth: { at: birthAt, place: input.place, utcOffsetMinutes },
-    moonSignIndex: moon.signIndex, sunSignIndex: sun.signIndex, lagnaSignIndex,
-    lagnaDegree: mod(lagnaLongitude, 30), nakshatraIndex: moon.nakshatraIndex, nakshatraPada: moon.pada,
-    planets, houses, dasha: buildDasha(birthAt, moon.longitude),
+    moonSignIndex: moon.signIndex,
+    sunSignIndex: sun.signIndex,
+    lagnaSignIndex,
+    lagnaDegree: mod(lagnaLongitude, 30),
+    nakshatraIndex: moon.nakshatraIndex,
+    nakshatraPada: moon.pada,
+    planets,
+    houses,
+    dasha: buildDasha(birthAt, moon.longitude),
   };
 }

@@ -20,23 +20,32 @@ export const searchBirthPlaces = createServerFn({ method: "POST" })
     );
     if (!response.ok) throw new Error("Birth-place search is temporarily unavailable");
     const json = (await response.json()) as {
-      features?: { geometry?: { coordinates?: [number, number] }; properties?: Record<string, string> }[];
+      features?: {
+        geometry?: { coordinates?: [number, number] };
+        properties?: Record<string, string>;
+      }[];
     };
     return (json.features ?? []).flatMap((feature) => {
       const coordinates = feature.geometry?.coordinates;
       if (!coordinates) return [];
       const p = feature.properties ?? {};
-      return [{
-        name: [p['name'], p['city'], p['state'], p['country']].filter((v, i, a) => v && a.indexOf(v) === i).join(", "),
-        latitude: coordinates[1],
-        longitude: coordinates[0],
-      }];
+      return [
+        {
+          name: [p["name"], p["city"], p["state"], p["country"]]
+            .filter((v, i, a) => v && a.indexOf(v) === i)
+            .join(", "),
+          latitude: coordinates[1],
+          longitude: coordinates[0],
+        },
+      ];
     });
   });
 
 export const resolveBirthPlace = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ name: z.string().min(2), latitude: z.number(), longitude: z.number() }).parse(input))
+  .inputValidator((input) =>
+    z.object({ name: z.string().min(2), latitude: z.number(), longitude: z.number() }).parse(input),
+  )
   .handler(async ({ data }) => {
     const response = await fetch(
       `https://timeapi.io/api/timezone/coordinate?latitude=${data.latitude}&longitude=${data.longitude}`,
@@ -48,5 +57,7 @@ export const resolveBirthPlace = createServerFn({ method: "POST" })
 
 export const generateKundali = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ bornAt: z.number().positive(), place: placeSchema }).parse(input))
+  .inputValidator((input) =>
+    z.object({ bornAt: z.number().positive(), place: placeSchema }).parse(input),
+  )
   .handler(async ({ data }) => calculateKundali(data));

@@ -1,7 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Bell, UserPlus, LogOut, ChevronRight, Wifi, RefreshCw, Settings as SettingsIcon, Sparkles } from "lucide-react";
-import { AppShell, PageHeader, SoftCard, ThemeToggle, BabyAvatar } from "@/components/babybond/shell";
+import {
+  Bell,
+  UserPlus,
+  LogOut,
+  ChevronRight,
+  Wifi,
+  RefreshCw,
+  Settings as SettingsIcon,
+  Sparkles,
+} from "lucide-react";
+import {
+  AppShell,
+  PageHeader,
+  SoftCard,
+  ThemeToggle,
+  BabyAvatar,
+} from "@/components/babybond/shell";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useBabyBond, useTodayStats } from "@/lib/babybond-store";
@@ -11,9 +26,15 @@ export const Route = createFileRoute("/profile")({
   head: () => ({
     meta: [
       { title: "Family profile — BabyBond" },
-      { name: "description", content: "Manage your baby's profile, invite your partner and tune reminders in BabyBond." },
+      {
+        name: "description",
+        content: "Manage your baby's profile, invite your partner and tune reminders in BabyBond.",
+      },
       { property: "og:title", content: "Family profile — BabyBond" },
-      { property: "og:description", content: "Baby details, family members, reminders and sync settings." },
+      {
+        property: "og:description",
+        content: "Baby details, family members, reminders and sync settings.",
+      },
     ],
   }),
   component: Profile,
@@ -42,14 +63,19 @@ function Profile() {
         </SoftCard>
 
         <div>
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Family</h2>
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Family
+          </h2>
           <div className="space-y-2">
             {parents.map((p) => (
               <SoftCard key={p.id} className="flex items-center gap-3 py-3">
-                <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">{p.emoji}</span>
+                <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">
+                  {p.emoji}
+                </span>
                 <div className="flex-1">
                   <p className="text-sm font-bold">
-                    {p.name} <span className="text-xs font-medium text-muted-foreground">· {p.role}</span>
+                    {p.name}{" "}
+                    <span className="text-xs font-medium text-muted-foreground">· {p.role}</span>
                   </p>
                   <p className="text-[11px] text-health-foreground">Online · syncing live</p>
                 </div>
@@ -57,7 +83,9 @@ function Profile() {
                   type="button"
                   onClick={() => switchParent(p.id)}
                   className={`rounded-full px-3 py-1 text-[11px] font-semibold ${
-                    me.id === p.id ? "bb-gradient text-primary-foreground" : "bg-secondary text-secondary-foreground"
+                    me.id === p.id
+                      ? "bb-gradient text-primary-foreground"
+                      : "bg-secondary text-secondary-foreground"
                   }`}
                 >
                   {me.id === p.id ? "You" : "Switch"}
@@ -66,7 +94,9 @@ function Profile() {
             ))}
             <button
               type="button"
-              onClick={() => toast.success("Invite link copied", { description: "Share it with your partner." })}
+              onClick={() =>
+                toast.success("Invite link copied", { description: "Share it with your partner." })
+              }
               className="flex w-full items-center gap-3 rounded-3xl bg-secondary p-4 text-secondary-foreground bb-shadow active:scale-95"
             >
               <UserPlus className="size-5" />
@@ -77,7 +107,9 @@ function Profile() {
         </div>
 
         <div>
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Reminders</h2>
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Reminders
+          </h2>
           <div className="space-y-2">
             {[
               { label: "Feed due after 3 hours", icon: Bell, on: true },
@@ -95,7 +127,9 @@ function Profile() {
         </div>
 
         <div>
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Sync</h2>
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Sync
+          </h2>
           <SoftCard tone="health" className="flex items-center gap-3 py-3">
             <Wifi className="size-5" />
             <span className="flex-1 text-sm font-semibold">Real-time sync active</span>
@@ -107,9 +141,13 @@ function Profile() {
         </div>
 
         <div>
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Baby name</h2>
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Baby name
+          </h2>
           <Link to="/names" className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow">
-            <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">💕</span>
+            <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">
+              💕
+            </span>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold">
                 {baby.nameStatus === "final" ? "Final name selected" : "Temporary / Choosing"}
@@ -125,8 +163,13 @@ function Profile() {
         </div>
 
         <div>
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Baby / More</h2>
-          <Link to="/kundali" className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow active:scale-95">
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Baby / More
+          </h2>
+          <Link
+            to="/kundali"
+            className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow active:scale-95"
+          >
             <span className="bb-icon-well text-lg">🔮</span>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold">जन्मकुंडली & ज्योतिष</p>
@@ -167,7 +210,6 @@ function Profile() {
             <LogOut className="size-4" /> Sign in to sync
           </Link>
         )}
-
       </div>
     </AppShell>
   );
