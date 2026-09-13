@@ -180,6 +180,41 @@ function KundaliPage() {
     doc.setFontSize(8);
     doc.setTextColor(100);
     doc.text(`Convention: ${chart.config.ayanamsa}; ${chart.config.houseSystem} houses.`, 42, 800);
+    doc.addPage();
+    doc.setTextColor(25);
+    doc.setFontSize(16);
+    doc.text("North Indian birth chart", 42, 48);
+    const left = 100;
+    const top = 100;
+    const size = 395;
+    const midX = left + size / 2;
+    const midY = top + size / 2;
+    doc.rect(left, top, size, size);
+    doc.line(left, top, left + size, top + size);
+    doc.line(left + size, top, left, top + size);
+    doc.line(left, top, midX, midY);
+    doc.line(left + size, top, midX, midY);
+    doc.line(left + size, top + size, midX, midY);
+    doc.line(left, top + size, midX, midY);
+    const pdfCells = [
+      [50, 11], [75, 24], [88, 50], [75, 76], [50, 89], [25, 76],
+      [12, 50], [25, 24], [50, 37], [63, 50], [50, 63], [37, 50],
+    ];
+    doc.setFontSize(8);
+    chart.houses.forEach((house, index) => {
+      const cell = pdfCells[index];
+      if (!cell) return;
+      const planets = house.planets.map((p) => PLANET_LABELS[p]?.short ?? p.slice(0, 2)).join(" ");
+      doc.text(
+        `${house.house} ${rashi(house.signIndex).en}${planets ? ` / ${planets}` : ""}`,
+        left + ((cell[0] ?? 0) / 100) * size,
+        top + ((cell[1] ?? 0) / 100) * size,
+        { align: "center" },
+      );
+    });
+    doc.setFontSize(8);
+    doc.setTextColor(100);
+    doc.text("Traditional astrology information; not medical or scientifically established guidance.", 42, 800);
     return doc;
   };
 
