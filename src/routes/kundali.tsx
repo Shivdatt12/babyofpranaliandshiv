@@ -197,8 +197,18 @@ function KundaliPage() {
     doc.line(left + size, top + size, midX, midY);
     doc.line(left, top + size, midX, midY);
     const pdfCells = [
-      [50, 11], [75, 24], [88, 50], [75, 76], [50, 89], [25, 76],
-      [12, 50], [25, 24], [50, 37], [63, 50], [50, 63], [37, 50],
+      [50, 11],
+      [75, 24],
+      [88, 50],
+      [75, 76],
+      [50, 89],
+      [25, 76],
+      [12, 50],
+      [25, 24],
+      [50, 37],
+      [63, 50],
+      [50, 63],
+      [37, 50],
     ];
     doc.setFontSize(8);
     chart.houses.forEach((house, index) => {
@@ -214,7 +224,11 @@ function KundaliPage() {
     });
     doc.setFontSize(8);
     doc.setTextColor(100);
-    doc.text("Traditional astrology information; not medical or scientifically established guidance.", 42, 800);
+    doc.text(
+      "Traditional astrology information; not medical or scientifically established guidance.",
+      42,
+      800,
+    );
     return doc;
   };
 
