@@ -200,6 +200,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
   /** Recent local writes win over anything a slower cloud/cache read brings back. */
   const GUARD_MS = 30_000;
   const localSettingsAt = useRef(0);
+  const localBabyAt = useRef(0);
   const localParentAt = useRef<Map<string, number>>(new Map());
   const settingsGuarded = () => Date.now() - localSettingsAt.current < GUARD_MS;
   const parentGuarded = (id: string) =>
@@ -356,7 +357,9 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     const cloud = await loadFamilyData(fid);
     const { data: profileRows } = await supabase.from("profiles").select("*").eq("family_id", fid);
     applyingRemote.current = true;
-    setBabyState(cloud.baby ?? null);
+    // Exact birth-detail edits and a freshly generated kundali must not be
+    // replaced by an older realtime snapshot while their queued write lands.
+    if (Date.now() - localBabyAt.current >= 30_000) setBabyState(cloud.baby ?? null);
     // a settings change made seconds ago must not be undone by a slower cloud read
     if (Date.now() - localSettingsAt.current >= 30_000)
       setSettings({ ...DEFAULT_SETTINGS, ...(cloud.settings ?? {}) });
@@ -691,6 +694,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       },
       setBaby: (b) => {
         const next = { ...(baby ?? EMPTY_BABY), ...b };
+        localBabyAt.current = Date.now();
         setBabyState(next);
         saveBaby(next);
       },

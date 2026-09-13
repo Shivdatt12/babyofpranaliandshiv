@@ -2,34 +2,76 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Bell, Download, Upload, Camera, RotateCcw, Info, LogIn, LogOut, UserPlus, Copy, MapPin, Search } from "lucide-react";
-import { AppShell, PageHeader, SoftCard, ThemeToggle, BabyAvatar } from "@/components/babybond/shell";
+import {
+  Bell,
+  Download,
+  Upload,
+  Camera,
+  RotateCcw,
+  Info,
+  LogIn,
+  LogOut,
+  UserPlus,
+  Copy,
+  MapPin,
+  Search,
+} from "lucide-react";
+import {
+  AppShell,
+  PageHeader,
+  SoftCard,
+  ThemeToggle,
+  BabyAvatar,
+} from "@/components/babybond/shell";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { useBabyBond } from "@/lib/babybond-store";
-import { PARENT_ROLES, roleEmoji, toDateInput, toTimeInput, fromDateTimeInputs, type ParentRole } from "@/lib/babybond-data";
+import {
+  PARENT_ROLES,
+  roleEmoji,
+  toDateInput,
+  toTimeInput,
+  fromDateTimeInputs,
+  type ParentRole,
+} from "@/lib/babybond-data";
 import { searchBirthPlaces, resolveBirthPlace } from "@/lib/kundali.functions";
 import { ACCEPTED_IMAGE_TYPES, MediaError, removeMedia, uploadMedia } from "@/lib/babybond-media";
 import { notifyNow, pushPrefs, requestNotificationPermission } from "@/lib/babybond-push";
-
 
 export const Route = createFileRoute("/settings")({
   ssr: false,
   head: () => ({
     meta: [
       { title: "Settings — BabyBond" },
-      { name: "description", content: "Baby profile, parent details, reminder times, backup and restore for your BabyBond family account." },
+      {
+        name: "description",
+        content:
+          "Baby profile, parent details, reminder times, backup and restore for your BabyBond family account.",
+      },
       { property: "og:title", content: "Settings — BabyBond" },
-      { property: "og:description", content: "Profiles, notifications, reminder times, data export and backup." },
+      {
+        property: "og:description",
+        content: "Profiles, notifications, reminder times, data export and backup.",
+      },
     ],
   }),
   component: Settings,
 });
 
 function Settings() {
-  const { baby, setBaby, parents, updateParent, settings, updateSettings, exportData, importData, resetData, familyId } =
-    useBabyBond();
+  const {
+    baby,
+    setBaby,
+    parents,
+    updateParent,
+    settings,
+    updateSettings,
+    exportData,
+    importData,
+    resetData,
+    familyId,
+  } = useBabyBond();
   const photoRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
   const restoreRef = useRef<HTMLInputElement>(null);
@@ -38,7 +80,9 @@ function Settings() {
   const searchPlaces = useServerFn(searchBirthPlaces);
   const resolvePlace = useServerFn(resolveBirthPlace);
   const [placeQuery, setPlaceQuery] = useState("");
-  const [placeResults, setPlaceResults] = useState<{ name: string; latitude: number; longitude: number }[]>([]);
+  const [placeResults, setPlaceResults] = useState<
+    { name: string; latitude: number; longitude: number }[]
+  >([]);
   const [placeBusy, setPlaceBusy] = useState(false);
   const updateBirth = (date: string, time: string) => {
     const bornAt = fromDateTimeInputs(date, time);
@@ -55,7 +99,9 @@ function Settings() {
       void removeMedia(previous);
       toast.success("Baby photo updated");
     } catch (err) {
-      toast.error(err instanceof MediaError ? err.message : "Photo upload failed — please try again.");
+      toast.error(
+        err instanceof MediaError ? err.message : "Photo upload failed — please try again.",
+      );
     } finally {
       setUploading(false);
     }
@@ -93,13 +139,16 @@ function Settings() {
       <PageHeader title="Settings" subtitle="Profiles, reminders & data" />
       <div className="space-y-4 px-5 pb-6">
         <div>
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Account</h2>
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Account
+          </h2>
           <AccountCard />
         </div>
 
         <div>
-
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Baby profile</h2>
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Baby profile
+          </h2>
           <SoftCard className="space-y-3">
             <div className="flex items-center gap-4">
               <BabyAvatar className="size-16 rounded-2xl text-2xl" />
@@ -157,51 +206,113 @@ function Settings() {
                 }}
               />
             </div>
-            <Input value={baby.name} onChange={(e) => setBaby({ name: e.target.value })} className="h-11 rounded-2xl" />
+            <Input
+              value={baby.name}
+              onChange={(e) => setBaby({ name: e.target.value })}
+              className="h-11 rounded-2xl"
+            />
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="mb-1 block text-[11px] font-semibold text-muted-foreground">Date of birth</label>
+                <label className="mb-1 block text-[11px] font-semibold text-muted-foreground">
+                  Date of birth
+                </label>
                 <Input
                   type="date"
                   value={baby.bornAt ? toDateInput(baby.bornAt) : ""}
-                  onChange={(e) => updateBirth(e.target.value, baby.bornAt ? toTimeInput(baby.bornAt) : "")}
+                  onChange={(e) =>
+                    updateBirth(e.target.value, baby.bornAt ? toTimeInput(baby.bornAt) : "")
+                  }
                   className="h-11 rounded-2xl"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-[11px] font-semibold text-muted-foreground">Exact birth time</label>
+                <label className="mb-1 block text-[11px] font-semibold text-muted-foreground">
+                  Exact birth time
+                </label>
                 <Input
                   type="time"
                   value={baby.bornAt ? toTimeInput(baby.bornAt) : ""}
-                  onChange={(e) => updateBirth(baby.bornAt ? toDateInput(baby.bornAt) : "", e.target.value)}
+                  onChange={(e) =>
+                    updateBirth(baby.bornAt ? toDateInput(baby.bornAt) : "", e.target.value)
+                  }
                   className="h-11 rounded-2xl"
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <label className="block text-[11px] font-semibold text-muted-foreground">Birth place</label>
+              <label className="block text-[11px] font-semibold text-muted-foreground">
+                Birth place
+              </label>
               {baby.birthPlace ? (
                 <div className="flex items-center gap-2 rounded-2xl bg-secondary p-3">
                   <MapPin className="size-4 shrink-0" />
-                  <span className="min-w-0 flex-1 text-xs font-semibold">{baby.birthPlace.name}</span>
-                  <button type="button" onClick={() => { setBaby({ birthPlace: null, kundaliCache: null }); setPlaceQuery(""); }} className="text-xs font-bold text-primary">Change</button>
+                  <span className="min-w-0 flex-1 text-xs font-semibold">
+                    {baby.birthPlace.name}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBaby({ birthPlace: null, kundaliCache: null });
+                      setPlaceQuery("");
+                    }}
+                    className="text-xs font-bold text-primary"
+                  >
+                    Change
+                  </button>
                 </div>
               ) : (
                 <>
                   <div className="flex gap-2">
-                    <Input value={placeQuery} onChange={(e) => setPlaceQuery(e.target.value)} placeholder="Search city, town or hospital area" className="h-11 rounded-2xl" />
-                    <Button type="button" size="icon" disabled={placeBusy || placeQuery.trim().length < 3} onClick={() => {
-                      setPlaceBusy(true);
-                      void searchPlaces({ data: { query: placeQuery } }).then(setPlaceResults).catch(() => toast.error("Place search unavailable")).finally(() => setPlaceBusy(false));
-                    }} aria-label="Search birth place"><Search className="size-4" /></Button>
+                    <Input
+                      value={placeQuery}
+                      onChange={(e) => setPlaceQuery(e.target.value)}
+                      placeholder="Search city, town or hospital area"
+                      className="h-11 rounded-2xl"
+                    />
+                    <Button
+                      type="button"
+                      size="icon"
+                      disabled={placeBusy || placeQuery.trim().length < 3}
+                      onClick={() => {
+                        setPlaceBusy(true);
+                        void searchPlaces({ data: { query: placeQuery } })
+                          .then(setPlaceResults)
+                          .catch(() => toast.error("Place search unavailable"))
+                          .finally(() => setPlaceBusy(false));
+                      }}
+                      aria-label="Search birth place"
+                    >
+                      <Search className="size-4" />
+                    </Button>
                   </div>
-                  {placeResults.length ? <div className="space-y-1 rounded-2xl bg-secondary p-2">{placeResults.map((place) => (
-                    <button type="button" key={`${place.latitude}-${place.longitude}`} className="flex w-full items-start gap-2 rounded-xl p-2 text-left text-xs hover:bg-card" onClick={() => {
-                      setPlaceBusy(true);
-                      void resolvePlace({ data: place }).then((resolved) => { setBaby({ birthPlace: resolved, kundaliCache: null }); setPlaceResults([]); toast.success("Birth place saved"); }).catch(() => toast.error("Timezone lookup unavailable")).finally(() => setPlaceBusy(false));
-                    }}><MapPin className="mt-0.5 size-3.5 shrink-0" /><span>{place.name}</span></button>
-                  ))}</div> : null}
-                  <p className="text-[10px] text-muted-foreground">Select the exact result; coordinates and timezone are saved for astrology only.</p>
+                  {placeResults.length ? (
+                    <div className="space-y-1 rounded-2xl bg-secondary p-2">
+                      {placeResults.map((place) => (
+                        <button
+                          type="button"
+                          key={`${place.latitude}-${place.longitude}`}
+                          className="flex w-full items-start gap-2 rounded-xl p-2 text-left text-xs hover:bg-card"
+                          onClick={() => {
+                            setPlaceBusy(true);
+                            void resolvePlace({ data: place })
+                              .then((resolved) => {
+                                setBaby({ birthPlace: resolved, kundaliCache: null });
+                                setPlaceResults([]);
+                                toast.success("Birth place saved");
+                              })
+                              .catch(() => toast.error("Timezone lookup unavailable"))
+                              .finally(() => setPlaceBusy(false));
+                          }}
+                        >
+                          <MapPin className="mt-0.5 size-3.5 shrink-0" />
+                          <span>{place.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                  <p className="text-[10px] text-muted-foreground">
+                    Select the exact result; coordinates and timezone are saved for astrology only.
+                  </p>
                 </>
               )}
             </div>
@@ -212,7 +323,9 @@ function Settings() {
                   type="button"
                   onClick={() => setBaby({ gender: g })}
                   className={`flex-1 rounded-2xl py-2 text-sm font-semibold capitalize ${
-                    baby.gender === g ? "bb-gradient text-primary-foreground" : "bg-secondary text-secondary-foreground"
+                    baby.gender === g
+                      ? "bb-gradient text-primary-foreground"
+                      : "bg-secondary text-secondary-foreground"
                   }`}
                 >
                   {g}
@@ -229,12 +342,16 @@ function Settings() {
         </div>
 
         <div>
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Parents</h2>
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Parents
+          </h2>
           <div className="space-y-2">
             {parents.map((p) => (
               <SoftCard key={p.id} className="space-y-3 py-3">
                 <div className="flex items-center gap-3">
-                  <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">{p.emoji}</span>
+                  <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">
+                    {p.emoji}
+                  </span>
                   <Input
                     value={p.name}
                     onChange={(e) => updateParent(p.id, { name: e.target.value })}
@@ -251,7 +368,9 @@ function Settings() {
                         toast.success(`Role saved · ${r}`);
                       }}
                       className={`flex-1 rounded-2xl py-2 text-xs font-semibold ${
-                        p.role === r ? "bb-gradient text-primary-foreground" : "bg-secondary text-secondary-foreground"
+                        p.role === r
+                          ? "bb-gradient text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground"
                       }`}
                     >
                       {roleEmoji(r)} {r}
@@ -264,13 +383,18 @@ function Settings() {
         </div>
 
         <div>
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Notifications</h2>
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Notifications
+          </h2>
           <div className="space-y-2">
             {toggles.map((t) => (
               <SoftCard key={t.key} className="flex items-center gap-3 py-3">
                 <Bell className="size-5 text-muted-foreground" />
                 <span className="flex-1 text-sm font-semibold">{t.label}</span>
-                <Switch checked={settings[t.key]} onCheckedChange={(v) => updateSettings({ [t.key]: v })} />
+                <Switch
+                  checked={settings[t.key]}
+                  onCheckedChange={(v) => updateSettings({ [t.key]: v })}
+                />
               </SoftCard>
             ))}
             <button
@@ -281,7 +405,9 @@ function Settings() {
                   return;
                 }
                 void Notification.requestPermission().then((p) =>
-                  p === "granted" ? toast.success("Notifications allowed") : toast("Notifications blocked"),
+                  p === "granted"
+                    ? toast.success("Notifications allowed")
+                    : toast("Notifications blocked"),
                 );
               }}
               className="w-full rounded-3xl bg-secondary p-3 text-sm font-semibold text-secondary-foreground bb-shadow"
@@ -311,11 +437,14 @@ function Settings() {
               </div>
               <div className="flex items-center gap-3">
                 <span className="flex-1 text-sm font-semibold">Vibration</span>
-                <Switch checked={settings.vibrate} onCheckedChange={(v) => updateSettings({ vibrate: v })} />
+                <Switch
+                  checked={settings.vibrate}
+                  onCheckedChange={(v) => updateSettings({ vibrate: v })}
+                />
               </div>
               <p className="text-[11px] text-muted-foreground">
-                Sound and vibration follow your device's notification channel. Android may keep its own sound setting for
-                the installed app.
+                Sound and vibration follow your device's notification channel. Android may keep its
+                own sound setting for the installed app.
               </p>
               <Button
                 variant="secondary"
@@ -351,20 +480,24 @@ function Settings() {
           </div>
         </div>
 
-
         <div>
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Feeding</h2>
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Feeding
+          </h2>
           <BreastEstimateSetting />
         </div>
 
         <div>
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Reminder timing</h2>
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Reminder timing
+          </h2>
           <ReminderTiming />
         </div>
 
-
         <div>
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Data</h2>
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Data
+          </h2>
           <div className="grid grid-cols-2 gap-3">
             <Button variant="secondary" className="h-12 rounded-2xl" onClick={backup}>
               <Download className="mr-2 size-4" /> Backup
@@ -407,8 +540,8 @@ function Settings() {
           <div>
             <p className="text-sm font-bold">About BabyBond</p>
             <p className="text-xs text-muted-foreground">
-              A gentle shared journal for new parents. Data stays on your device and syncs live between the family's open
-              sessions.
+              A gentle shared journal for new parents. Data stays on your device and syncs live
+              between the family's open sessions.
             </p>
           </div>
         </SoftCard>
@@ -431,7 +564,11 @@ type ReminderKey = (typeof REMINDER_FIELDS)[number]["key"];
 function ReminderTiming() {
   const { settings, updateSettings } = useBabyBond();
   const saved = useMemo(
-    () => Object.fromEntries(REMINDER_FIELDS.map((f) => [f.key, String(settings[f.key])])) as Record<ReminderKey, string>,
+    () =>
+      Object.fromEntries(REMINDER_FIELDS.map((f) => [f.key, String(settings[f.key])])) as Record<
+        ReminderKey,
+        string
+      >,
     [settings],
   );
   const [draft, setDraft] = useState<Record<ReminderKey, string>>(saved);
@@ -476,10 +613,19 @@ function ReminderTiming() {
         </SoftCard>
       ))}
       <div className="grid grid-cols-2 gap-2">
-        <Button disabled={!dirty} className="h-11 rounded-2xl bb-gradient text-primary-foreground" onClick={save}>
+        <Button
+          disabled={!dirty}
+          className="h-11 rounded-2xl bb-gradient text-primary-foreground"
+          onClick={save}
+        >
           Save
         </Button>
-        <Button disabled={!dirty} variant="secondary" className="h-11 rounded-2xl" onClick={() => setDraft(saved)}>
+        <Button
+          disabled={!dirty}
+          variant="secondary"
+          className="h-11 rounded-2xl"
+          onClick={() => setDraft(saved)}
+        >
           Cancel
         </Button>
       </div>
@@ -488,7 +634,8 @@ function ReminderTiming() {
 }
 
 function AccountCard() {
-  const { authed, authEmail, inviteCode, joinFamily, signOut, online, pendingCount } = useBabyBond();
+  const { authed, authEmail, inviteCode, joinFamily, signOut, online, pendingCount } =
+    useBabyBond();
   const [code, setCode] = useState("");
   const [joining, setJoining] = useState(false);
 
@@ -513,12 +660,16 @@ function AccountCard() {
     <div className="space-y-2">
       <SoftCard className="space-y-3">
         <div className="flex items-center gap-3">
-          <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">👤</span>
+          <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">
+            👤
+          </span>
           <div className="flex-1">
             <p className="text-sm font-bold">{authEmail}</p>
             <p className="text-[11px] text-muted-foreground">
               {online ? "Synced live" : "Offline"}
-              {pendingCount ? ` · ${pendingCount} change${pendingCount > 1 ? "s" : ""} waiting` : ""}
+              {pendingCount
+                ? ` · ${pendingCount} change${pendingCount > 1 ? "s" : ""} waiting`
+                : ""}
             </p>
           </div>
         </div>
@@ -614,14 +765,24 @@ function BreastEstimateSetting() {
           />
         </div>
         <p className="text-[11px] text-muted-foreground">
-          This is an estimated value for tracking only, not a measurement of actual breastmilk intake.
+          This is an estimated value for tracking only, not a measurement of actual breastmilk
+          intake.
         </p>
       </SoftCard>
       <div className="grid grid-cols-2 gap-2">
-        <Button disabled={!dirty} className="h-11 rounded-2xl bb-gradient text-primary-foreground" onClick={save}>
+        <Button
+          disabled={!dirty}
+          className="h-11 rounded-2xl bb-gradient text-primary-foreground"
+          onClick={save}
+        >
           Save
         </Button>
-        <Button disabled={!dirty} variant="secondary" className="h-11 rounded-2xl" onClick={() => setDraft(saved)}>
+        <Button
+          disabled={!dirty}
+          variant="secondary"
+          className="h-11 rounded-2xl"
+          onClick={() => setDraft(saved)}
+        >
           Cancel
         </Button>
       </div>
