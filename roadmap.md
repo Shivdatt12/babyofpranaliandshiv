@@ -7,5 +7,5 @@
 - [x] Apply the approved premium floating-glass card system across all existing screens
 - [x] Verify card consistency, light/dark mode, mobile layout, and interaction states
 
-- [ ] Add family-synced जन्मकुंडली & ज्योतिष with exact birth details and secure calculations
-- [ ] Add kundali PDF/share, offline cache, profile entry point, and mobile verification
+- [x] Add family-synced जन्मकुंडली & ज्योतिष with exact birth details and secure calculations
+- [x] Add kundali PDF/share, offline cache, profile entry point, and mobile verification
