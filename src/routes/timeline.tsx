@@ -129,10 +129,7 @@ function Timeline() {
       .sort((a, b) => (a[0] < b[0] ? 1 : -1))
       .map(
         ([key, list]) =>
-          [
-            key,
-            [...list].sort((a, b) => b.at - a.at || a.id.localeCompare(b.id)),
-          ] as const,
+          [key, [...list].sort((a, b) => b.at - a.at || a.id.localeCompare(b.id))] as const,
       );
   }, [filtered]);
 
