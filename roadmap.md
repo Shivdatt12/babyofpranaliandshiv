@@ -9,3 +9,4 @@
 
 - [x] Add family-synced जन्मकुंडली & ज्योतिष with exact birth details and secure calculations
 - [x] Add kundali PDF/share, offline cache, profile entry point, and mobile verification
+- [x] Show Timeline and Baby Day Journey events newest-first by occurrence time

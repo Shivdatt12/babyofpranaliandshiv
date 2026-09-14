@@ -116,7 +116,7 @@ function Timeline() {
     return entries.filter((e) => e.at >= from && (type === "all" || e.type === type));
   }, [entries, type, days, now]);
 
-  // one section per calendar date, newest date first, chronological inside the day
+  // One section per calendar date, with both dates and events newest first.
   const groups = useMemo(() => {
     const map = new Map<string, Entry[]>();
     for (const e of filtered) {
@@ -127,7 +127,10 @@ function Timeline() {
     }
     return [...map.entries()]
       .sort((a, b) => (a[0] < b[0] ? 1 : -1))
-      .map(([key, list]) => [key, [...list].sort((a, b) => a.at - b.at)] as const);
+      .map(
+        ([key, list]) =>
+          [key, [...list].sort((a, b) => b.at - a.at || a.id.localeCompare(b.id))] as const,
+      );
   }, [filtered]);
 
   return (

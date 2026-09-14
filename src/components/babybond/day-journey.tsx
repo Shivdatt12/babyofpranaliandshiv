@@ -43,7 +43,7 @@ const PERIODS: Record<DayPeriod, { icon: string; label: string }> = {
   "night-late": { icon: "🌙", label: "Night" },
 };
 
-const PERIOD_ORDER: DayPeriod[] = ["night-early", "morning", "afternoon", "evening", "night-late"];
+const PERIOD_ORDER: DayPeriod[] = ["night-late", "evening", "afternoon", "morning", "night-early"];
 const MAX_VISIBLE = 8;
 
 function periodFor(at: number): DayPeriod {
@@ -173,10 +173,12 @@ export function BabyDayJourney() {
         detail: "Milestone achieved",
         to: "/track/milestones",
       }));
-    return [...eventItems, ...milestoneItems].sort((a, b) => a.at - b.at);
+    return [...eventItems, ...milestoneItems].sort(
+      (a, b) => b.at - a.at || a.id.localeCompare(b.id),
+    );
   }, [entries, from, milestones, settings.breastMlPerMinute, until]);
 
-  const visibleItems = allItems.length > MAX_VISIBLE ? allItems.slice(-MAX_VISIBLE) : allItems;
+  const visibleItems = allItems.slice(0, MAX_VISIBLE);
   const groups = PERIOD_ORDER.map((period) => ({
     period,
     items: visibleItems.filter((item) => periodFor(item.at) === period),
