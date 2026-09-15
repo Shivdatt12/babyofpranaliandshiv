@@ -405,16 +405,14 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       setLifetimeRecords(
         (cloud.lifetimeRecords ?? []).map((record) => ({
           ...record,
-          by:
-            profileRows?.find((profile) => profile.id === record.byId)?.role ?? record.by,
+          by: profileRows?.find((profile) => profile.id === record.byId)?.role ?? record.by,
         })),
       );
     if (Date.now() - localDocumentsAt.current >= 30_000)
       setMedicalDocuments(
         (cloud.medicalDocuments ?? []).map((document) => ({
           ...document,
-          by:
-            profileRows?.find((profile) => profile.id === document.byId)?.role ?? document.by,
+          by: profileRows?.find((profile) => profile.id === document.byId)?.role ?? document.by,
         })),
       );
     setParents((prev) =>

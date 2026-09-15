@@ -182,15 +182,28 @@ function Records() {
               />
             </div>
             <div className="flex gap-2 overflow-x-auto pb-1">
-              {([
-                ["all", "All"],
-                ["health", "Health"],
-                ["growth", "Growth"],
-                ["life_event", "Life events"],
-                ["memory", "Memories"],
-                ["document", "Documents"],
-              ] as const).map(([value, label]) => (
-                <Button key={value} size="sm" variant={filter === value ? "default" : "secondary"} className="shrink-0 rounded-2xl" onClick={() => { setFilter(value); setVisible(30); }}>{label}</Button>
+              {(
+                [
+                  ["all", "All"],
+                  ["health", "Health"],
+                  ["growth", "Growth"],
+                  ["life_event", "Life events"],
+                  ["memory", "Memories"],
+                  ["document", "Documents"],
+                ] as const
+              ).map(([value, label]) => (
+                <Button
+                  key={value}
+                  size="sm"
+                  variant={filter === value ? "default" : "secondary"}
+                  className="shrink-0 rounded-2xl"
+                  onClick={() => {
+                    setFilter(value);
+                    setVisible(30);
+                  }}
+                >
+                  {label}
+                </Button>
               ))}
             </div>
             {filtered.length === 0 ? (
@@ -211,16 +224,37 @@ function Records() {
                   </div>
                   {item.source === "lifetime" ? (
                     <div className="flex flex-col gap-2">
-                      <Button size="icon" variant="ghost" aria-label="Edit record" onClick={() => {
-                        const record = store.lifetimeRecords.find((candidate) => `lifetime:${candidate.id}` === item.id);
-                        if (!record) return;
-                        setEditingId(record.id); setCategory(record.category); setTitle(record.title); setNotes(record.notes ?? ""); setAt(toLocalInput(record.eventAt)); setTab("event");
-                      }}><Pencil className="size-4" /></Button>
-                      <Button size="icon" variant="ghost" aria-label="Archive record" onClick={() => {
-                        if (!window.confirm("Archive this record?")) return;
-                        store.archiveLifetimeRecord(item.id.replace("lifetime:", ""));
-                        toast.success("Record archived");
-                      }}><Archive className="size-4" /></Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        aria-label="Edit record"
+                        onClick={() => {
+                          const record = store.lifetimeRecords.find(
+                            (candidate) => `lifetime:${candidate.id}` === item.id,
+                          );
+                          if (!record) return;
+                          setEditingId(record.id);
+                          setCategory(record.category);
+                          setTitle(record.title);
+                          setNotes(record.notes ?? "");
+                          setAt(toLocalInput(record.eventAt));
+                          setTab("event");
+                        }}
+                      >
+                        <Pencil className="size-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        aria-label="Archive record"
+                        onClick={() => {
+                          if (!window.confirm("Archive this record?")) return;
+                          store.archiveLifetimeRecord(item.id.replace("lifetime:", ""));
+                          toast.success("Record archived");
+                        }}
+                      >
+                        <Archive className="size-4" />
+                      </Button>
                     </div>
                   ) : null}
                 </SoftCard>
@@ -271,7 +305,20 @@ function Records() {
                 <Plus className="mr-2 size-4" />
                 {editingId ? "Save changes" : "Add to record"}
               </Button>
-              {editingId ? <Button variant="ghost" className="w-full" onClick={() => { setEditingId(null); setTitle(""); setNotes(""); setTab("history"); }}>Cancel</Button> : null}
+              {editingId ? (
+                <Button
+                  variant="ghost"
+                  className="w-full"
+                  onClick={() => {
+                    setEditingId(null);
+                    setTitle("");
+                    setNotes("");
+                    setTab("history");
+                  }}
+                >
+                  Cancel
+                </Button>
+              ) : null}
             </SoftCard>
           </TabsContent>
           <TabsContent value="documents" className="space-y-3">
