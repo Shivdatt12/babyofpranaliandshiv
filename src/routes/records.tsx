@@ -182,14 +182,14 @@ function Records() {
               />
             </div>
             <div className="flex gap-2 overflow-x-auto pb-1">
-              {[
+              {([
                 ["all", "All"],
                 ["health", "Health"],
                 ["growth", "Growth"],
                 ["life_event", "Life events"],
                 ["memory", "Memories"],
                 ["document", "Documents"],
-              ].map(([value, label]) => (
+              ] as const).map(([value, label]) => (
                 <Button key={value} size="sm" variant={filter === value ? "default" : "secondary"} className="shrink-0 rounded-2xl" onClick={() => { setFilter(value); setVisible(30); }}>{label}</Button>
               ))}
             </div>
