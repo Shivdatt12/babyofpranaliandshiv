@@ -10,6 +10,7 @@
      Snooze              -> one reminder after snoozeMs (does not count as a follow-up) */
 
 const STORE = "babybond-schedule";
+const APP_CACHE = "babybond-app-v2";
 const SCHEDULE_URL = "/__babybond_schedule";
 const SESSION_URL = "/__babybond_session";
 const PREFS_URL = "/__babybond_prefs";
@@ -47,6 +48,32 @@ async function clearAll() {
 
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
+
+// Keep previously opened app screens available when the device loses its
+// connection. Private family data remains in the account-scoped local cache.
+self.addEventListener("fetch", (event) => {
+  const request = event.request;
+  if (request.method !== "GET") return;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin || url.pathname.startsWith("/api/")) return;
+
+  event.respondWith(
+    (async () => {
+      const cache = await caches.open(APP_CACHE);
+      try {
+        const response = await fetch(request);
+        if (response.ok) await cache.put(request, response.clone());
+        return response;
+      } catch {
+        return (
+          (await cache.match(request)) ??
+          (request.mode === "navigate" ? await cache.match("/") : undefined) ??
+          Response.error()
+        );
+      }
+    })(),
+  );
+});
 
 self.addEventListener("message", (event) => {
   const data = event.data || {};
@@ -88,7 +115,8 @@ self.addEventListener("message", (event) => {
         // keep resolved/snoozed occurrences the client no longer sends, so they
         // cannot be re-created as a fresh reminder
         for (const old of existing) {
-          if (!merged.some((m) => m.id === old.id) && (old.resolved || old.overrideAt)) merged.push(old);
+          if (!merged.some((m) => m.id === old.id) && (old.resolved || old.overrideAt))
+            merged.push(old);
         }
         await writeSchedule(merged);
         await fireDue();
@@ -262,7 +290,12 @@ self.addEventListener("notificationclose", (event) => {
         return;
       }
       const at = Date.now() + prefs.snoozeMs;
-      await patchItem(item.id, { followUps: (current.followUps ?? 0) + 1, at, overrideAt: at, shown: false });
+      await patchItem(item.id, {
+        followUps: (current.followUps ?? 0) + 1,
+        at,
+        overrideAt: at,
+        shown: false,
+      });
       await tellClients({ type: "reminder-dismissed", data: current });
     })(),
   );
