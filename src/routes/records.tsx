@@ -99,7 +99,7 @@ function Records() {
         eventType: category,
         eventAt: new Date(at).getTime(),
         title: title.trim(),
-        notes: notes.trim() || undefined,
+        notes: notes.trim(),
       });
     } else {
       store.addLifetimeRecord({
