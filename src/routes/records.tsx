@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBabyBond } from "@/lib/babybond-store";
-import { formatDate, formatTime, toLocalInput } from "@/lib/babybond-data";
+import { formatDate, formatTime } from "@/lib/babybond-data";
 import { buildUnifiedRecords } from "@/lib/lifetime-records";
 import {
   ACCEPTED_DOCUMENT_TYPES,
@@ -47,6 +47,11 @@ const documentCategories: { value: MedicalDocumentCategory; label: string }[] = 
   { value: "other", label: "Other" },
 ];
 
+const toLocalInput = (at: number) => {
+  const date = new Date(at - new Date(at).getTimezoneOffset() * 60_000);
+  return date.toISOString().slice(0, 16);
+};
+
 function Records() {
   const store = useBabyBond();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -77,7 +82,10 @@ function Records() {
   );
 
   const saveEvent = () => {
-    if (!title.trim()) return toast.error("Add a title for this memory or record.");
+    if (!title.trim()) {
+      toast.error("Add a title for this memory or record.");
+      return;
+    }
     store.addLifetimeRecord({
       category,
       eventType: category,
@@ -170,7 +178,7 @@ function Records() {
           </TabsContent>
         </Tabs>
 
-        <div className="grid grid-cols-2 gap-2 text-xs"><Link to="/track/weight" className="rounded-2xl bg-secondary p-3 text-center font-bold">Growth tracker</Link><Link to="/track/doctor" className="rounded-2xl bg-secondary p-3 text-center font-bold">Doctor visits</Link><Link to="/track/album" className="rounded-2xl bg-secondary p-3 text-center font-bold">Memories</Link><Link to="/timeline" className="rounded-2xl bg-secondary p-3 text-center font-bold">Daily timeline</Link></div>
+        <div className="grid grid-cols-2 gap-2 text-xs"><Link to="/track/weight" className="rounded-2xl bg-secondary p-3 text-center font-bold">Growth tracker</Link><Link to="/track/doctor" className="rounded-2xl bg-secondary p-3 text-center font-bold">Doctor visits</Link><Link to="/track/album" className="rounded-2xl bg-secondary p-3 text-center font-bold">Memories</Link><Link to="/timeline" search={{ days: 0, type: "all" }} className="rounded-2xl bg-secondary p-3 text-center font-bold">Daily timeline</Link></div>
       </div>
     </AppShell>
   );
