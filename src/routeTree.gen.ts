@@ -15,6 +15,7 @@ import { Route as InsightsRouteImport } from './routes/insights'
 import { Route as KundaliRouteImport } from './routes/kundali'
 import { Route as NamesRouteImport } from './routes/names'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as RecordsRouteImport } from './routes/records'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TimelineRouteImport } from './routes/timeline'
@@ -57,6 +58,11 @@ const NamesRoute = NamesRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecordsRoute = RecordsRouteImport.update({
+  id: '/records',
+  path: '/records',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReportsRoute = ReportsRouteImport.update({
@@ -132,6 +138,7 @@ export interface FileRoutesByFullPath {
   '/kundali': typeof KundaliRoute
   '/names': typeof NamesRoute
   '/profile': typeof ProfileRoute
+  '/records': typeof RecordsRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/timeline': typeof TimelineRoute
@@ -153,6 +160,7 @@ export interface FileRoutesByTo {
   '/kundali': typeof KundaliRoute
   '/names': typeof NamesRoute
   '/profile': typeof ProfileRoute
+  '/records': typeof RecordsRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/timeline': typeof TimelineRoute
@@ -175,6 +183,7 @@ export interface FileRoutesById {
   '/kundali': typeof KundaliRoute
   '/names': typeof NamesRoute
   '/profile': typeof ProfileRoute
+  '/records': typeof RecordsRoute
   '/reports': typeof ReportsRoute
   '/settings': typeof SettingsRoute
   '/timeline': typeof TimelineRoute
@@ -198,6 +207,7 @@ export interface FileRouteTypes {
     | '/kundali'
     | '/names'
     | '/profile'
+    | '/records'
     | '/reports'
     | '/settings'
     | '/timeline'
@@ -219,6 +229,7 @@ export interface FileRouteTypes {
     | '/kundali'
     | '/names'
     | '/profile'
+    | '/records'
     | '/reports'
     | '/settings'
     | '/timeline'
@@ -240,6 +251,7 @@ export interface FileRouteTypes {
     | '/kundali'
     | '/names'
     | '/profile'
+    | '/records'
     | '/reports'
     | '/settings'
     | '/timeline'
@@ -262,6 +274,7 @@ export interface RootRouteChildren {
   KundaliRoute: typeof KundaliRoute
   NamesRoute: typeof NamesRoute
   ProfileRoute: typeof ProfileRoute
+  RecordsRoute: typeof RecordsRoute
   ReportsRoute: typeof ReportsRoute
   SettingsRoute: typeof SettingsRoute
   TimelineRoute: typeof TimelineRoute
@@ -319,6 +332,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/records': {
+      id: '/records'
+      path: '/records'
+      fullPath: '/records'
+      preLoaderRoute: typeof RecordsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reports': {
@@ -422,6 +442,7 @@ const rootRouteChildren: RootRouteChildren = {
   KundaliRoute: KundaliRoute,
   NamesRoute: NamesRoute,
   ProfileRoute: ProfileRoute,
+  RecordsRoute: RecordsRoute,
   ReportsRoute: ReportsRoute,
   SettingsRoute: SettingsRoute,
   TimelineRoute: TimelineRoute,
