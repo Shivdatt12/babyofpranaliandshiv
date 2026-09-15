@@ -714,9 +714,12 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
         if (!fid) return;
         setBabyState(b);
         setDataLoaded(true);
-        await supabase
+        const savedBaby = await supabase
           .from("babies")
-          .upsert({ family_id: fid, data: b }, { onConflict: "family_id" });
+          .upsert({ family_id: fid, data: b }, { onConflict: "family_id" })
+          .select("id")
+          .maybeSingle();
+        if (savedBaby.data?.id) setBabyId(savedBaby.data.id);
         if (!milestones.length) {
           const seeded = defaultMilestones();
           setMilestones(seeded);
@@ -1107,6 +1110,43 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
                   list.map((d) => docToRow({ ...d, id: asUuid(d.id) }, fid, uid)),
                   { onConflict: "id" },
                 );
+              }
+              const importedBabyId =
+                babyId ??
+                (
+                  await supabase
+                    .from("babies")
+                    .select("id")
+                    .eq("family_id", fid)
+                    .maybeSingle()
+                ).data?.id;
+              if (importedBabyId) {
+                if (parsed.lifetimeRecords?.length) {
+                  await supabase.from("lifetime_records").upsert(
+                    parsed.lifetimeRecords.map((record) =>
+                      lifetimeRecordToRow(
+                        { ...record, id: asUuid(record.id) },
+                        fid,
+                        importedBabyId,
+                        uid,
+                      ),
+                    ),
+                    { onConflict: "id" },
+                  );
+                }
+                if (parsed.medicalDocuments?.length) {
+                  await supabase.from("medical_documents").upsert(
+                    parsed.medicalDocuments.map((document) =>
+                      medicalDocumentToRow(
+                        { ...document, id: asUuid(document.id) },
+                        fid,
+                        importedBabyId,
+                        uid,
+                      ),
+                    ),
+                    { onConflict: "id" },
+                  );
+                }
               }
               await reload(fid);
             })();

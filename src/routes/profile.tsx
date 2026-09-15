@@ -9,6 +9,7 @@ import {
   RefreshCw,
   Settings as SettingsIcon,
   Sparkles,
+  Archive,
 } from "lucide-react";
 import {
   AppShell,
@@ -166,18 +167,31 @@ function Profile() {
           <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
             Baby / More
           </h2>
-          <Link
-            to="/kundali"
-            className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow active:scale-95"
-          >
-            <span className="bb-icon-well text-lg">🔮</span>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold">जन्मकुंडली & ज्योतिष</p>
-              <p className="text-xs text-muted-foreground">View Janma Kundali</p>
-            </div>
-            <Sparkles className="size-4 text-muted-foreground" />
-            <ChevronRight className="size-4 text-muted-foreground" />
-          </Link>
+          <div className="space-y-2">
+            <Link
+              to="/records"
+              className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow active:scale-95"
+            >
+              <span className="bb-icon-well"><Archive className="size-5" /></span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold">Lifetime records</p>
+                <p className="text-xs text-muted-foreground">Health, growth, life events and documents</p>
+              </div>
+              <ChevronRight className="size-4 text-muted-foreground" />
+            </Link>
+            <Link
+              to="/kundali"
+              className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow active:scale-95"
+            >
+              <span className="bb-icon-well text-lg">🔮</span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold">जन्मकुंडली & ज्योतिष</p>
+                <p className="text-xs text-muted-foreground">View Janma Kundali</p>
+              </div>
+              <Sparkles className="size-4 text-muted-foreground" />
+              <ChevronRight className="size-4 text-muted-foreground" />
+            </Link>
+          </div>
         </div>
 
         <Link
