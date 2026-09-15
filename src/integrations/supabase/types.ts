@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       active_timers: {
         Row: {
+          baby_id: string | null
           created_at: string
           data: Json
           family_id: string
@@ -25,6 +26,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          baby_id?: string | null
           created_at?: string
           data?: Json
           family_id: string
@@ -34,6 +36,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          baby_id?: string | null
           created_at?: string
           data?: Json
           family_id?: string
@@ -43,6 +46,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "active_timers_baby_id_fkey"
+            columns: ["baby_id"]
+            isOneToOne: false
+            referencedRelation: "babies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "active_timers_family_id_fkey"
             columns: ["family_id"]
@@ -54,6 +64,8 @@ export type Database = {
       }
       appointments: {
         Row: {
+          baby_id: string | null
+          created_at: string
           created_by: string | null
           data: Json
           family_id: string
@@ -61,6 +73,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          baby_id?: string | null
+          created_at?: string
           created_by?: string | null
           data?: Json
           family_id: string
@@ -68,6 +82,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          baby_id?: string | null
+          created_at?: string
           created_by?: string | null
           data?: Json
           family_id?: string
@@ -75,6 +91,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "appointments_baby_id_fkey"
+            columns: ["baby_id"]
+            isOneToOne: false
+            referencedRelation: "babies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "appointments_family_id_fkey"
             columns: ["family_id"]
@@ -88,16 +111,19 @@ export type Database = {
         Row: {
           data: Json
           family_id: string
+          id: string
           updated_at: string
         }
         Insert: {
           data?: Json
           family_id: string
+          id?: string
           updated_at?: string
         }
         Update: {
           data?: Json
           family_id?: string
+          id?: string
           updated_at?: string
         }
         Relationships: [
@@ -113,6 +139,7 @@ export type Database = {
       entries: {
         Row: {
           at: string
+          baby_id: string | null
           created_at: string
           created_by: string | null
           data: Json
@@ -123,6 +150,7 @@ export type Database = {
         }
         Insert: {
           at: string
+          baby_id?: string | null
           created_at?: string
           created_by?: string | null
           data?: Json
@@ -133,6 +161,7 @@ export type Database = {
         }
         Update: {
           at?: string
+          baby_id?: string | null
           created_at?: string
           created_by?: string | null
           data?: Json
@@ -142,6 +171,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "entries_baby_id_fkey"
+            columns: ["baby_id"]
+            isOneToOne: false
+            referencedRelation: "babies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "entries_family_id_fkey"
             columns: ["family_id"]
@@ -198,8 +234,160 @@ export type Database = {
           },
         ]
       }
+      lifetime_records: {
+        Row: {
+          archived_at: string | null
+          baby_id: string
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          details: Json
+          event_at: string
+          event_type: string
+          family_id: string
+          has_time: boolean
+          id: string
+          media_paths: string[]
+          notes: string | null
+          source: string
+          source_device: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          baby_id: string
+          category: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          details?: Json
+          event_at: string
+          event_type: string
+          family_id: string
+          has_time?: boolean
+          id?: string
+          media_paths?: string[]
+          notes?: string | null
+          source?: string
+          source_device?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          baby_id?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          details?: Json
+          event_at?: string
+          event_type?: string
+          family_id?: string
+          has_time?: boolean
+          id?: string
+          media_paths?: string[]
+          notes?: string | null
+          source?: string
+          source_device?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lifetime_records_baby_id_fkey"
+            columns: ["baby_id"]
+            isOneToOne: false
+            referencedRelation: "babies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lifetime_records_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      medical_documents: {
+        Row: {
+          archived_at: string | null
+          baby_id: string
+          category: string
+          created_at: string
+          created_by: string | null
+          document_at: string
+          family_id: string
+          id: string
+          mime_type: string
+          note: string | null
+          object_path: string
+          original_name: string
+          size_bytes: number
+          source: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string | null
+          baby_id: string
+          category: string
+          created_at?: string
+          created_by?: string | null
+          document_at: string
+          family_id: string
+          id?: string
+          mime_type: string
+          note?: string | null
+          object_path: string
+          original_name: string
+          size_bytes: number
+          source?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string | null
+          baby_id?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          document_at?: string
+          family_id?: string
+          id?: string
+          mime_type?: string
+          note?: string | null
+          object_path?: string
+          original_name?: string
+          size_bytes?: number
+          source?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_documents_baby_id_fkey"
+            columns: ["baby_id"]
+            isOneToOne: false
+            referencedRelation: "babies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_documents_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medicines: {
         Row: {
+          baby_id: string | null
+          created_at: string
           created_by: string | null
           data: Json
           family_id: string
@@ -207,6 +395,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          baby_id?: string | null
+          created_at?: string
           created_by?: string | null
           data?: Json
           family_id: string
@@ -214,6 +404,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          baby_id?: string | null
+          created_at?: string
           created_by?: string | null
           data?: Json
           family_id?: string
@@ -221,6 +413,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "medicines_baby_id_fkey"
+            columns: ["baby_id"]
+            isOneToOne: false
+            referencedRelation: "babies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "medicines_family_id_fkey"
             columns: ["family_id"]
@@ -232,6 +431,8 @@ export type Database = {
       }
       milestones: {
         Row: {
+          baby_id: string | null
+          created_at: string
           created_by: string | null
           data: Json
           family_id: string
@@ -239,6 +440,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          baby_id?: string | null
+          created_at?: string
           created_by?: string | null
           data?: Json
           family_id: string
@@ -246,6 +449,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          baby_id?: string | null
+          created_at?: string
           created_by?: string | null
           data?: Json
           family_id?: string
@@ -253,6 +458,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "milestones_baby_id_fkey"
+            columns: ["baby_id"]
+            isOneToOne: false
+            referencedRelation: "babies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "milestones_family_id_fkey"
             columns: ["family_id"]
@@ -264,6 +476,7 @@ export type Database = {
       }
       name_ideas: {
         Row: {
+          baby_id: string | null
           created_at: string
           created_by: string | null
           data: Json
@@ -274,6 +487,7 @@ export type Database = {
           votes: Json
         }
         Insert: {
+          baby_id?: string | null
           created_at?: string
           created_by?: string | null
           data?: Json
@@ -284,6 +498,7 @@ export type Database = {
           votes?: Json
         }
         Update: {
+          baby_id?: string | null
           created_at?: string
           created_by?: string | null
           data?: Json
@@ -294,6 +509,13 @@ export type Database = {
           votes?: Json
         }
         Relationships: [
+          {
+            foreignKeyName: "name_ideas_baby_id_fkey"
+            columns: ["baby_id"]
+            isOneToOne: false
+            referencedRelation: "babies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "name_ideas_family_id_fkey"
             columns: ["family_id"]
@@ -346,6 +568,8 @@ export type Database = {
       }
       vaccines: {
         Row: {
+          baby_id: string | null
+          created_at: string
           created_by: string | null
           data: Json
           family_id: string
@@ -353,6 +577,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          baby_id?: string | null
+          created_at?: string
           created_by?: string | null
           data?: Json
           family_id: string
@@ -360,6 +586,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          baby_id?: string | null
+          created_at?: string
           created_by?: string | null
           data?: Json
           family_id?: string
@@ -367,6 +595,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "vaccines_baby_id_fkey"
+            columns: ["baby_id"]
+            isOneToOne: false
+            referencedRelation: "babies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "vaccines_family_id_fkey"
             columns: ["family_id"]
