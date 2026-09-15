@@ -14,4 +14,4 @@
 - [x] Add family-synced life events, health/growth records, and private medical documents
 - [x] Add the Records area with unified history, filters, search, and pagination
 - [x] Extend offline cache, backup/restore, and realtime sync for lifetime records
-- [ ] Verify security, existing record preservation, core tracker regressions, and mobile layout
+- [x] Verify security, existing record preservation, core tracker regressions, and mobile layout
