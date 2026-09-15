@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
-import { Archive, FilePlus2, Loader2, Plus, Search, Trash2 } from "lucide-react";
+import { Archive, FilePlus2, Loader2, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
 import { Button } from "@/components/ui/button";
@@ -63,6 +63,9 @@ function Records() {
   const [docCategory, setDocCategory] = useState<MedicalDocumentCategory>("other");
   const [uploading, setUploading] = useState(false);
   const [visible, setVisible] = useState(30);
+  const [tab, setTab] = useState("history");
+  const [filter, setFilter] = useState("all");
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const unified = useMemo(
     () =>
@@ -77,10 +80,12 @@ function Records() {
       }),
     [store],
   );
-  const filtered = unified.filter((item) =>
-    `${item.title} ${item.detail} ${item.category}`
-      .toLowerCase()
-      .includes(query.trim().toLowerCase()),
+  const filtered = unified.filter(
+    (item) =>
+      (filter === "all" || item.category === filter) &&
+      `${item.title} ${item.detail} ${item.category}`
+        .toLowerCase()
+        .includes(query.trim().toLowerCase()),
   );
 
   const saveEvent = () => {
@@ -88,20 +93,32 @@ function Records() {
       toast.error("Add a title for this memory or record.");
       return;
     }
-    store.addLifetimeRecord({
-      category,
-      eventType: category,
-      eventAt: new Date(at).getTime(),
-      hasTime: true,
-      title: title.trim(),
-      ...(notes.trim() ? { notes: notes.trim() } : {}),
-      details: {},
-      mediaPaths: [],
-      archivedAt: null,
-    });
+    if (editingId) {
+      store.updateLifetimeRecord(editingId, {
+        category,
+        eventType: category,
+        eventAt: new Date(at).getTime(),
+        title: title.trim(),
+        notes: notes.trim() || undefined,
+      });
+    } else {
+      store.addLifetimeRecord({
+        category,
+        eventType: category,
+        eventAt: new Date(at).getTime(),
+        hasTime: true,
+        title: title.trim(),
+        ...(notes.trim() ? { notes: notes.trim() } : {}),
+        details: {},
+        mediaPaths: [],
+        archivedAt: null,
+      });
+    }
     setTitle("");
     setNotes("");
-    toast.success("Added to the lifetime record");
+    setEditingId(null);
+    setTab("history");
+    toast.success(editingId ? "Record updated" : "Added to the lifetime record");
   };
 
   const addDocument = async (file?: File) => {
@@ -148,7 +165,7 @@ function Records() {
           </div>
         </SoftCard>
 
-        <Tabs defaultValue="history">
+        <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="grid h-auto grid-cols-3 rounded-2xl">
             <TabsTrigger value="history">History</TabsTrigger>
             <TabsTrigger value="event">Add event</TabsTrigger>
@@ -163,6 +180,18 @@ function Records() {
                 placeholder="Search all records"
                 className="rounded-2xl pl-9"
               />
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {[
+                ["all", "All"],
+                ["health", "Health"],
+                ["growth", "Growth"],
+                ["life_event", "Life events"],
+                ["memory", "Memories"],
+                ["document", "Documents"],
+              ].map(([value, label]) => (
+                <Button key={value} size="sm" variant={filter === value ? "default" : "secondary"} className="shrink-0 rounded-2xl" onClick={() => { setFilter(value); setVisible(30); }}>{label}</Button>
+              ))}
             </div>
             {filtered.length === 0 ? (
               <SoftCard className="text-center text-sm text-muted-foreground">
@@ -180,6 +209,20 @@ function Records() {
                       {item.by ? ` · ${item.by}` : ""}
                     </p>
                   </div>
+                  {item.source === "lifetime" ? (
+                    <div className="flex flex-col gap-2">
+                      <Button size="icon" variant="ghost" aria-label="Edit record" onClick={() => {
+                        const record = store.lifetimeRecords.find((candidate) => `lifetime:${candidate.id}` === item.id);
+                        if (!record) return;
+                        setEditingId(record.id); setCategory(record.category); setTitle(record.title); setNotes(record.notes ?? ""); setAt(toLocalInput(record.eventAt)); setTab("event");
+                      }}><Pencil className="size-4" /></Button>
+                      <Button size="icon" variant="ghost" aria-label="Archive record" onClick={() => {
+                        if (!window.confirm("Archive this record?")) return;
+                        store.archiveLifetimeRecord(item.id.replace("lifetime:", ""));
+                        toast.success("Record archived");
+                      }}><Archive className="size-4" /></Button>
+                    </div>
+                  ) : null}
                 </SoftCard>
               ))
             )}
@@ -226,8 +269,9 @@ function Records() {
               />
               <Button onClick={saveEvent} className="w-full rounded-2xl">
                 <Plus className="mr-2 size-4" />
-                Add to record
+                {editingId ? "Save changes" : "Add to record"}
               </Button>
+              {editingId ? <Button variant="ghost" className="w-full" onClick={() => { setEditingId(null); setTitle(""); setNotes(""); setTab("history"); }}>Cancel</Button> : null}
             </SoftCard>
           </TabsContent>
           <TabsContent value="documents" className="space-y-3">

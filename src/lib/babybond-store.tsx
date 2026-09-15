@@ -224,6 +224,8 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
   const localSettingsAt = useRef(0);
   const localBabyAt = useRef(0);
   const localParentAt = useRef<Map<string, number>>(new Map());
+  const localLifetimeAt = useRef(0);
+  const localDocumentsAt = useRef(0);
   const settingsGuarded = () => Date.now() - localSettingsAt.current < GUARD_MS;
   const parentGuarded = (id: string) =>
     Date.now() - (localParentAt.current.get(id) ?? 0) < GUARD_MS;
@@ -399,8 +401,22 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     setMilestones(cloud.milestones);
     setTimers(cloud.timers);
     setNameIdeas(cloud.nameIdeas ?? []);
-    setLifetimeRecords(cloud.lifetimeRecords ?? []);
-    setMedicalDocuments(cloud.medicalDocuments ?? []);
+    if (Date.now() - localLifetimeAt.current >= 30_000)
+      setLifetimeRecords(
+        (cloud.lifetimeRecords ?? []).map((record) => ({
+          ...record,
+          by:
+            profileRows?.find((profile) => profile.id === record.byId)?.role ?? record.by,
+        })),
+      );
+    if (Date.now() - localDocumentsAt.current >= 30_000)
+      setMedicalDocuments(
+        (cloud.medicalDocuments ?? []).map((document) => ({
+          ...document,
+          by:
+            profileRows?.find((profile) => profile.id === document.byId)?.role ?? document.by,
+        })),
+      );
     setParents((prev) =>
       (profileRows ?? []).map((p) => {
         const local = prev.find((x) => x.id === p.id);
@@ -631,6 +647,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       ),
       addLifetimeRecord: (record) => {
         if (!fid || !babyId) return null;
+        localLifetimeAt.current = Date.now();
         const timestamp = Date.now();
         const doc: LifetimeRecord = {
           ...record,
@@ -652,6 +669,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       },
       updateLifetimeRecord: (id, patch) => {
         if (!fid || !babyId) return;
+        localLifetimeAt.current = Date.now();
         const next = lifetimeRecords.map((record) =>
           record.id === id ? { ...record, ...patch, updatedAt: Date.now() } : record,
         );
@@ -668,6 +686,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       },
       archiveLifetimeRecord: (id) => {
         if (!fid || !babyId) return;
+        localLifetimeAt.current = Date.now();
         const next = lifetimeRecords.map((record) =>
           record.id === id ? { ...record, archivedAt: Date.now(), updatedAt: Date.now() } : record,
         );
@@ -684,6 +703,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       },
       addMedicalDocument: (document) => {
         if (!fid || !babyId) return null;
+        localDocumentsAt.current = Date.now();
         const timestamp = Date.now();
         const doc: MedicalDocument = {
           ...document,
@@ -705,6 +725,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       },
       deleteMedicalDocument: (id) => {
         if (!fid) return;
+        localDocumentsAt.current = Date.now();
         setMedicalDocuments((prev) => prev.filter((document) => document.id !== id));
         pushOp({ kind: "delete", table: "medical_documents", id });
         sync();
