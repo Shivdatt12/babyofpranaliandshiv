@@ -77,7 +77,7 @@ export function buildUnifiedRecords(input: {
       title: vaccine.name,
       detail: vaccine.dose ? `${vaccine.dose} · vaccine given` : "Vaccine given",
       emoji: "🛡️",
-      by: vaccine.completedBy,
+      ...(vaccine.completedBy ? { by: vaccine.completedBy } : {}),
     });
   }
 
