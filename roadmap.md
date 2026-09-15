@@ -10,3 +10,8 @@
 - [x] Add family-synced जन्मकुंडली & ज्योतिष with exact birth details and secure calculations
 - [x] Add kundali PDF/share, offline cache, profile entry point, and mobile verification
 - [x] Show Timeline and Baby Day Journey events newest-first by occurrence time
+- [ ] Add the lifetime baby identity and secure long-term record foundation
+- [ ] Add family-synced life events, health/growth records, and private medical documents
+- [ ] Add the Records area with unified history, filters, search, and pagination
+- [ ] Extend offline cache, backup/restore, and realtime sync for lifetime records
+- [ ] Verify security, existing record preservation, core tracker regressions, and mobile layout

@@ -8,8 +8,9 @@ import { uuid } from "./babybond-cloud";
 
 export const MEDIA_BUCKET = "family-media";
 export const ACCEPTED_IMAGE_TYPES = "image/jpeg,image/png,image/webp";
+export const ACCEPTED_DOCUMENT_TYPES = "image/jpeg,image/png,image/webp,application/pdf";
 
-export type MediaFolder = "baby" | "album" | "prescriptions" | "parents";
+export type MediaFolder = "baby" | "album" | "prescriptions" | "parents" | "documents" | "life-events";
 
 /** A stored object path (not a data URL, blob URL or remote URL). */
 export function isStoragePath(value?: string | null): value is string {
@@ -50,6 +51,23 @@ export async function uploadMedia(familyId: string | null, folder: MediaFolder, 
   const body = await compress(file);
   const ext = body.type === "image/jpeg" ? "jpg" : (file.name.split(".").pop() || "jpg").toLowerCase().slice(0, 5);
   const path = `${familyId}/${folder}/${uuid()}.${ext}`;
+  const { error } = await supabase.storage
+    .from(MEDIA_BUCKET)
+    .upload(path, body, { contentType: body.type || file.type, upsert: false });
+  if (error) throw new MediaError(error.message || "Upload failed. Please check your connection and try again.");
+  return path;
+}
+
+/** Uploads a private medical image or PDF without making a public link. */
+export async function uploadDocument(familyId: string | null, file: File): Promise<string> {
+  if (!familyId) throw new MediaError("Sign in first so this document can be saved to your family account.");
+  const allowed = file.type === "application/pdf" || file.type.startsWith("image/");
+  if (!allowed) throw new MediaError("Please choose a PDF, JPG, PNG or WebP file.");
+  if (file.size > 25 * 1024 * 1024) throw new MediaError("That file is too large (max 25 MB).");
+  const body = file.type.startsWith("image/") ? await compress(file) : file;
+  const rawExt = file.name.split(".").pop()?.toLowerCase() ?? (file.type === "application/pdf" ? "pdf" : "jpg");
+  const ext = body.type === "image/jpeg" ? "jpg" : rawExt.replace(/[^a-z0-9]/g, "").slice(0, 5);
+  const path = `${familyId}/documents/${uuid()}.${ext}`;
   const { error } = await supabase.storage
     .from(MEDIA_BUCKET)
     .upload(path, body, { contentType: body.type || file.type, upsert: false });

@@ -166,6 +166,55 @@ export type Milestone = {
   achievedAt: number | null;
 };
 
+export type LifetimeCategory = "health" | "growth" | "life_event" | "important_event";
+
+export type LifetimeRecord = {
+  id: string;
+  category: LifetimeCategory;
+  eventType: string;
+  eventAt: number;
+  hasTime: boolean;
+  title: string;
+  description?: string;
+  notes?: string;
+  details: Record<string, string | number | boolean | null>;
+  mediaPaths: string[];
+  by: string;
+  byId?: string;
+  source: string;
+  sourceDevice?: string;
+  archivedAt?: number | null;
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type MedicalDocumentCategory =
+  | "prescription"
+  | "lab_report"
+  | "vaccination_certificate"
+  | "discharge_summary"
+  | "doctor_document"
+  | "medical_photo"
+  | "other";
+
+export type MedicalDocument = {
+  id: string;
+  category: MedicalDocumentCategory;
+  title: string;
+  note?: string;
+  documentAt: number;
+  objectPath: string;
+  originalName: string;
+  mimeType: string;
+  sizeBytes: number;
+  by: string;
+  byId?: string;
+  source: string;
+  archivedAt?: number | null;
+  createdAt: number;
+  updatedAt: number;
+};
+
 export type Baby = {
   name: string;
   /** date + time of birth */

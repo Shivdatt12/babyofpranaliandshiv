@@ -1,11 +1,29 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
-import type { Appointment, Baby, Entry, Medicine, Milestone, Settings, Vaccine } from "./babybond-data";
+import type {
+  Appointment,
+  Baby,
+  Entry,
+  LifetimeRecord,
+  MedicalDocument,
+  Medicine,
+  Milestone,
+  Settings,
+  Vaccine,
+} from "./babybond-data";
 import { nameKey, type NameIdea, type NameVote } from "./babybond-names";
 
 
 export type DocTable = "medicines" | "appointments" | "vaccines" | "milestones";
-export type SyncTable = DocTable | "entries" | "babies" | "family_settings" | "active_timers" | "name_ideas";
+export type SyncTable =
+  | DocTable
+  | "entries"
+  | "babies"
+  | "family_settings"
+  | "active_timers"
+  | "name_ideas"
+  | "lifetime_records"
+  | "medical_documents";
 
 
 export type TimerKind = "breast" | "sleep";
@@ -54,6 +72,7 @@ export function rowToDoc<T>(r: Row): T {
 }
 
 export type CloudSnapshot = {
+  babyId: string | null;
   baby: Baby | null;
   settings: Partial<Settings> | null;
   entries: Entry[];
@@ -63,7 +82,101 @@ export type CloudSnapshot = {
   milestones: Milestone[];
   timers: ActiveTimer[];
   nameIdeas: NameIdea[];
+  lifetimeRecords: LifetimeRecord[];
+  medicalDocuments: MedicalDocument[];
 };
+
+export function lifetimeRecordToRow(
+  record: LifetimeRecord,
+  familyId: string,
+  babyId: string,
+  userId: string | null,
+) {
+  return {
+    id: record.id,
+    family_id: familyId,
+    baby_id: babyId,
+    category: record.category,
+    event_type: record.eventType,
+    event_at: new Date(record.eventAt).toISOString(),
+    has_time: record.hasTime,
+    title: record.title,
+    description: record.description ?? null,
+    notes: record.notes ?? null,
+    details: record.details as Json,
+    media_paths: record.mediaPaths,
+    created_by: record.byId ?? userId,
+    source: record.source,
+    source_device: record.sourceDevice ?? null,
+    archived_at: record.archivedAt ? new Date(record.archivedAt).toISOString() : null,
+  };
+}
+
+export function rowToLifetimeRecord(r: Record<string, unknown>): LifetimeRecord {
+  return {
+    id: String(r['id']),
+    category: r['category'] as LifetimeRecord['category'],
+    eventType: String(r['event_type']),
+    eventAt: new Date(String(r['event_at'])).getTime(),
+    hasTime: Boolean(r['has_time']),
+    title: String(r['title']),
+    ...(r['description'] ? { description: String(r['description']) } : {}),
+    ...(r['notes'] ? { notes: String(r['notes']) } : {}),
+    details: (r['details'] as LifetimeRecord['details']) ?? {},
+    mediaPaths: (r['media_paths'] as string[] | null) ?? [],
+    by: "Parent",
+    ...(r['created_by'] ? { byId: String(r['created_by']) } : {}),
+    source: String(r['source'] ?? "parent"),
+    ...(r['source_device'] ? { sourceDevice: String(r['source_device']) } : {}),
+    archivedAt: r['archived_at'] ? new Date(String(r['archived_at'])).getTime() : null,
+    createdAt: new Date(String(r['created_at'])).getTime(),
+    updatedAt: new Date(String(r['updated_at'])).getTime(),
+  };
+}
+
+export function medicalDocumentToRow(
+  document: MedicalDocument,
+  familyId: string,
+  babyId: string,
+  userId: string | null,
+) {
+  return {
+    id: document.id,
+    family_id: familyId,
+    baby_id: babyId,
+    category: document.category,
+    title: document.title,
+    note: document.note ?? null,
+    document_at: new Date(document.documentAt).toISOString(),
+    object_path: document.objectPath,
+    original_name: document.originalName,
+    mime_type: document.mimeType,
+    size_bytes: document.sizeBytes,
+    created_by: document.byId ?? userId,
+    source: document.source,
+    archived_at: document.archivedAt ? new Date(document.archivedAt).toISOString() : null,
+  };
+}
+
+export function rowToMedicalDocument(r: Record<string, unknown>): MedicalDocument {
+  return {
+    id: String(r['id']),
+    category: r['category'] as MedicalDocument['category'],
+    title: String(r['title']),
+    ...(r['note'] ? { note: String(r['note']) } : {}),
+    documentAt: new Date(String(r['document_at'])).getTime(),
+    objectPath: String(r['object_path']),
+    originalName: String(r['original_name']),
+    mimeType: String(r['mime_type']),
+    sizeBytes: Number(r['size_bytes']),
+    by: "Parent",
+    ...(r['created_by'] ? { byId: String(r['created_by']) } : {}),
+    source: String(r['source'] ?? "parent"),
+    archivedAt: r['archived_at'] ? new Date(String(r['archived_at'])).getTime() : null,
+    createdAt: new Date(String(r['created_at'])).getTime(),
+    updatedAt: new Date(String(r['updated_at'])).getTime(),
+  };
+}
 
 export function nameToRow(idea: NameIdea, familyId: string, userId: string | null) {
   const { id, votes, ...rest } = idea;
@@ -86,8 +199,8 @@ export function rowToName(r: Row & { votes?: unknown }): NameIdea {
 }
 
 export async function loadFamilyData(familyId: string): Promise<CloudSnapshot> {
-  const [baby, settings, entries, medicines, appointments, vaccines, milestones, timers, names] = await Promise.all([
-    supabase.from("babies").select("data").eq("family_id", familyId).maybeSingle(),
+  const [baby, settings, entries, medicines, appointments, vaccines, milestones, timers, names, lifetime, documents] = await Promise.all([
+    supabase.from("babies").select("id,data").eq("family_id", familyId).maybeSingle(),
     supabase.from("family_settings").select("data").eq("family_id", familyId).maybeSingle(),
     supabase.from("entries").select("*").eq("family_id", familyId).order("at", { ascending: false }).limit(5000),
     supabase.from("medicines").select("*").eq("family_id", familyId),
@@ -96,9 +209,12 @@ export async function loadFamilyData(familyId: string): Promise<CloudSnapshot> {
     supabase.from("milestones").select("*").eq("family_id", familyId),
     supabase.from("active_timers").select("*").eq("family_id", familyId),
     supabase.from("name_ideas").select("*").eq("family_id", familyId),
+    supabase.from("lifetime_records").select("*").eq("family_id", familyId).order("event_at", { ascending: false }).limit(500),
+    supabase.from("medical_documents").select("*").eq("family_id", familyId).order("document_at", { ascending: false }).limit(500),
   ]);
 
   return {
+    babyId: baby.data?.id ?? null,
     baby: (baby.data?.data as Baby | undefined) ?? null,
     settings: (settings.data?.data as Partial<Settings> | undefined) ?? null,
     entries: ((entries.data ?? []) as never[]).map(rowToEntry),
@@ -118,6 +234,8 @@ export async function loadFamilyData(familyId: string): Promise<CloudSnapshot> {
       ...(t.data?.['side'] ? { side: String(t.data['side']) } : {}),
       ...(t.data?.['note'] ? { note: String(t.data['note']) } : {}),
     })),
+    lifetimeRecords: ((lifetime.data ?? []) as unknown as Record<string, unknown>[]).map(rowToLifetimeRecord),
+    medicalDocuments: ((documents.data ?? []) as unknown as Record<string, unknown>[]).map(rowToMedicalDocument),
   };
 }
 
