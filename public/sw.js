@@ -115,7 +115,8 @@ self.addEventListener("message", (event) => {
         // keep resolved/snoozed occurrences the client no longer sends, so they
         // cannot be re-created as a fresh reminder
         for (const old of existing) {
-          if (!merged.some((m) => m.id === old.id) && (old.resolved || old.overrideAt)) merged.push(old);
+          if (!merged.some((m) => m.id === old.id) && (old.resolved || old.overrideAt))
+            merged.push(old);
         }
         await writeSchedule(merged);
         await fireDue();
@@ -289,7 +290,12 @@ self.addEventListener("notificationclose", (event) => {
         return;
       }
       const at = Date.now() + prefs.snoozeMs;
-      await patchItem(item.id, { followUps: (current.followUps ?? 0) + 1, at, overrideAt: at, shown: false });
+      await patchItem(item.id, {
+        followUps: (current.followUps ?? 0) + 1,
+        at,
+        overrideAt: at,
+        shown: false,
+      });
       await tellClients({ type: "reminder-dismissed", data: current });
     })(),
   );
