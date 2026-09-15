@@ -642,7 +642,11 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
           updatedAt: timestamp,
         };
         setLifetimeRecords((prev) => [doc, ...prev]);
-        pushOp({ kind: "upsert", table: "lifetime_records", row: lifetimeRecordToRow(doc, fid, babyId, uid) });
+        pushOp({
+          kind: "upsert",
+          table: "lifetime_records",
+          row: lifetimeRecordToRow(doc, fid, babyId, uid),
+        });
         sync();
         return doc.id;
       },
@@ -654,7 +658,11 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
         setLifetimeRecords(next);
         const doc = next.find((record) => record.id === id);
         if (doc) {
-          pushOp({ kind: "upsert", table: "lifetime_records", row: lifetimeRecordToRow(doc, fid, babyId, uid) });
+          pushOp({
+            kind: "upsert",
+            table: "lifetime_records",
+            row: lifetimeRecordToRow(doc, fid, babyId, uid),
+          });
           sync();
         }
       },
@@ -666,7 +674,11 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
         setLifetimeRecords(next);
         const doc = next.find((record) => record.id === id);
         if (doc) {
-          pushOp({ kind: "upsert", table: "lifetime_records", row: lifetimeRecordToRow(doc, fid, babyId, uid) });
+          pushOp({
+            kind: "upsert",
+            table: "lifetime_records",
+            row: lifetimeRecordToRow(doc, fid, babyId, uid),
+          });
           sync();
         }
       },
@@ -683,7 +695,11 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
           updatedAt: timestamp,
         };
         setMedicalDocuments((prev) => [doc, ...prev]);
-        pushOp({ kind: "upsert", table: "medical_documents", row: medicalDocumentToRow(doc, fid, babyId, uid) });
+        pushOp({
+          kind: "upsert",
+          table: "medical_documents",
+          row: medicalDocumentToRow(doc, fid, babyId, uid),
+        });
         sync();
         return doc.id;
       },
@@ -1113,13 +1129,8 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
               }
               const importedBabyId =
                 babyId ??
-                (
-                  await supabase
-                    .from("babies")
-                    .select("id")
-                    .eq("family_id", fid)
-                    .maybeSingle()
-                ).data?.id;
+                (await supabase.from("babies").select("id").eq("family_id", fid).maybeSingle()).data
+                  ?.id;
               if (importedBabyId) {
                 if (parsed.lifetimeRecords?.length) {
                   await supabase.from("lifetime_records").upsert(

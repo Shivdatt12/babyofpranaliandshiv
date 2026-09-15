@@ -20,14 +20,14 @@ export type UnifiedRecord = {
   by?: string;
 };
 
-const entryCategory = (entry: Entry): UnifiedRecord['category'] => {
+const entryCategory = (entry: Entry): UnifiedRecord["category"] => {
   if (["weight", "bilirubin"].includes(entry.type)) return "growth";
   if (["medicine", "vaccine", "visit"].includes(entry.type)) return "health";
   if (entry.type === "photo") return "memory";
   return "daily_care";
 };
 
-const lifetimeCategory = (category: LifetimeCategory): UnifiedRecord['category'] =>
+const lifetimeCategory = (category: LifetimeCategory): UnifiedRecord["category"] =>
   category === "important_event" ? "life_event" : category;
 
 export function buildUnifiedRecords(input: {

@@ -172,10 +172,14 @@ function Profile() {
               to="/records"
               className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow active:scale-95"
             >
-              <span className="bb-icon-well"><Archive className="size-5" /></span>
+              <span className="bb-icon-well">
+                <Archive className="size-5" />
+              </span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold">Lifetime records</p>
-                <p className="text-xs text-muted-foreground">Health, growth, life events and documents</p>
+                <p className="text-xs text-muted-foreground">
+                  Health, growth, life events and documents
+                </p>
               </div>
               <ChevronRight className="size-4 text-muted-foreground" />
             </Link>
