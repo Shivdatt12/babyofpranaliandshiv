@@ -21,6 +21,8 @@ import {
   type Appointment,
   type Baby,
   type Entry,
+  type LifetimeRecord,
+  type MedicalDocument,
   type Medicine,
   type Milestone,
   type Parent,
@@ -42,6 +44,8 @@ import {
   uuid,
   timerToRow,
   nameToRow,
+  lifetimeRecordToRow,
+  medicalDocumentToRow,
   type DocTable,
   type ActiveTimer,
   type TimerKind,
@@ -51,6 +55,7 @@ import { nameKey, type NameIdea, type NameVote } from "./babybond-names";
 import { buildDefaultVaccines, DEFAULT_VACCINE_SCHEDULE, templateCodes } from "./babybond-vaccines";
 
 type Snapshot = {
+  babyId?: string | null;
   baby: Baby | null;
   entries: Entry[];
   medicines: Medicine[];
@@ -62,6 +67,8 @@ type Snapshot = {
   settings?: Settings;
   timers?: ActiveTimer[];
   nameIdeas?: NameIdea[];
+  lifetimeRecords?: LifetimeRecord[];
+  medicalDocuments?: MedicalDocument[];
 };
 
 type Store = {
@@ -89,8 +96,20 @@ type Store = {
   authed: boolean;
   authEmail: string | null;
   familyId: string | null;
+  babyId: string | null;
   inviteCode: string | null;
   pendingCount: number;
+  lifetimeRecords: LifetimeRecord[];
+  medicalDocuments: MedicalDocument[];
+  addLifetimeRecord: (
+    record: Omit<LifetimeRecord, "id" | "by" | "byId" | "source" | "createdAt" | "updatedAt">,
+  ) => string | null;
+  updateLifetimeRecord: (id: string, patch: Partial<LifetimeRecord>) => void;
+  archiveLifetimeRecord: (id: string) => void;
+  addMedicalDocument: (
+    document: Omit<MedicalDocument, "id" | "by" | "byId" | "source" | "createdAt" | "updatedAt">,
+  ) => string | null;
+  deleteMedicalDocument: (id: string) => void;
   joinFamily: (code: string) => Promise<void>;
   signOut: () => Promise<void>;
   createBaby: (b: Baby) => Promise<void>;
@@ -171,6 +190,7 @@ function clearAllLocalData() {
 export function BabyBondProvider({ children }: { children: ReactNode }) {
   const [now, setNow] = useState(() => Date.now());
   const [baby, setBabyState] = useState<Baby | null>(null);
+  const [babyId, setBabyId] = useState<string | null>(null);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -178,6 +198,8 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [timers, setTimers] = useState<ActiveTimer[]>([]);
   const [nameIdeas, setNameIdeas] = useState<NameIdea[]>([]);
+  const [lifetimeRecords, setLifetimeRecords] = useState<LifetimeRecord[]>([]);
+  const [medicalDocuments, setMedicalDocuments] = useState<MedicalDocument[]>([]);
   const [meId, setMeId] = useState("");
   const [parents, setParents] = useState<Parent[]>([]);
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
@@ -214,6 +236,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
   const clearMemory = useCallback(() => {
     applyingRemote.current = true;
     setBabyState(null);
+    setBabyId(null);
     setEntries([]);
     setMedicines([]);
     setAppointments([]);
@@ -221,6 +244,8 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     setMilestones([]);
     setTimers([]);
     setNameIdeas([]);
+    setLifetimeRecords([]);
+    setMedicalDocuments([]);
     setParents([]);
     setSettings(DEFAULT_SETTINGS);
     setDataLoaded(false);
@@ -229,6 +254,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
   const applySnapshot = useCallback((s: Snapshot) => {
     applyingRemote.current = true;
     setBabyState(s.baby ?? null);
+    setBabyId(s.babyId ?? null);
     setEntries(s.entries ?? []);
     setMedicines(s.medicines ?? []);
     setAppointments(s.appointments ?? []);
@@ -236,6 +262,8 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     setMilestones(s.milestones ?? []);
     setTimers(s.timers ?? []);
     setNameIdeas(s.nameIdeas ?? []);
+    setLifetimeRecords(s.lifetimeRecords ?? []);
+    setMedicalDocuments(s.medicalDocuments ?? []);
     if (s.parents)
       setParents((prev) =>
         s.parents!.map((p) =>
@@ -360,6 +388,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     // Exact birth-detail edits and a freshly generated kundali must not be
     // replaced by an older realtime snapshot while their queued write lands.
     if (Date.now() - localBabyAt.current >= 30_000) setBabyState(cloud.baby ?? null);
+    setBabyId(cloud.babyId);
     // a settings change made seconds ago must not be undone by a slower cloud read
     if (Date.now() - localSettingsAt.current >= 30_000)
       setSettings({ ...DEFAULT_SETTINGS, ...(cloud.settings ?? {}) });
@@ -370,6 +399,8 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     setMilestones(cloud.milestones);
     setTimers(cloud.timers);
     setNameIdeas(cloud.nameIdeas ?? []);
+    setLifetimeRecords(cloud.lifetimeRecords ?? []);
+    setMedicalDocuments(cloud.medicalDocuments ?? []);
     setParents((prev) =>
       (profileRows ?? []).map((p) => {
         const local = prev.find((x) => x.id === p.id);
@@ -424,6 +455,8 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       "profiles",
       "active_timers",
       "name_ideas",
+      "lifetime_records",
+      "medical_documents",
     ]) {
       channel.on(
         "postgres_changes",
@@ -462,6 +495,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     if (!familyId || !dataLoaded) return;
     const snapshot: Snapshot = {
       baby,
+      babyId,
       entries,
       medicines,
       appointments,
@@ -472,6 +506,8 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       settings,
       timers,
       nameIdeas,
+      lifetimeRecords,
+      medicalDocuments,
     };
     try {
       window.localStorage.setItem(cacheKey(familyId), JSON.stringify(snapshot));
@@ -492,6 +528,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     familyId,
     dataLoaded,
     baby,
+    babyId,
     entries,
     medicines,
     appointments,
@@ -502,6 +539,8 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     settings,
     timers,
     nameIdeas,
+    lifetimeRecords,
+    medicalDocuments,
   ]);
 
   const value = useMemo<Store>(() => {
@@ -581,8 +620,79 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       authed: !!session,
       authEmail: session?.user.email ?? null,
       familyId,
+      babyId,
       inviteCode,
       pendingCount,
+      lifetimeRecords: [...lifetimeRecords].sort(
+        (a, b) => b.eventAt - a.eventAt || a.id.localeCompare(b.id),
+      ),
+      medicalDocuments: [...medicalDocuments].sort(
+        (a, b) => b.documentAt - a.documentAt || a.id.localeCompare(b.id),
+      ),
+      addLifetimeRecord: (record) => {
+        if (!fid || !babyId) return null;
+        const timestamp = Date.now();
+        const doc: LifetimeRecord = {
+          ...record,
+          id: uuid(),
+          by: me.role,
+          ...(uid ? { byId: uid } : {}),
+          source: "parent",
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        };
+        setLifetimeRecords((prev) => [doc, ...prev]);
+        pushOp({ kind: "upsert", table: "lifetime_records", row: lifetimeRecordToRow(doc, fid, babyId, uid) });
+        sync();
+        return doc.id;
+      },
+      updateLifetimeRecord: (id, patch) => {
+        if (!fid || !babyId) return;
+        const next = lifetimeRecords.map((record) =>
+          record.id === id ? { ...record, ...patch, updatedAt: Date.now() } : record,
+        );
+        setLifetimeRecords(next);
+        const doc = next.find((record) => record.id === id);
+        if (doc) {
+          pushOp({ kind: "upsert", table: "lifetime_records", row: lifetimeRecordToRow(doc, fid, babyId, uid) });
+          sync();
+        }
+      },
+      archiveLifetimeRecord: (id) => {
+        if (!fid || !babyId) return;
+        const next = lifetimeRecords.map((record) =>
+          record.id === id ? { ...record, archivedAt: Date.now(), updatedAt: Date.now() } : record,
+        );
+        setLifetimeRecords(next);
+        const doc = next.find((record) => record.id === id);
+        if (doc) {
+          pushOp({ kind: "upsert", table: "lifetime_records", row: lifetimeRecordToRow(doc, fid, babyId, uid) });
+          sync();
+        }
+      },
+      addMedicalDocument: (document) => {
+        if (!fid || !babyId) return null;
+        const timestamp = Date.now();
+        const doc: MedicalDocument = {
+          ...document,
+          id: uuid(),
+          by: me.role,
+          ...(uid ? { byId: uid } : {}),
+          source: "parent",
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        };
+        setMedicalDocuments((prev) => [doc, ...prev]);
+        pushOp({ kind: "upsert", table: "medical_documents", row: medicalDocumentToRow(doc, fid, babyId, uid) });
+        sync();
+        return doc.id;
+      },
+      deleteMedicalDocument: (id) => {
+        if (!fid) return;
+        setMedicalDocuments((prev) => prev.filter((document) => document.id !== id));
+        pushOp({ kind: "delete", table: "medical_documents", id });
+        sync();
+      },
       joinFamily: async (code) => {
         const { data, error } = await supabase.rpc("join_family_by_code", { _code: code });
         if (error) throw error;
@@ -965,6 +1075,8 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
             parents,
             settings,
             timers,
+            lifetimeRecords,
+            medicalDocuments,
           },
           null,
           2,
@@ -1037,6 +1149,9 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     familyId,
     inviteCode,
     pendingCount,
+    babyId,
+    lifetimeRecords,
+    medicalDocuments,
     applySnapshot,
     clearMemory,
     reload,
