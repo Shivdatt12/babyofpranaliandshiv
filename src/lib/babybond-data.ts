@@ -164,6 +164,11 @@ export type Milestone = {
   label: string;
   emoji: string;
   achievedAt: number | null;
+  note?: string;
+  by?: string;
+  byId?: string;
+  createdAt?: number;
+  updatedAt?: number;
 };
 
 export type LifetimeCategory = "health" | "growth" | "life_event" | "important_event";
