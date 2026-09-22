@@ -9,6 +9,7 @@ import {
   formatFullDate,
   formatTime,
   type Entry,
+  type Milestone,
 } from "@/lib/babybond-data";
 
 export const Route = createFileRoute("/timeline")({
@@ -94,7 +95,31 @@ const FILTERS = [
   { key: "bilirubin", label: "Bilirubin", emoji: "🩸" },
   { key: "vaccine", label: "Vaccine", emoji: "🛡️" },
   { key: "visit", label: "Doctor", emoji: "🩺" },
+  { key: "milestone", label: "Milestone", emoji: "✨" },
 ] as const;
+
+type TimelineItem = {
+  id: string;
+  at: number;
+  type: Entry["type"] | "milestone";
+  emoji: string;
+  title: string;
+  detail: string;
+  by?: string;
+};
+
+function milestoneItem(milestone: Milestone): TimelineItem | null {
+  if (!milestone.achievedAt) return null;
+  return {
+    id: `milestone-${milestone.id}`,
+    at: milestone.achievedAt,
+    type: "milestone",
+    emoji: milestone.emoji || "✨",
+    title: milestone.label,
+    detail: milestone.note || "Milestone achieved",
+    by: milestone.by,
+  };
+}
 
 const RANGES = [
   { key: 1, label: "Today" },
@@ -104,7 +129,7 @@ const RANGES = [
 ] as const;
 
 function Timeline() {
-  const { entries, now, settings } = useBabyBond();
+  const { entries, milestones, now, settings } = useBabyBond();
   const search = Route.useSearch();
   const [type, setType] = useState<(typeof FILTERS)[number]["key"]>(search.type);
   const [days, setDays] = useState<number>(search.days);
@@ -113,12 +138,19 @@ function Timeline() {
     const from = days
       ? new Date(new Date(now).setHours(0, 0, 0, 0)).getTime() - (days - 1) * 86400000
       : 0;
-    return entries.filter((e) => e.at >= from && (type === "all" || e.type === type));
-  }, [entries, type, days, now]);
+    const entryItems: TimelineItem[] = entries.map((entry) => {
+      const display = describe(entry, settings.breastMlPerMinute);
+      return { ...entry, ...display };
+    });
+    const milestoneItems = milestones.map(milestoneItem).filter((item): item is TimelineItem => !!item);
+    return [...entryItems, ...milestoneItems].filter(
+      (item) => item.at >= from && (type === "all" || item.type === type),
+    );
+  }, [entries, milestones, type, days, now, settings.breastMlPerMinute]);
 
   // One section per calendar date, with both dates and events newest first.
   const groups = useMemo(() => {
-    const map = new Map<string, Entry[]>();
+    const map = new Map<string, TimelineItem[]>();
     for (const e of filtered) {
       const key = dayKey(e.at);
       const list = map.get(key);
@@ -186,16 +218,15 @@ function Timeline() {
             </h2>
             <div className="space-y-2">
               {list.map((e) => {
-                const d = describe(e, settings.breastMlPerMinute);
                 return (
                   <SoftCard key={e.id} className="flex items-center gap-3 py-3">
                     <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-secondary text-lg">
-                      {d.emoji}
+                      {e.emoji}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold">{d.title}</p>
+                      <p className="truncate text-sm font-bold">{e.title}</p>
                       <p className="truncate text-xs capitalize text-muted-foreground">
-                        {d.detail}
+                        {e.detail}
                       </p>
                     </div>
                     <div className="text-right">

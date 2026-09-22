@@ -46,6 +46,7 @@ import {
   nameToRow,
   lifetimeRecordToRow,
   medicalDocumentToRow,
+  milestoneToRow,
   type DocTable,
   type ActiveTimer,
   type TimerKind,
@@ -148,6 +149,9 @@ type Store = {
   voteNameIdea: (id: string, vote: NameVote | null) => void;
   chooseFinalName: (id: string) => void;
   clearFinalName: () => void;
+  addMilestone: (milestone: Omit<Milestone, "id" | "by" | "byId" | "createdAt" | "updatedAt">) => Promise<string>;
+  updateMilestone: (id: string, patch: Partial<Milestone>) => Promise<void>;
+  deleteMilestone: (id: string) => Promise<void>;
   toggleMilestone: (id: string) => void;
   switchParent: (id: string) => void;
   updateParent: (id: string, p: Partial<Parent>) => void;
@@ -226,6 +230,7 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
   const localParentAt = useRef<Map<string, number>>(new Map());
   const localLifetimeAt = useRef(0);
   const localDocumentsAt = useRef(0);
+  const localMilestonesAt = useRef(0);
   const settingsGuarded = () => Date.now() - localSettingsAt.current < GUARD_MS;
   const parentGuarded = (id: string) =>
     Date.now() - (localParentAt.current.get(id) ?? 0) < GUARD_MS;
@@ -398,7 +403,13 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
     setMedicines(cloud.medicines);
     setAppointments(cloud.appointments);
     setVaccines(cloud.vaccines);
-    setMilestones(cloud.milestones);
+    if (Date.now() - localMilestonesAt.current >= 30_000)
+      setMilestones(
+        cloud.milestones.map((milestone) => ({
+          ...milestone,
+          by: profileRows?.find((profile) => profile.id === milestone.byId)?.role ?? milestone.by,
+        })),
+      );
     setTimers(cloud.timers);
     setNameIdeas(cloud.nameIdeas ?? []);
     if (Date.now() - localLifetimeAt.current >= 30_000)
@@ -1061,6 +1072,69 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
         const next: Baby = { ...(baby ?? EMPTY_BABY), nameStatus: "choosing", chosenNameId: null };
         setBabyState(next);
         saveBaby(next);
+      },
+      addMilestone: async (milestone) => {
+        if (!fid || !babyId) throw new Error("Baby profile is not ready yet. Please try again.");
+        const timestamp = Date.now();
+        const doc: Milestone = {
+          ...milestone,
+          id: uuid(),
+          by: me.role,
+          ...(uid ? { byId: uid } : {}),
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        };
+        const row = milestoneToRow(doc, fid, babyId, uid);
+        localMilestonesAt.current = timestamp;
+        if (!navigator.onLine) {
+          setMilestones((prev) => [...prev, doc]);
+          pushOp({ kind: "upsert", table: "milestones", row });
+          setPendingCount(readQueue().length);
+          return doc.id;
+        }
+        const { error } = await supabase.from("milestones").upsert(row, { onConflict: "id" });
+        if (error) {
+          console.error("Milestone create failed", { code: error.code, message: error.message });
+          throw new Error("The milestone could not be saved. Please check your connection and try again.");
+        }
+        setMilestones((prev) => (prev.some((item) => item.id === doc.id) ? prev : [...prev, doc]));
+        return doc.id;
+      },
+      updateMilestone: async (id, patch) => {
+        if (!fid || !babyId) throw new Error("Baby profile is not ready yet. Please try again.");
+        const current = milestones.find((item) => item.id === id);
+        if (!current) throw new Error("This milestone is no longer available.");
+        const doc: Milestone = { ...current, ...patch, updatedAt: Date.now() };
+        const row = milestoneToRow(doc, fid, babyId, uid);
+        localMilestonesAt.current = Date.now();
+        if (!navigator.onLine) {
+          setMilestones((prev) => prev.map((item) => (item.id === id ? doc : item)));
+          pushOp({ kind: "upsert", table: "milestones", row });
+          setPendingCount(readQueue().length);
+          return;
+        }
+        const { error } = await supabase.from("milestones").upsert(row, { onConflict: "id" });
+        if (error) {
+          console.error("Milestone update failed", { code: error.code, message: error.message });
+          throw new Error("The milestone could not be updated. Please try again.");
+        }
+        setMilestones((prev) => prev.map((item) => (item.id === id ? doc : item)));
+      },
+      deleteMilestone: async (id) => {
+        if (!fid) throw new Error("Family details are not ready yet. Please try again.");
+        localMilestonesAt.current = Date.now();
+        if (!navigator.onLine) {
+          setMilestones((prev) => prev.filter((item) => item.id !== id));
+          pushOp({ kind: "delete", table: "milestones", id });
+          setPendingCount(readQueue().length);
+          return;
+        }
+        const { error } = await supabase.from("milestones").delete().eq("id", id);
+        if (error) {
+          console.error("Milestone delete failed", { code: error.code, message: error.message });
+          throw new Error("The milestone could not be deleted. Please try again.");
+        }
+        setMilestones((prev) => prev.filter((item) => item.id !== id));
       },
       toggleMilestone: (id) => {
         const m = milestones.find((x) => x.id === id);

@@ -86,6 +86,30 @@ export function rowToDoc<T>(r: Row): T {
   return { id: r.id, ...(r.data ?? {}) } as T;
 }
 
+export function milestoneToRow(
+  milestone: Milestone,
+  familyId: string,
+  babyId: string,
+  userId: string | null,
+) {
+  const { id, byId, ...data } = milestone;
+  return {
+    id,
+    family_id: familyId,
+    baby_id: babyId,
+    data: data as Json,
+    created_by: byId ?? userId,
+  };
+}
+
+export function rowToMilestone(r: Row & { created_by?: string | null }): Milestone {
+  return {
+    id: r.id,
+    ...(r.data ?? {}),
+    ...(r.created_by ? { byId: r.created_by } : {}),
+  } as Milestone;
+}
+
 export type CloudSnapshot = {
   babyId: string | null;
   baby: Baby | null;
@@ -263,7 +287,7 @@ export async function loadFamilyData(familyId: string): Promise<CloudSnapshot> {
     medicines: ((medicines.data ?? []) as Row[]).map((r) => rowToDoc<Medicine>(r)),
     appointments: ((appointments.data ?? []) as Row[]).map((r) => rowToDoc<Appointment>(r)),
     vaccines: ((vaccines.data ?? []) as Row[]).map((r) => rowToDoc<Vaccine>(r)),
-    milestones: ((milestones.data ?? []) as Row[]).map((r) => rowToDoc<Milestone>(r)),
+    milestones: ((milestones.data ?? []) as Row[]).map((r) => rowToMilestone(r)),
     nameIdeas: ((names.data ?? []) as unknown as Row[]).map((r) => rowToName(r)),
     timers: (
       (timers.data ?? []) as unknown as {
