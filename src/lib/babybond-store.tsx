@@ -407,7 +407,13 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       setMilestones(
         cloud.milestones.map((milestone) => ({
           ...milestone,
-          by: profileRows?.find((profile) => profile.id === milestone.byId)?.role ?? milestone.by,
+          ...(profileRows?.find((profile) => profile.id === milestone.byId)?.role ?? milestone.by
+            ? {
+                by:
+                  profileRows?.find((profile) => profile.id === milestone.byId)?.role ??
+                  milestone.by,
+              }
+            : {}),
         })),
       );
     setTimers(cloud.timers);

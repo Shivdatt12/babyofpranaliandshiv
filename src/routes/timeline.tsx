@@ -117,7 +117,7 @@ function milestoneItem(milestone: Milestone): TimelineItem | null {
     emoji: milestone.emoji || "✨",
     title: milestone.label,
     detail: milestone.note || "Milestone achieved",
-    by: milestone.by,
+    ...(milestone.by ? { by: milestone.by } : {}),
   };
 }
 

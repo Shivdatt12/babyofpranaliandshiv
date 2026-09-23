@@ -73,9 +73,18 @@ function Milestones() {
     setSaving(true);
     try {
       if (editing) {
-        await updateMilestone(editing.id, { label: title.trim(), achievedAt: eventAt, note: note.trim() || undefined });
+        await updateMilestone(editing.id, {
+          label: title.trim(),
+          achievedAt: eventAt,
+          ...(note.trim() ? { note: note.trim() } : {}),
+        });
       } else {
-        await addMilestone({ label: title.trim(), emoji: "✨", achievedAt: eventAt, note: note.trim() || undefined });
+        await addMilestone({
+          label: title.trim(),
+          emoji: "✨",
+          achievedAt: eventAt,
+          ...(note.trim() ? { note: note.trim() } : {}),
+        });
       }
       setOpen(false);
       toast.success(editing ? "Milestone updated" : "Milestone added");
