@@ -149,7 +149,9 @@ type Store = {
   voteNameIdea: (id: string, vote: NameVote | null) => void;
   chooseFinalName: (id: string) => void;
   clearFinalName: () => void;
-  addMilestone: (milestone: Omit<Milestone, "id" | "by" | "byId" | "createdAt" | "updatedAt">) => Promise<string>;
+  addMilestone: (
+    milestone: Omit<Milestone, "id" | "by" | "byId" | "createdAt" | "updatedAt">,
+  ) => Promise<string>;
   updateMilestone: (id: string, patch: Partial<Milestone>) => Promise<void>;
   deleteMilestone: (id: string) => Promise<void>;
   toggleMilestone: (id: string) => void;
@@ -407,7 +409,13 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
       setMilestones(
         cloud.milestones.map((milestone) => ({
           ...milestone,
-          by: profileRows?.find((profile) => profile.id === milestone.byId)?.role ?? milestone.by,
+          ...((profileRows?.find((profile) => profile.id === milestone.byId)?.role ?? milestone.by)
+            ? {
+                by:
+                  profileRows?.find((profile) => profile.id === milestone.byId)?.role ??
+                  milestone.by,
+              }
+            : {}),
         })),
       );
     setTimers(cloud.timers);
@@ -1095,7 +1103,9 @@ export function BabyBondProvider({ children }: { children: ReactNode }) {
         const { error } = await supabase.from("milestones").upsert(row, { onConflict: "id" });
         if (error) {
           console.error("Milestone create failed", { code: error.code, message: error.message });
-          throw new Error("The milestone could not be saved. Please check your connection and try again.");
+          throw new Error(
+            "The milestone could not be saved. Please check your connection and try again.",
+          );
         }
         setMilestones((prev) => (prev.some((item) => item.id === doc.id) ? prev : [...prev, doc]));
         return doc.id;

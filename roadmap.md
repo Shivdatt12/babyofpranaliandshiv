@@ -15,4 +15,4 @@
 - [x] Add the Records area with unified history, filters, search, and pagination
 - [x] Extend offline cache, backup/restore, and realtime sync for lifetime records
 - [x] Verify security, existing record preservation, core tracker regressions, and mobile layout
-- [ ] Fix Milestone Add/save flow and verify create, edit, delete, persistence, timeline, and journey
+- [x] Fix Milestone Add/save flow and verify create, edit, delete, persistence, timeline, and journey

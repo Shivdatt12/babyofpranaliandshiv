@@ -117,7 +117,7 @@ function milestoneItem(milestone: Milestone): TimelineItem | null {
     emoji: milestone.emoji || "✨",
     title: milestone.label,
     detail: milestone.note || "Milestone achieved",
-    by: milestone.by,
+    ...(milestone.by ? { by: milestone.by } : {}),
   };
 }
 
@@ -142,7 +142,9 @@ function Timeline() {
       const display = describe(entry, settings.breastMlPerMinute);
       return { ...entry, ...display };
     });
-    const milestoneItems = milestones.map(milestoneItem).filter((item): item is TimelineItem => !!item);
+    const milestoneItems = milestones
+      .map(milestoneItem)
+      .filter((item): item is TimelineItem => !!item);
     return [...entryItems, ...milestoneItems].filter(
       (item) => item.at >= from && (type === "all" || item.type === type),
     );
