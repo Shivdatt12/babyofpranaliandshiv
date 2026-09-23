@@ -22,9 +22,16 @@ export const Route = createFileRoute("/track/milestones")({
   head: () => ({
     meta: [
       { title: "Milestones — BabyBond" },
-      { name: "description", content: "Celebrate first smiles, first rolls and every little first with a shared milestone list." },
+      {
+        name: "description",
+        content:
+          "Celebrate first smiles, first rolls and every little first with a shared milestone list.",
+      },
       { property: "og:title", content: "Milestones — BabyBond" },
-      { property: "og:description", content: "First smile, first roll, first tooth — captured together." },
+      {
+        property: "og:description",
+        content: "First smile, first roll, first tooth — captured together.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -33,7 +40,8 @@ export const Route = createFileRoute("/track/milestones")({
 });
 
 function Milestones() {
-  const { milestones, toggleMilestone, addMilestone, updateMilestone, deleteMilestone } = useBabyBond();
+  const { milestones, toggleMilestone, addMilestone, updateMilestone, deleteMilestone } =
+    useBabyBond();
   const done = milestones.filter((m) => m.achievedAt).length;
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Milestone | null>(null);
@@ -49,7 +57,11 @@ function Milestones() {
     setDate(dayKey(milestone?.achievedAt ?? Date.now()));
     setTime(
       milestone?.achievedAt
-        ? new Date(milestone.achievedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false })
+        ? new Date(milestone.achievedAt).toLocaleTimeString("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+          })
         : "",
     );
     setNote(milestone?.note ?? "");
@@ -113,7 +125,9 @@ function Milestones() {
             tone={m.achievedAt ? "health" : "card"}
             className="flex items-center gap-3 py-3"
           >
-            <span className="grid size-11 place-items-center rounded-2xl bg-card/70 text-xl">{m.emoji}</span>
+            <span className="grid size-11 place-items-center rounded-2xl bg-card/70 text-xl">
+              {m.emoji}
+            </span>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold">{m.label}</p>
               <p className="text-xs opacity-70">
@@ -123,7 +137,12 @@ function Milestones() {
               </p>
               {m.note ? <p className="mt-1 text-xs text-muted-foreground">{m.note}</p> : null}
             </div>
-            <Button size="icon" variant="ghost" aria-label={`Edit ${m.label}`} onClick={() => openForm(m)}>
+            <Button
+              size="icon"
+              variant="ghost"
+              aria-label={`Edit ${m.label}`}
+              onClick={() => openForm(m)}
+            >
               <Pencil />
             </Button>
             <Button
@@ -134,7 +153,13 @@ function Milestones() {
                 if (!window.confirm(`Delete ${m.label}?`)) return;
                 void deleteMilestone(m.id)
                   .then(() => toast.success("Milestone deleted"))
-                  .catch((error: unknown) => toast.error(error instanceof Error ? error.message : "The milestone could not be deleted."));
+                  .catch((error: unknown) =>
+                    toast.error(
+                      error instanceof Error
+                        ? error.message
+                        : "The milestone could not be deleted.",
+                    ),
+                  );
               }}
             >
               <Trash2 />
@@ -146,7 +171,9 @@ function Milestones() {
                 if (!m.achievedAt) toast.success(`${m.label} unlocked! 🎉`);
               }}
               className={`grid size-9 place-items-center rounded-full transition-transform active:scale-90 ${
-                m.achievedAt ? "bb-gradient text-primary-foreground" : "bg-secondary text-secondary-foreground"
+                m.achievedAt
+                  ? "bb-gradient text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground"
               }`}
               aria-label={`Toggle ${m.label}`}
             >
@@ -163,26 +190,60 @@ function Milestones() {
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <label htmlFor="milestone-title" className="mb-1 block text-xs font-bold">Title</label>
-              <Input id="milestone-title" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Ear Piercing" disabled={saving} />
+              <label htmlFor="milestone-title" className="mb-1 block text-xs font-bold">
+                Title
+              </label>
+              <Input
+                id="milestone-title"
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                placeholder="Ear Piercing"
+                disabled={saving}
+              />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label htmlFor="milestone-date" className="mb-1 block text-xs font-bold">Date</label>
-                <Input id="milestone-date" type="date" value={date} onChange={(event) => setDate(event.target.value)} disabled={saving} />
+                <label htmlFor="milestone-date" className="mb-1 block text-xs font-bold">
+                  Date
+                </label>
+                <Input
+                  id="milestone-date"
+                  type="date"
+                  value={date}
+                  onChange={(event) => setDate(event.target.value)}
+                  disabled={saving}
+                />
               </div>
               <div>
-                <label htmlFor="milestone-time" className="mb-1 block text-xs font-bold">Time (optional)</label>
-                <Input id="milestone-time" type="time" value={time} onChange={(event) => setTime(event.target.value)} disabled={saving} />
+                <label htmlFor="milestone-time" className="mb-1 block text-xs font-bold">
+                  Time (optional)
+                </label>
+                <Input
+                  id="milestone-time"
+                  type="time"
+                  value={time}
+                  onChange={(event) => setTime(event.target.value)}
+                  disabled={saving}
+                />
               </div>
             </div>
             <div>
-              <label htmlFor="milestone-note" className="mb-1 block text-xs font-bold">Note (optional)</label>
-              <Textarea id="milestone-note" value={note} onChange={(event) => setNote(event.target.value)} placeholder="Baby's ears were pierced." disabled={saving} />
+              <label htmlFor="milestone-note" className="mb-1 block text-xs font-bold">
+                Note (optional)
+              </label>
+              <Textarea
+                id="milestone-note"
+                value={note}
+                onChange={(event) => setNote(event.target.value)}
+                placeholder="Baby's ears were pierced."
+                disabled={saving}
+              />
             </div>
           </div>
           <DialogFooter className="gap-2">
-            <Button variant="secondary" disabled={saving} onClick={() => setOpen(false)}>Cancel</Button>
+            <Button variant="secondary" disabled={saving} onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
             <Button disabled={saving} onClick={() => void save()}>
               {saving ? <Loader2 className="animate-spin" /> : null}
               {editing ? "Save changes" : "Save Milestone"}
