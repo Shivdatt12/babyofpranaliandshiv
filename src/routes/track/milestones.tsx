@@ -88,7 +88,7 @@ function Milestones() {
         await updateMilestone(editing.id, {
           label: title.trim(),
           achievedAt: eventAt,
-          ...(note.trim() ? { note: note.trim() } : {}),
+          note: note.trim(),
         });
       } else {
         await addMilestone({
@@ -164,13 +164,15 @@ function Milestones() {
             >
               <Trash2 />
             </Button>
-            <button
+            <Button
               type="button"
+              size="icon"
+              variant="secondary"
               onClick={() => {
                 toggleMilestone(m.id);
                 if (!m.achievedAt) toast.success(`${m.label} unlocked! 🎉`);
               }}
-              className={`grid size-9 place-items-center rounded-full transition-transform active:scale-90 ${
+              className={`rounded-full transition-transform active:scale-90 ${
                 m.achievedAt
                   ? "bb-gradient text-primary-foreground"
                   : "bg-secondary text-secondary-foreground"
@@ -178,7 +180,7 @@ function Milestones() {
               aria-label={`Toggle ${m.label}`}
             >
               <Check className="size-4" />
-            </button>
+            </Button>
           </SoftCard>
         ))}
       </div>
