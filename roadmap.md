@@ -16,3 +16,4 @@
 - [x] Extend offline cache, backup/restore, and realtime sync for lifetime records
 - [x] Verify security, existing record preservation, core tracker regressions, and mobile layout
 - [x] Fix Milestone Add/save flow and verify create, edit, delete, persistence, timeline, and journey
+- [ ] Add large album photo viewing and private photo download, then verify mobile behavior

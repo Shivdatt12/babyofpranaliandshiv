@@ -1,12 +1,27 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { Camera, ImagePlus, Trash2, Loader2 } from "lucide-react";
+import { Camera, Download, ImagePlus, Trash2, Loader2, Maximize2 } from "lucide-react";
 import { AppShell, PageHeader, SoftCard, BabyAvatar } from "@/components/babybond/shell";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useBabyBond } from "@/lib/babybond-store";
 import { formatDate, formatTime, type Entry } from "@/lib/babybond-data";
-import { ACCEPTED_IMAGE_TYPES, MediaError, removeMedia, uploadMedia, useMediaUrl } from "@/lib/babybond-media";
+import {
+  ACCEPTED_IMAGE_TYPES,
+  downloadMedia,
+  MediaError,
+  removeMedia,
+  uploadMedia,
+  useMediaUrl,
+} from "@/lib/babybond-media";
 
 export const Route = createFileRoute("/track/album")({
   ssr: false,
@@ -143,24 +158,115 @@ function Album() {
 
 function PhotoTile({ photo, onDelete }: { photo: PhotoEntry; onDelete: () => void }) {
   const url = useMediaUrl(photo.path);
+  const [open, setOpen] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+
+  const download = async () => {
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      const blob = await downloadMedia(photo.path);
+      const extension =
+        blob.type === "image/png" ? "png" : blob.type === "image/webp" ? "webp" : "jpg";
+      const day = new Date(photo.at).toISOString().slice(0, 10);
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = `baby-photo-${day}.${extension}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1_000);
+      toast.success("Photo downloaded");
+    } catch (error) {
+      console.error("Album photo download failed", error);
+      toast.error(error instanceof MediaError ? error.message : "Photo download failed. Please try again.");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
-    <SoftCard className="space-y-2 p-2">
-      <div className="aspect-square overflow-hidden rounded-2xl bg-secondary">
-        {url ? (
-          <img src={url} alt={photo.caption ?? "Baby photo"} loading="lazy" className="size-full object-cover" />
-        ) : null}
-      </div>
-      <div className="flex items-center gap-2 px-1 pb-1">
-        <div className="min-w-0 flex-1">
-          {photo.caption ? <p className="truncate text-xs font-bold">{photo.caption}</p> : null}
-          <p className="text-[10px] text-muted-foreground">
-            {formatDate(photo.at)} · {formatTime(photo.at)} · {photo.by}
-          </p>
+    <>
+      <SoftCard className="space-y-2 p-2">
+        <Button
+          type="button"
+          variant="ghost"
+          aria-label={`Open ${photo.caption ?? "baby photo"} in large view`}
+          disabled={!url}
+          onClick={() => setOpen(true)}
+          className="group relative aspect-square h-auto w-full overflow-hidden rounded-2xl bg-secondary p-0"
+        >
+          {url ? (
+            <img src={url} alt={photo.caption ?? "Baby photo"} loading="lazy" className="size-full object-cover" />
+          ) : (
+            <Loader2 className="size-5 animate-spin text-muted-foreground" />
+          )}
+          {url ? (
+            <span className="absolute bottom-2 right-2 grid size-8 place-items-center rounded-full bg-background/80 text-foreground shadow-sm backdrop-blur-sm">
+              <Maximize2 className="size-4" />
+            </span>
+          ) : null}
+        </Button>
+        <div className="flex items-center gap-1 px-1 pb-1">
+          <div className="min-w-0 flex-1">
+            {photo.caption ? <p className="truncate text-xs font-bold">{photo.caption}</p> : null}
+            <p className="text-[10px] text-muted-foreground">
+              {formatDate(photo.at)} · {formatTime(photo.at)} · {photo.by}
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label="Download photo"
+            disabled={!url || downloading}
+            onClick={() => void download()}
+            className="size-8 text-muted-foreground"
+          >
+            {downloading ? <Loader2 className="animate-spin" /> : <Download />}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label="Delete photo"
+            onClick={onDelete}
+            className="size-8 text-muted-foreground"
+          >
+            <Trash2 />
+          </Button>
         </div>
-        <button type="button" aria-label="Delete photo" onClick={onDelete} className="text-muted-foreground">
-          <Trash2 className="size-4" />
-        </button>
-      </div>
-    </SoftCard>
+      </SoftCard>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="flex max-h-[92dvh] w-[calc(100%-1.5rem)] max-w-3xl flex-col gap-3 overflow-hidden rounded-2xl border-border/70 p-3 sm:p-4">
+          <DialogHeader className="min-w-0 pr-10 text-left">
+            <DialogTitle className="truncate text-base">{photo.caption || "Baby photo"}</DialogTitle>
+            <DialogDescription>
+              {formatDate(photo.at)} at {formatTime(photo.at)}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden rounded-xl bg-secondary">
+            {url ? (
+              <img
+                src={url}
+                alt={photo.caption ?? "Baby photo"}
+                className="max-h-[70dvh] max-w-full object-contain"
+              />
+            ) : null}
+          </div>
+          <Button
+            type="button"
+            onClick={() => void download()}
+            disabled={!url || downloading}
+            className="h-11 w-full rounded-xl"
+          >
+            {downloading ? <Loader2 className="animate-spin" /> : <Download />}
+            {downloading ? "Downloading…" : "Download photo"}
+          </Button>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
