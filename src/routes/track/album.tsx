@@ -31,6 +31,8 @@ export const Route = createFileRoute("/track/album")({
       { name: "description", content: "Monthly photos and everyday moments of your baby, kept in one soft shared album." },
       { property: "og:title", content: "Photo album — BabyBond" },
       { property: "og:description", content: "Monthly photos and precious moments, shared with both parents." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Album,
