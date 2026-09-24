@@ -15,7 +15,8 @@ const SCHEDULE_URL = "/__babybond_schedule";
 const SESSION_URL = "/__babybond_session";
 const PREFS_URL = "/__babybond_prefs";
 
-const DEFAULT_PREFS = { snoozeMs: 600000, silent: false, vibrate: true };
+const ONE_HOUR_MS = 60 * 60 * 1000;
+const DEFAULT_PREFS = { snoozeMs: ONE_HOUR_MS, silent: false, vibrate: true };
 
 async function readJson(url, fallback) {
   try {
@@ -150,7 +151,10 @@ async function resolveItem(id) {
 
 async function snoozeItem(id, ms) {
   const prefs = await readPrefs();
-  const at = Date.now() + (ms || prefs.snoozeMs);
+  // Older installations may still have a 10-minute preference cached. A
+  // deliberate Snooze action must always suppress the reminder for one hour.
+  const delay = Math.max(ONE_HOUR_MS, Number(ms) || Number(prefs.snoozeMs) || ONE_HOUR_MS);
+  const at = Date.now() + delay;
   await patchItem(id, { at, overrideAt: at, shown: false });
 }
 
@@ -289,7 +293,7 @@ self.addEventListener("notificationclose", (event) => {
         await patchItem(item.id, { resolved: true, shown: true });
         return;
       }
-      const at = Date.now() + prefs.snoozeMs;
+      const at = Date.now() + Math.max(ONE_HOUR_MS, Number(prefs.snoozeMs) || ONE_HOUR_MS);
       await patchItem(item.id, {
         followUps: (current.followUps ?? 0) + 1,
         at,

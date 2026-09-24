@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { useBabyBond, useTodayDoses } from "@/lib/babybond-store";
-import { formatDate, formatTime, todayOccurrence, isMedicineActiveOn } from "@/lib/babybond-data";
+import {
+  formatDate,
+  formatTime,
+  todayOccurrence,
+  isMedicineActiveOn,
+  REMINDER_SNOOZE_MINUTES,
+} from "@/lib/babybond-data";
 import { vaccineFullName } from "@/lib/babybond-vaccines";
 import {
   checkDueNow,
@@ -18,13 +24,13 @@ import {
 
 const MED_ACTIONS = [
   { action: "given", title: "Given" },
-  { action: "snooze", title: "Snooze 10m" },
+  { action: "snooze", title: "Snooze 1 hr" },
   { action: "skip", title: "Skip" },
 ];
 
 const VACCINE_ACTIONS = [
   { action: "given", title: "Mark as Given" },
-  { action: "snooze", title: "Snooze 10m" },
+  { action: "snooze", title: "Snooze 1 hr" },
   { action: "dismiss", title: "Dismiss" },
 ];
 
@@ -57,11 +63,11 @@ export function MedicineReminders() {
 
   const prefs = useMemo<NotificationPrefs>(
     () => ({
-      snoozeMs: Math.max(1, settings.snoozeMinutes) * 60_000,
+      snoozeMs: REMINDER_SNOOZE_MINUTES * 60_000,
       silent: settings.soundMode === "silent",
       vibrate: settings.vibrate,
     }),
-    [settings.snoozeMinutes, settings.soundMode, settings.vibrate],
+    [settings.soundMode, settings.vibrate],
   );
 
   useEffect(() => {
@@ -169,7 +175,7 @@ export function MedicineReminders() {
           title: `🩺 ${a.doctor}`,
           body: `${a.hospital} · ${formatDate(a.at)} at ${formatTime(a.at)}`,
           kind: "doctor",
-          actions: [{ action: "snooze", title: `Snooze ${settings.snoozeMinutes}m` }],
+          actions: [{ action: "snooze", title: "Snooze 1 hr" }],
         });
       }
     }
@@ -189,7 +195,7 @@ export function MedicineReminders() {
             title: "🍼 Feed reminder",
             body: `Next feed around ${formatTime(dueAt)} · ${settings.feedGapHours}h gap`,
             kind: "feed",
-            actions: [{ action: "snooze", title: `Snooze ${settings.snoozeMinutes}m` }],
+            actions: [{ action: "snooze", title: "Snooze 1 hr" }],
           });
         }
       }
@@ -237,16 +243,15 @@ export function MedicineReminders() {
           },
         },
         cancel: {
-          label: `Snooze ${settings.snoozeMinutes}m`,
+          label: "Snooze 1 hr",
           onClick: () => {
-            void snoozeReminder(id, settings.snoozeMinutes * 60_000);
-            toasted.current.delete(d.key);
-            toast(`Snoozed for ${settings.snoozeMinutes} minutes`);
+            void snoozeReminder(id, REMINDER_SNOOZE_MINUTES * 60_000);
+            toast("Snoozed for 1 hour");
           },
         },
       });
     }
-  }, [doses, now, logMedicine, settings.medicineReminders, settings.snoozeMinutes, active]);
+  }, [doses, now, logMedicine, settings.medicineReminders, active]);
 
   // vaccines / appointments — gentle in-app notice only, once each
   useEffect(() => {

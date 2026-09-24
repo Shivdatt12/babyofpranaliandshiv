@@ -277,6 +277,9 @@ export function estimatedBreastMl(minutes: number, mlPerMinute: number = ESTIMAT
 
 export type SoundMode = "default" | "silent";
 
+/** Snoozed reminders stay quiet for a full hour across app and device notifications. */
+export const REMINDER_SNOOZE_MINUTES = 60;
+
 export type Settings = {
   medicineReminders: boolean;
   feedReminders: boolean;
@@ -305,7 +308,7 @@ export const DEFAULT_SETTINGS: Settings = {
   vaccineLeadDays: 2,
   doctorLeadHours: 24,
   reminderLeadMinutes: 5,
-  snoozeMinutes: 10,
+  snoozeMinutes: REMINDER_SNOOZE_MINUTES,
   soundMode: "default",
   vibrate: true,
 };
