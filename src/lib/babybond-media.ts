@@ -112,6 +112,21 @@ export async function mediaUrl(src?: string | null): Promise<string | null> {
   return data.signedUrl;
 }
 
+/** Downloads private media with the signed-in family session and returns the file body. */
+export async function downloadMedia(src: string): Promise<Blob> {
+  if (isStoragePath(src)) {
+    const { data, error } = await supabase.storage.from(MEDIA_BUCKET).download(src);
+    if (error || !data) {
+      throw new MediaError(error?.message || "Photo download failed. Please try again.");
+    }
+    return data;
+  }
+
+  const response = await fetch(src);
+  if (!response.ok) throw new MediaError("Photo download failed. Please try again.");
+  return response.blob();
+}
+
 export function clearMediaUrlCache() {
   urlCache.clear();
 }
