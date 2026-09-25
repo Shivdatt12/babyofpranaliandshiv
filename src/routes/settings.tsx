@@ -565,7 +565,7 @@ function ReminderTiming() {
   const { settings, updateSettings } = useBabyBond();
   const saved = useMemo(
     () =>
-      Object.fromEntries(REMINDER_FIELDS.map((f) => [f.key, String(settings[f.key])])) as Record<
+      Object.fromEntries(REMINDER_FIELDS.map((f) => [f.key, String(f.key === "snoozeMinutes" ? 60 : settings[f.key])])) as Record<
         ReminderKey,
         string
       >,
