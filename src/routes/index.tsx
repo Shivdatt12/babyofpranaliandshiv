@@ -10,7 +10,8 @@ import {
   Syringe,
   Stethoscope,
   Images,
-  Sparkles,
+  Trophy,
+  Heart,
   ChevronRight,
 } from "lucide-react";
 import { AppShell, SoftCard, StatTile, ThemeToggle, BabyAvatar } from "@/components/babybond/shell";
@@ -19,6 +20,7 @@ import { VACCINE_STATUS_LABEL, vaccineFullName, vaccineStatus } from "@/lib/baby
 import { useBabyBond, useTodayDoses, useTodayStats } from "@/lib/babybond-store";
 import { durationLabel, formatTime, timeAgo, type Entry } from "@/lib/babybond-data";
 import { useInsights } from "@/lib/use-insights";
+import { FeatureIcon, featureIconForType } from "@/components/babybond/feature-icon";
 
 export const Route = createFileRoute("/")({
   ssr: false,
@@ -42,16 +44,16 @@ export const Route = createFileRoute("/")({
 });
 
 const TRACKERS = [
-  { to: "/track/milk", label: "Milk", emoji: "🍼", icon: Droplets },
-  { to: "/track/sleep", label: "Sleep", emoji: "🌙", icon: Moon },
-  { to: "/track/weight", label: "Weight", emoji: "⚖️", icon: Scale },
-  { to: "/track/bilirubin", label: "Bilirubin", emoji: "🩸", icon: Activity },
-  { to: "/track/medicines", label: "Medicines", emoji: "💊", icon: Pill },
-  { to: "/track/vaccines", label: "Vaccines", emoji: "🛡️", icon: Syringe },
-  { to: "/track/doctor", label: "Doctor", emoji: "🩺", icon: Stethoscope },
-  { to: "/track/album", label: "Album", emoji: "📸", icon: Images },
-  { to: "/track/milestones", label: "Milestones", emoji: "✨", icon: Sparkles },
-  { to: "/names", label: "Baby Names", emoji: "💕", icon: Sparkles },
+  { to: "/track/milk", label: "Milk", icon: Droplets },
+  { to: "/track/sleep", label: "Sleep", icon: Moon },
+  { to: "/track/weight", label: "Weight", icon: Scale },
+  { to: "/track/bilirubin", label: "Bilirubin", icon: Activity },
+  { to: "/track/medicines", label: "Medicines", icon: Pill },
+  { to: "/track/vaccines", label: "Vaccines", icon: Syringe },
+  { to: "/track/doctor", label: "Doctor", icon: Stethoscope },
+  { to: "/track/album", label: "Album", icon: Images },
+  { to: "/track/milestones", label: "Milestones", icon: Trophy },
+  { to: "/names", label: "Baby Names", icon: Heart },
 ] as const;
 
 function Countdown({ target, now }: { target: number; now: number }) {
@@ -94,7 +96,7 @@ function RightNow() {
         {breast ? (
           <div className="rounded-2xl bg-milk p-4 bb-shadow bb-live-card">
             <div className="flex items-start justify-between">
-              <span className="text-2xl leading-none">🤱</span>
+              <FeatureIcon name="feeding" className="size-6" />
               <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-milk-foreground/80">
                 <span className="size-1.5 animate-pulse rounded-full bg-milk-foreground" /> live
               </span>
@@ -118,7 +120,7 @@ function RightNow() {
           </div>
         ) : (
           <div className="rounded-2xl bg-card/60 p-3 bb-shadow">
-            <span className="bb-icon-well text-xl leading-none">🤱</span>
+            <span className="bb-icon-well"><FeatureIcon name="feeding" /></span>
             <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               Breastfeeding
             </p>
@@ -136,7 +138,7 @@ function RightNow() {
         {sleep ? (
           <div className="rounded-2xl bg-sleep p-4 bb-shadow bb-live-card">
             <div className="flex items-start justify-between">
-              <span className="text-2xl leading-none">😴</span>
+              <FeatureIcon name="sleep" className="size-6" />
               <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-sleep-foreground/80">
                 <span className="size-1.5 animate-pulse rounded-full bg-sleep-foreground" /> live
               </span>
@@ -160,7 +162,7 @@ function RightNow() {
           </div>
         ) : (
           <div className="rounded-2xl bg-card/60 p-3 bb-shadow">
-            <span className="bb-icon-well text-xl leading-none">😴</span>
+            <span className="bb-icon-well"><FeatureIcon name="sleep" /></span>
             <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               Sleep
             </p>
@@ -176,7 +178,7 @@ function RightNow() {
         )}
 
         <div className="rounded-2xl bg-card p-3 bb-shadow">
-          <span className="bb-icon-well text-xl leading-none">💧</span>
+          <span className="bb-icon-well"><FeatureIcon name="pee" /></span>
           <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
             Last pee
           </p>
@@ -189,7 +191,7 @@ function RightNow() {
         </div>
 
         <div className="rounded-2xl bg-card p-3 bb-shadow">
-          <span className="bb-icon-well text-xl leading-none">💩</span>
+          <span className="bb-icon-well"><FeatureIcon name="potty" /></span>
           <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
             Last potty
           </p>
@@ -203,7 +205,7 @@ function RightNow() {
 
         <div className="col-span-2 rounded-2xl bg-card p-3 bb-shadow">
           <div className="flex items-center gap-3">
-            <span className="bb-icon-well text-xl leading-none">🍼</span>
+            <span className="bb-icon-well"><FeatureIcon name="feeding" /></span>
             <div className="min-w-0 flex-1">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                 Formula
@@ -232,7 +234,7 @@ function SmartInsights() {
       <div className="rounded-2xl bg-card p-4 bb-shadow">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h2 className="font-display text-base font-bold">🧠 Smart Baby Insights</h2>
+            <h2 className="flex items-center gap-2 font-display text-base font-bold"><FeatureIcon name="insights" className="size-4" /> Smart Baby Insights</h2>
             <p className="text-[11px] text-muted-foreground">
               Simple observations from your baby's recorded data
             </p>
@@ -249,7 +251,7 @@ function SmartInsights() {
                 key={i.id}
                 className="flex gap-2.5 rounded-xl border border-border/50 bg-secondary/45 p-3"
               >
-                <span className="bb-icon-well size-8 text-base leading-none">{i.icon}</span>
+                <span className="bb-icon-well size-8"><FeatureIcon name={featureIconForType(i.category)} className="size-4" /></span>
                 <div className="min-w-0 flex-1">
                   <p className="text-[13px] font-semibold leading-snug">{i.text}</p>
                   {i.detail ? (
@@ -280,7 +282,7 @@ function NameJourneyCard() {
         to="/names"
         className="flex items-center gap-3 rounded-2xl bg-card p-4 bb-shadow active:scale-95"
       >
-        <span className="bb-icon-well text-lg">💕</span>
+        <span className="bb-icon-well"><Heart className="size-5" /></span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold">Still choosing her name? 💕</p>
           <p className="text-xs text-muted-foreground">
@@ -360,7 +362,7 @@ function Dashboard() {
                 : "—"}
             </p>
           </div>
-          <span className="text-3xl">🍼</span>
+          <FeatureIcon name="feeding" className="size-7 text-muted-foreground" />
         </SoftCard>
       </div>
 
@@ -382,7 +384,7 @@ function Dashboard() {
             }}
             className="rounded-2xl bg-pee p-5 text-left text-pee-foreground bb-shadow transition-transform active:scale-95"
           >
-            <span className="text-3xl">💛</span>
+            <FeatureIcon name="pee" className="size-7" />
             <p className="mt-2 font-display text-xl font-bold">+ Pee</p>
             <p className="text-xs opacity-70">{s.peeCount} today · one tap</p>
           </button>
@@ -390,7 +392,7 @@ function Dashboard() {
             to="/track/potty"
             className="rounded-2xl bg-potty p-5 text-left text-potty-foreground bb-shadow transition-transform active:scale-95"
           >
-            <span className="text-3xl">💩</span>
+            <FeatureIcon name="potty" className="size-7" />
             <p className="mt-2 font-display text-xl font-bold">+ Potty</p>
             <p className="text-xs opacity-70">{s.pottyCount} today · with type</p>
           </Link>
@@ -401,6 +403,7 @@ function Dashboard() {
           <StatTile
             tone="milk"
             emoji="🥛"
+            icon="feeding"
             label="Today's milk"
             value={`${s.milkMl} ml`}
             hint="formula + estimated breastmilk"
@@ -408,6 +411,7 @@ function Dashboard() {
           <StatTile
             tone="formula"
             emoji="🍼"
+            icon="feeding"
             label="Formula"
             value={`${s.formulaMl} ml`}
             hint="bottle feeds"
@@ -415,6 +419,7 @@ function Dashboard() {
           <StatTile
             tone="milk"
             emoji="🤱"
+            icon="feeding"
             label="Estimated Breastmilk"
             value={`${s.breastMl} ml`}
             hint={`${s.breastCount} feeds · ${durationLabel(s.breastMinutes)}`}
@@ -422,6 +427,7 @@ function Dashboard() {
           <StatTile
             tone="sleep"
             emoji="🌙"
+            icon="sleep"
             label="Sleep"
             value={durationLabel(s.sleepMinutes)}
             hint="total today"
@@ -430,6 +436,7 @@ function Dashboard() {
           <StatTile
             tone="health"
             emoji="⚖️"
+            icon="weight"
             label="Weight"
             value={s.weight ? `${(s.weight.grams / 1000).toFixed(2)} kg` : "—"}
             hint={
@@ -441,6 +448,7 @@ function Dashboard() {
           <StatTile
             tone="health"
             emoji="🩸"
+            icon="bilirubin"
             label="Bilirubin"
             value={s.bilirubin ? `${s.bilirubin.value}` : "—"}
             hint={s.bilirubin ? `${s.bilirubin.method} test` : "not measured"}
@@ -453,7 +461,7 @@ function Dashboard() {
             to="/track/medicines"
             className="flex items-center gap-3 rounded-2xl bg-card p-4 bb-shadow"
           >
-            <span className="bb-icon-well text-lg">💊</span>
+            <span className="bb-icon-well"><FeatureIcon name="medicine" /></span>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold">
                 {nextDose ? nextDose.medicine.name : "No medicine left today"}
@@ -470,7 +478,7 @@ function Dashboard() {
             to="/track/vaccines"
             className="flex items-center gap-3 rounded-2xl bg-card p-4 bb-shadow"
           >
-            <span className="bb-icon-well text-lg">{overdueVaccine ? "⚠️" : "💉"}</span>
+            <span className="bb-icon-well"><FeatureIcon name="vaccine" /></span>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold">
                 {nextVaccine ? vaccineFullName(nextVaccine) : "✅ Vaccines up to date"}
@@ -493,7 +501,7 @@ function Dashboard() {
             to="/track/doctor"
             className="flex items-center gap-3 rounded-2xl bg-card p-4 bb-shadow"
           >
-            <span className="bb-icon-well text-lg">🩺</span>
+            <span className="bb-icon-well"><FeatureIcon name="doctor" /></span>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold">
                 {nextVisit ? nextVisit.doctor : "No upcoming visit"}
@@ -516,7 +524,7 @@ function Dashboard() {
               to={t.to}
               className="flex items-center gap-3 rounded-2xl bg-card p-4 bb-shadow transition-transform active:scale-95"
             >
-              <span className="bb-icon-well text-lg">{t.emoji}</span>
+              <span className="bb-icon-well"><t.icon className="size-5" /></span>
               <span className="flex-1 text-sm font-semibold">{t.label}</span>
               <ChevronRight className="size-4 text-muted-foreground" />
             </Link>

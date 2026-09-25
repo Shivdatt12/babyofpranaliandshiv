@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { useBabyBond } from "@/lib/babybond-store";
 import { useMediaUrl } from "@/lib/babybond-media";
+import { FeatureIcon, type FeatureIconName } from "./feature-icon";
 import { QuickAdd } from "./quick-add";
 import { MedicineReminders } from "./reminders";
 import { CreateBabyProfile, LoadingScreen, SignInPrompt } from "./onboarding";
@@ -136,17 +137,21 @@ export function StatTile({
   value,
   hint,
   emoji,
+  icon,
   tone,
 }: {
   label: string;
   value: string;
   hint?: string | undefined;
   emoji: string;
+  icon?: FeatureIconName;
   tone?: "milk" | "formula" | "pee" | "potty" | "sleep" | "health" | "card" | undefined;
 }) {
   return (
     <SoftCard tone={tone} className="flex flex-col gap-1">
-      <span className="bb-icon-well text-xl leading-none">{emoji}</span>
+      <span className="bb-icon-well text-xl leading-none">
+        {icon ? <FeatureIcon name={icon} /> : emoji}
+      </span>
       <span className="text-[11px] font-semibold uppercase tracking-wide opacity-70">{label}</span>
       <span className="font-display text-xl font-bold leading-tight text-foreground">{value}</span>
       {hint ? <span className="text-[11px] opacity-70">{hint}</span> : null}
