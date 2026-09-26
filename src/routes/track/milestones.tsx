@@ -3,6 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Check, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
+import { FeatureIcon } from "@/components/babybond/feature-icon";
 import { useBabyBond } from "@/lib/babybond-store";
 import { dayKey, formatDate, formatTime, type Milestone } from "@/lib/babybond-data";
 import { Button } from "@/components/ui/button";
@@ -126,7 +127,7 @@ function Milestones() {
             className="flex items-center gap-3 py-3"
           >
             <span className="grid size-11 place-items-center rounded-2xl bg-card/70 text-xl">
-              {m.emoji}
+              <FeatureIcon name="milestone" />
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold">{m.label}</p>

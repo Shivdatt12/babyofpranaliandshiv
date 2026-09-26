@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { CalendarPlus, Camera, ImagePlus, Trash2, X } from "lucide-react";
 import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
+import { FeatureIcon } from "@/components/babybond/feature-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -79,7 +80,7 @@ function Doctor() {
             {appointments.map((a) => (
               <SoftCard key={a.id} tone="health" className="space-y-2">
                 <div className="flex items-start gap-3">
-                  <span className="grid size-10 place-items-center rounded-2xl bg-card/70 text-lg">🩺</span>
+                  <span className="grid size-10 place-items-center rounded-2xl bg-card/70"><FeatureIcon name="doctor" /></span>
                   <div className="flex-1">
                     <p className="text-sm font-bold">{a.doctor}</p>
                     <p className="text-xs opacity-80">{a.hospital}</p>

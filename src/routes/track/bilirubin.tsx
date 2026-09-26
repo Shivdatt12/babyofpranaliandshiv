@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
+import { AlertTriangle, CheckCircle2, Eye, TrendingDown } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AppShell, PageHeader, SoftCard, StatTile } from "@/components/babybond/shell";
+import { FeatureIcon } from "@/components/babybond/feature-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useBabyBond } from "@/lib/babybond-store";
@@ -45,8 +47,8 @@ function BilirubinTracker() {
       <PageHeader title="Bilirubin" subtitle="Jaundice monitoring" />
       <div className="space-y-4 px-5 pb-6">
         <div className="grid grid-cols-2 gap-3">
-          <StatTile tone="health" emoji="🩸" label="Latest" value={latest ? `${latest.value}` : "—"} hint={latest?.method} />
-          <StatTile tone="health" emoji="📉" label="Readings" value={`${list.length}`} hint="all time" />
+          <StatTile tone="health" emoji="" icon="bilirubin" label="Latest" value={latest ? `${latest.value}` : "—"} hint={latest?.method} />
+          <StatTile tone="health" emoji="" icon="reports" label="Readings" value={`${list.length}`} hint="all time" />
         </div>
 
         {latest ? (
@@ -56,7 +58,7 @@ function BilirubinTracker() {
             }`}
           >
             <span className="grid size-10 place-items-center rounded-2xl bg-card/70 text-lg">
-              {level === "high" ? "⚠️" : level === "watch" ? "👀" : "✅"}
+              {level === "high" ? <AlertTriangle className="size-5" /> : level === "watch" ? <Eye className="size-5" /> : <CheckCircle2 className="size-5" />}
             </span>
             <div className="flex-1">
               <p className="text-sm font-bold">
@@ -157,7 +159,7 @@ function BilirubinTracker() {
                     className={`flex items-center gap-3 py-3 ${l === "high" ? "bg-destructive/10" : l === "watch" ? "bg-potty text-potty-foreground" : ""}`}
                   >
                     <span className="grid size-10 place-items-center rounded-2xl bg-card/70 text-lg">
-                      {l === "normal" ? "🩸" : l === "watch" ? "👀" : "⚠️"}
+                      {l === "normal" ? <FeatureIcon name="bilirubin" /> : l === "watch" ? <Eye className="size-5" /> : <AlertTriangle className="size-5" />}
                     </span>
                     <div className="flex-1">
                       <p className="text-sm font-bold">{b.value} mg/dL</p>

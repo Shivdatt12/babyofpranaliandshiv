@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { ListFilter } from "lucide-react";
 import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
+import { FeatureIcon, featureIconForType, type FeatureIconName } from "@/components/babybond/feature-icon";
 import { useBabyBond } from "@/lib/babybond-store";
 import {
   dayKey,
@@ -40,43 +42,43 @@ export const Route = createFileRoute("/timeline")({
 export function describe(
   e: Entry,
   mlPerMinute?: number,
-): { emoji: string; title: string; detail: string } {
+): { icon: FeatureIconName; title: string; detail: string } {
   switch (e.type) {
     case "breast":
       return {
-        emoji: "🤱",
+        icon: "feeding",
         title: "Breastfeed",
         detail: `${e.side} · ${durationLabel(e.minutes)} · Estimated Breastmilk ${estimatedBreastMl(e.minutes, mlPerMinute)} ml`,
       };
     case "formula":
-      return { emoji: "🍼", title: "Formula", detail: `${e.ml} ml` };
+      return { icon: "feeding", title: "Formula", detail: `${e.ml} ml` };
     case "pee":
-      return { emoji: "💛", title: "Pee", detail: e.note || "nappy change" };
+      return { icon: "pee", title: "Pee", detail: e.note || "nappy change" };
     case "potty":
-      return { emoji: "💩", title: "Potty", detail: e.kind + (e.note ? ` · ${e.note}` : "") };
+      return { icon: "potty", title: "Potty", detail: e.kind + (e.note ? ` · ${e.note}` : "") };
     case "sleep":
-      return { emoji: "🌙", title: "Sleep", detail: durationLabel(e.minutes) };
+      return { icon: "sleep", title: "Sleep", detail: durationLabel(e.minutes) };
     case "weight":
       return {
-        emoji: "⚖️",
+        icon: "weight",
         title: "Weight",
         detail: `${(e.grams / 1000).toFixed(2)} kg${e.note ? ` · ${e.note}` : ""}`,
       };
     case "bilirubin":
-      return { emoji: "🩸", title: "Bilirubin", detail: `${e.value} · ${e.method} test` };
+      return { icon: "bilirubin", title: "Bilirubin", detail: `${e.value} · ${e.method} test` };
     case "medicine":
-      return { emoji: "💊", title: e.name, detail: `${e.dose}${e.status ? ` · ${e.status}` : ""}` };
+      return { icon: "medicine", title: e.name, detail: `${e.dose}${e.status ? ` · ${e.status}` : ""}` };
     case "visit":
       return {
-        emoji: "🩺",
+        icon: "doctor",
         title: e.doctor,
         detail: `${e.hospital}${e.note ? ` · ${e.note}` : ""}`,
       };
     case "photo":
-      return { emoji: "📸", title: "Photo", detail: e.caption || "added to the album" };
+      return { icon: "memory", title: "Photo", detail: e.caption || "added to the album" };
     case "vaccine":
       return {
-        emoji: "🛡️",
+        icon: "vaccine",
         title: e.name,
         detail: e.note ? `vaccine · ${e.note}` : "vaccine given",
       };
@@ -84,25 +86,25 @@ export function describe(
 }
 
 const FILTERS = [
-  { key: "all", label: "All", emoji: "✨" },
-  { key: "breast", label: "Breastfeed", emoji: "🤱" },
-  { key: "formula", label: "Formula", emoji: "🍼" },
-  { key: "pee", label: "Pee", emoji: "💛" },
-  { key: "potty", label: "Potty", emoji: "💩" },
-  { key: "sleep", label: "Sleep", emoji: "🌙" },
-  { key: "medicine", label: "Medicine", emoji: "💊" },
-  { key: "weight", label: "Weight", emoji: "⚖️" },
-  { key: "bilirubin", label: "Bilirubin", emoji: "🩸" },
-  { key: "vaccine", label: "Vaccine", emoji: "🛡️" },
-  { key: "visit", label: "Doctor", emoji: "🩺" },
-  { key: "milestone", label: "Milestone", emoji: "✨" },
+  { key: "all", label: "All", icon: "timeline" },
+  { key: "breast", label: "Breastfeed", icon: "feeding" },
+  { key: "formula", label: "Formula", icon: "feeding" },
+  { key: "pee", label: "Pee", icon: "pee" },
+  { key: "potty", label: "Potty", icon: "potty" },
+  { key: "sleep", label: "Sleep", icon: "sleep" },
+  { key: "medicine", label: "Medicine", icon: "medicine" },
+  { key: "weight", label: "Weight", icon: "weight" },
+  { key: "bilirubin", label: "Bilirubin", icon: "bilirubin" },
+  { key: "vaccine", label: "Vaccine", icon: "vaccine" },
+  { key: "visit", label: "Doctor", icon: "doctor" },
+  { key: "milestone", label: "Milestone", icon: "milestone" },
 ] as const;
 
 type TimelineItem = {
   id: string;
   at: number;
   type: Entry["type"] | "milestone";
-  emoji: string;
+  icon: FeatureIconName;
   title: string;
   detail: string;
   by?: string;
@@ -114,7 +116,7 @@ function milestoneItem(milestone: Milestone): TimelineItem | null {
     id: `milestone-${milestone.id}`,
     at: milestone.achievedAt,
     type: "milestone",
-    emoji: milestone.emoji || "✨",
+    icon: "milestone",
     title: milestone.label,
     detail: milestone.note || "Milestone achieved",
     ...(milestone.by ? { by: milestone.by } : {}),
@@ -200,7 +202,7 @@ function Timeline() {
                   : "bg-secondary text-secondary-foreground"
               }`}
             >
-              {f.emoji} {f.label}
+              <FeatureIcon name={f.icon} className="mr-1 inline size-3.5" /> {f.label}
             </button>
           ))}
         </div>
@@ -223,7 +225,7 @@ function Timeline() {
                 return (
                   <SoftCard key={e.id} className="flex items-center gap-3 py-3">
                     <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-secondary text-lg">
-                      {e.emoji}
+                      <FeatureIcon name={e.icon ?? featureIconForType(e.type)} />
                     </span>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-bold">{e.title}</p>

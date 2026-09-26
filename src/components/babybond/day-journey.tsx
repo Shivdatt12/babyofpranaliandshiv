@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { useMemo } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Moon, Sprout, Sun, Sunrise, Sunset, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FeatureIcon, featureIconForType, type FeatureIconName } from "./feature-icon";
 import { useBabyBond } from "@/lib/babybond-store";
 import {
   durationLabel,
@@ -26,7 +27,7 @@ type JourneyRoute =
 type JourneyItem = {
   id: string;
   at: number;
-  emoji: string;
+  icon: FeatureIconName;
   title: string;
   detail: string;
   by?: string;
@@ -35,12 +36,12 @@ type JourneyItem = {
 
 type DayPeriod = "night-early" | "morning" | "afternoon" | "evening" | "night-late";
 
-const PERIODS: Record<DayPeriod, { icon: string; label: string }> = {
-  "night-early": { icon: "🌙", label: "Night" },
-  morning: { icon: "🌅", label: "Morning" },
-  afternoon: { icon: "☀️", label: "Afternoon" },
-  evening: { icon: "🌆", label: "Evening" },
-  "night-late": { icon: "🌙", label: "Night" },
+const PERIODS: Record<DayPeriod, { icon: LucideIcon; label: string }> = {
+  "night-early": { icon: Moon, label: "Night" },
+  morning: { icon: Sunrise, label: "Morning" },
+  afternoon: { icon: Sun, label: "Afternoon" },
+  evening: { icon: Sunset, label: "Evening" },
+  "night-late": { icon: Moon, label: "Night" },
 };
 
 const PERIOD_ORDER: DayPeriod[] = ["night-late", "evening", "afternoon", "morning", "night-early"];
@@ -61,17 +62,17 @@ function entryToJourney(e: Entry, mlPerMinute: number): JourneyItem {
     case "breast":
       return {
         ...common,
-        emoji: "🤱",
+        icon: "feeding",
         title: "Breastfeeding",
         detail: `${durationLabel(e.minutes)} · ${e.side} · Est. ${estimatedBreastMl(e.minutes, mlPerMinute)} ml`,
         to: "/track/milk",
       };
     case "formula":
-      return { ...common, emoji: "🍼", title: "Formula", detail: `${e.ml} ml`, to: "/track/milk" };
+      return { ...common, icon: "feeding", title: "Formula", detail: `${e.ml} ml`, to: "/track/milk" };
     case "pee":
       return {
         ...common,
-        emoji: "💧",
+        icon: "pee",
         title: "Pee",
         detail: e.note || "Pee recorded",
         to: "/track/potty",
@@ -79,7 +80,7 @@ function entryToJourney(e: Entry, mlPerMinute: number): JourneyItem {
     case "potty":
       return {
         ...common,
-        emoji: "💩",
+        icon: "potty",
         title: "Potty",
         detail: `${e.kind}${e.note ? ` · ${e.note}` : ""}`,
         to: "/track/potty",
@@ -87,7 +88,7 @@ function entryToJourney(e: Entry, mlPerMinute: number): JourneyItem {
     case "sleep":
       return {
         ...common,
-        emoji: "😴",
+        icon: "sleep",
         title: "Sleep",
         detail: durationLabel(e.minutes),
         to: "/track/sleep",
@@ -95,7 +96,7 @@ function entryToJourney(e: Entry, mlPerMinute: number): JourneyItem {
     case "weight":
       return {
         ...common,
-        emoji: "⚖️",
+        icon: "weight",
         title: "Weight",
         detail: `${(e.grams / 1000).toFixed(2)} kg${e.note ? ` · ${e.note}` : ""}`,
         to: "/track/weight",
@@ -103,7 +104,7 @@ function entryToJourney(e: Entry, mlPerMinute: number): JourneyItem {
     case "bilirubin":
       return {
         ...common,
-        emoji: "🩸",
+        icon: "bilirubin",
         title: "Bilirubin",
         detail: `${e.value} · ${e.method} test`,
         to: "/track/bilirubin",
@@ -111,7 +112,7 @@ function entryToJourney(e: Entry, mlPerMinute: number): JourneyItem {
     case "medicine":
       return {
         ...common,
-        emoji: "💊",
+        icon: "medicine",
         title: e.name,
         detail: `${e.dose}${e.status ? ` · ${e.status}` : ""}`,
         to: "/track/medicines",
@@ -119,7 +120,7 @@ function entryToJourney(e: Entry, mlPerMinute: number): JourneyItem {
     case "vaccine":
       return {
         ...common,
-        emoji: "💉",
+        icon: "vaccine",
         title: e.name,
         detail: e.note || "Given",
         to: "/track/vaccines",
@@ -127,7 +128,7 @@ function entryToJourney(e: Entry, mlPerMinute: number): JourneyItem {
     case "visit":
       return {
         ...common,
-        emoji: "👨‍⚕️",
+        icon: "doctor",
         title: e.doctor || "Doctor visit",
         detail: [e.hospital, e.note].filter(Boolean).join(" · ") || "Visit recorded",
         to: "/track/doctor",
@@ -135,7 +136,7 @@ function entryToJourney(e: Entry, mlPerMinute: number): JourneyItem {
     case "photo":
       return {
         ...common,
-        emoji: "📸",
+        icon: "memory",
         title: "Memory added",
         detail: e.caption || "Added to the album",
         to: "/track/album",
@@ -168,7 +169,7 @@ export function BabyDayJourney() {
       .map((milestone) => ({
         id: `milestone-${milestone.id}`,
         at: milestone.achievedAt ?? from,
-        emoji: milestone.emoji || "🏆",
+        icon: "milestone",
         title: milestone.label,
         detail: "Milestone achieved",
         to: "/track/milestones",
@@ -207,7 +208,7 @@ export function BabyDayJourney() {
             Today
           </p>
           <h2 id="baby-day-journey-title" className="mt-0.5 font-display text-lg font-bold">
-            🌤️ Baby Day Journey
+            <Sun className="mr-2 inline size-5" /> Baby Day Journey
           </h2>
           <p className="text-[11px] text-muted-foreground">
             Your baby’s day, one little moment at a time
@@ -228,9 +229,7 @@ export function BabyDayJourney() {
                 key={timer.kind}
                 className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl bg-card p-3 bb-shadow bb-live-card animate-fade-in"
               >
-                <span className="bb-icon-well text-lg">
-                  {timer.kind === "breast" ? "🤱" : "😴"}
-                </span>
+                <span className="bb-icon-well"><FeatureIcon name={timer.kind === "breast" ? "feeding" : "sleep"} /></span>
                 <Link
                   to={timer.kind === "breast" ? "/track/milk" : "/track/sleep"}
                   className="min-w-0 active:opacity-70"
@@ -270,7 +269,7 @@ export function BabyDayJourney() {
             {groups.map(({ period, items }) => (
               <div key={period} className="mb-3 last:mb-0">
                 <h3 className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                  {PERIODS[period].icon} {PERIODS[period].label}
+                  {(() => { const PeriodIcon = PERIODS[period].icon; return <PeriodIcon className="mr-1 inline size-3.5" />; })()} {PERIODS[period].label}
                 </h3>
                 <div>
                   {items.map((item, index) => (
@@ -286,7 +285,7 @@ export function BabyDayJourney() {
                           <span className="absolute bottom-0 top-7 w-px bg-border" />
                         ) : null}
                         <span className="relative z-10 mt-1 grid size-7 place-items-center rounded-lg border border-border/70 bg-secondary text-sm ring-4 ring-card">
-                          {item.emoji}
+                          <FeatureIcon name={item.icon ?? featureIconForType(item.title.toLowerCase())} className="size-4" />
                         </span>
                       </div>
                       <Link
@@ -310,9 +309,7 @@ export function BabyDayJourney() {
           </div>
         ) : !timers.length ? (
           <div className="px-5 py-8 text-center">
-            <span className="text-3xl" aria-hidden="true">
-              🌱
-            </span>
+            <Sprout className="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
             <p className="mt-2 text-sm font-bold">No moments recorded yet</p>
             <p className="text-xs text-muted-foreground">Start tracking your baby’s day</p>
           </div>

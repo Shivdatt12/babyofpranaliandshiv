@@ -3,6 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Pencil, Trash2 } from "lucide-react";
 import { AppShell, PageHeader, SoftCard, StatTile } from "@/components/babybond/shell";
+import { FeatureIcon } from "@/components/babybond/feature-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -48,8 +49,8 @@ function PottyTracker() {
       <PageHeader title="Nappies" subtitle="Pee & potty" />
       <div className="space-y-4 px-5 pb-6">
         <div className="grid grid-cols-2 gap-3">
-          <StatTile tone="pee" emoji="💛" label="Pee today" value={`${s.peeCount}`} />
-          <StatTile tone="potty" emoji="💩" label="Potty today" value={`${s.pottyCount}`} />
+          <StatTile tone="pee" emoji="" icon="pee" label="Pee today" value={`${s.peeCount}`} />
+          <StatTile tone="potty" emoji="" icon="potty" label="Potty today" value={`${s.pottyCount}`} />
         </div>
 
         <button
@@ -60,7 +61,7 @@ function PottyTracker() {
           }}
           className="w-full rounded-[2rem] bg-pee p-7 text-pee-foreground bb-shadow-float transition-transform active:scale-95"
         >
-          <span className="text-4xl">💛</span>
+          <FeatureIcon name="pee" className="mx-auto size-8" />
           <p className="mt-2 font-display text-2xl font-bold">+ Pee</p>
           <p className="text-xs opacity-70">saves with the current time</p>
         </button>
@@ -110,7 +111,7 @@ function PottyTracker() {
             {nappies.map((e) => (
               <SoftCard key={e.id} className="flex items-center gap-3 py-3">
                 <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">
-                  {e.type === "pee" ? "💛" : "💩"}
+                  <FeatureIcon name={e.type === "pee" ? "pee" : "potty"} />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-bold capitalize">

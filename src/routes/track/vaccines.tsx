@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, CalendarPlus, ChevronDown } from "lucide-react";
+import { Plus, Trash2, CalendarPlus, ChevronDown, CheckCircle2 } from "lucide-react";
 import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
+import { FeatureIcon } from "@/components/babybond/feature-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -116,7 +117,7 @@ function Vaccines() {
       <div className="space-y-4 px-5 pb-6">
         <SoftCard tone="health">
           <p className="text-sm font-bold">
-            {pending.length ? `${pending.length} doses pending` : "✅ Vaccines up to date"}
+            {pending.length ? `${pending.length} doses pending` : <span className="inline-flex items-center gap-1"><CheckCircle2 className="size-4" /> Vaccines up to date</span>}
             {overdueCount ? ` · ${overdueCount} overdue` : ""}
           </p>
           <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
@@ -173,7 +174,7 @@ function Vaccines() {
                   {g.rows.map(({ v, status }) => (
                     <SoftCard key={v.id} className="flex items-start gap-3">
                       <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">
-                        💉
+                        <FeatureIcon name="vaccine" />
                       </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
