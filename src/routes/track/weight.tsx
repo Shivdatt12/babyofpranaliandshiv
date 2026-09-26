@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AppShell, PageHeader, SoftCard, StatTile } from "@/components/babybond/shell";
+import { FeatureIcon } from "@/components/babybond/feature-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useBabyBond } from "@/lib/babybond-store";
@@ -62,6 +63,7 @@ function WeightTracker() {
           <StatTile
             tone="health"
             emoji="⚖️"
+            icon="weight"
             label="Current"
             value={latest ? `${(latest.grams / 1000).toFixed(2)} kg` : "—"}
             hint={latest ? formatDate(latest.at) : undefined}
@@ -69,6 +71,7 @@ function WeightTracker() {
           <StatTile
             tone="health"
             emoji="📈"
+            icon="reports"
             label="Gained"
             value={latest && first ? `${latest.grams - first.grams} g` : "—"}
             hint="since first entry"
@@ -171,7 +174,7 @@ function WeightTracker() {
                 const diff = before ? w.grams - before.grams : 0;
                 return (
                   <SoftCard key={w.id} className="flex items-center gap-3 py-3">
-                    <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">⚖️</span>
+                    <span className="grid size-10 place-items-center rounded-2xl bg-secondary"><FeatureIcon name="weight" /></span>
                     <div className="flex-1">
                       <p className="text-sm font-bold">{(w.grams / 1000).toFixed(2)} kg</p>
                       <p className="text-xs text-muted-foreground">

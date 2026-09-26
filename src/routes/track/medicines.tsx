@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Bell, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Bell, Clock3, Pencil, Plus, Trash2, X } from "lucide-react";
 import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
+import { FeatureIcon } from "@/components/babybond/feature-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -137,7 +138,7 @@ function Medicines() {
       <PageHeader title="Medicines" subtitle="Schedule, reminders & history" />
       <div className="space-y-4 px-5 pb-6">
         <SoftCard tone="health" className="flex items-center gap-3">
-          <span className="grid size-11 place-items-center rounded-2xl bg-card/70 text-xl">⏰</span>
+          <span className="grid size-11 place-items-center rounded-2xl bg-card/70"><Clock3 className="size-5" /></span>
           <div className="flex-1">
             <p className="text-[11px] font-semibold uppercase tracking-wide opacity-70">Next medicine</p>
             <p className="font-display text-lg font-bold">
@@ -161,7 +162,7 @@ function Medicines() {
             ) : null}
             {doses.map((d) => (
               <SoftCard key={d.key} className="flex items-center gap-3 py-3">
-                <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-secondary text-lg">💊</span>
+                <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-secondary"><FeatureIcon name="medicine" /></span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-bold">{d.medicine.name}</p>
                   <p className="truncate text-xs text-muted-foreground">
@@ -226,14 +227,14 @@ function Medicines() {
           <div className="space-y-2">
             {medicines.map((m) => (
               <SoftCard key={m.id} className="flex items-start gap-3">
-                <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">💊</span>
+                <span className="grid size-10 place-items-center rounded-2xl bg-secondary"><FeatureIcon name="medicine" /></span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-bold">{m.name}</p>
                   <p className="text-xs text-muted-foreground">
                     {m.type} · {m.dose} · {m.frequency}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    ⏰ {(m.times.length ? m.times : [m.time]).join(", ")}
+                    <Clock3 className="mr-1 inline size-3" /> {(m.times.length ? m.times : [m.time]).join(", ")}
                   </p>
                   <p className="text-[11px] text-muted-foreground">
                     {formatDate(m.startAt)} → {m.endAt ? formatDate(m.endAt) : "ongoing"}
@@ -384,7 +385,7 @@ function Medicines() {
         <SoftCard className="flex items-center gap-3">
           <Bell className="size-5 text-muted-foreground" />
           <p className="flex-1 text-xs text-muted-foreground">
-            Both parents get the reminder — tap Given, Snooze 10 min or Skip. Whoever acts first, the other sees it
+            Both parents get the reminder — tap Given, Snooze 1 hour or Skip. Whoever acts first, the other sees it
             instantly.
           </p>
         </SoftCard>
@@ -394,7 +395,7 @@ function Medicines() {
           <div className="space-y-2">
             {history.map((d) => (
               <SoftCard key={d.id} className="flex items-center gap-3 py-3">
-                <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">💊</span>
+                <span className="grid size-10 place-items-center rounded-2xl bg-secondary"><FeatureIcon name="medicine" /></span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-bold">{d.name}</p>
                   <p className="truncate text-xs text-muted-foreground">

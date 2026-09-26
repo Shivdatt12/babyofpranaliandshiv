@@ -3,6 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 import { AppShell, PageHeader, SoftCard, StatTile } from "@/components/babybond/shell";
+import { FeatureIcon } from "@/components/babybond/feature-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,8 +41,8 @@ function SleepTracker() {
       <PageHeader title="Sleep" subtitle="Naps & night sleep" />
       <div className="space-y-4 px-5 pb-6">
         <div className="grid grid-cols-2 gap-3">
-          <StatTile tone="sleep" emoji="🌙" label="Slept today" value={durationLabel(s.sleepMinutes)} />
-          <StatTile tone="sleep" emoji="😴" label="Naps" value={`${naps.filter((n) => n.at >= now - 86400000).length}`} />
+          <StatTile tone="sleep" emoji="" icon="sleep" label="Slept today" value={durationLabel(s.sleepMinutes)} />
+          <StatTile tone="sleep" emoji="" icon="sleep" label="Naps" value={`${naps.filter((n) => n.at >= now - 86400000).length}`} />
         </div>
 
         <Tabs defaultValue="timer">
@@ -106,7 +107,7 @@ function SleepTracker() {
           <div className="space-y-2">
             {naps.map((e) => (
               <SoftCard key={e.id} className="flex items-center gap-3 py-3">
-                <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">🌙</span>
+                <span className="grid size-10 place-items-center rounded-2xl bg-secondary"><FeatureIcon name="sleep" /></span>
                 <div className="flex-1">
                   <p className="text-sm font-bold">{durationLabel(e.type === "sleep" ? e.minutes : 0)}</p>
                   <p className="text-xs text-muted-foreground">

@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Pencil, Play, Square, Trash2, X } from "lucide-react";
+import { Baby, ChevronLeft, ChevronRight, Pencil, Play, Square, Trash2, Users, X } from "lucide-react";
 import { AppShell, PageHeader, SoftCard, StatTile } from "@/components/babybond/shell";
+import { FeatureIcon } from "@/components/babybond/feature-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,10 +34,10 @@ export const Route = createFileRoute("/track/milk")({
   component: MilkTracker,
 });
 
-const SIDES: { key: FeedSide; label: string; emoji: string }[] = [
-  { key: "left", label: "Left", emoji: "👈" },
-  { key: "right", label: "Right", emoji: "👉" },
-  { key: "both", label: "Both", emoji: "🤝" },
+const SIDES = [
+  { key: "left", label: "Left", icon: ChevronLeft },
+  { key: "right", label: "Right", icon: ChevronRight },
+  { key: "both", label: "Both", icon: Users },
 ];
 
 const QUICK = [10, 20, 30, 40, 50, 60];
@@ -80,10 +81,11 @@ function MilkTracker() {
       <PageHeader title="Milk" subtitle="Breastfeed & formula" />
       <div className="space-y-4 px-5 pb-6">
         <div className="grid grid-cols-2 gap-3">
-          <StatTile tone="formula" emoji="🍼" label="Formula" value={`${s.formulaMl} ml`} hint="measured" />
+          <StatTile tone="formula" emoji="" icon="feeding" label="Formula" value={`${s.formulaMl} ml`} hint="measured" />
           <StatTile
             tone="milk"
             emoji="🤱"
+            icon="feeding"
             label="Estimated Breastmilk"
             value={`${s.breastMl} ml`}
             hint={`${s.breastCount} sessions · ${durationLabel(s.breastMinutes)}`}
@@ -125,7 +127,7 @@ function MilkTracker() {
                       currentSide === sd.key ? "bb-gradient text-primary-foreground" : "bg-card/70"
                     }`}
                   >
-                    <span className="block text-lg">{sd.emoji}</span>
+                    <sd.icon className="mx-auto mb-1 size-4" />
                     {sd.label}
                   </button>
                 ))}
@@ -244,7 +246,7 @@ function MilkTracker() {
             {feeds.map((e) => (
               <SoftCard key={e.id} className="flex items-center gap-3 py-3">
                 <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">
-                  {e.type === "breast" ? "🤱" : "🍼"}
+                  <FeatureIcon name="feeding" />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-bold">
