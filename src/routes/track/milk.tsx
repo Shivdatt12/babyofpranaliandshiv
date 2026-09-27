@@ -34,7 +34,7 @@ export const Route = createFileRoute("/track/milk")({
   component: MilkTracker,
 });
 
-const SIDES = [
+const SIDES: ReadonlyArray<{ key: FeedSide; label: string; icon: typeof ChevronLeft }> = [
   { key: "left", label: "Left", icon: ChevronLeft },
   { key: "right", label: "Right", icon: ChevronRight },
   { key: "both", label: "Both", icon: Users },
@@ -452,7 +452,7 @@ function ManualFeed() {
               side === sd.key ? "bb-gradient text-primary-foreground" : "bg-card/70"
             }`}
           >
-            {sd.emoji} {sd.label}
+            <sd.icon className="mr-1 inline size-4" /> {sd.label}
           </button>
         ))}
       </div>

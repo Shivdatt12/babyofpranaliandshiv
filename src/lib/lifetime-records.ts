@@ -1,4 +1,5 @@
 import { describe } from "@/routes/timeline";
+import { featureIconForType, type FeatureIconName } from "@/components/babybond/feature-icon";
 import type {
   Appointment,
   Entry,
@@ -16,7 +17,7 @@ export type UnifiedRecord = {
   category: "daily_care" | "health" | "growth" | "life_event" | "memory" | "document";
   title: string;
   detail: string;
-  emoji: string;
+  icon: FeatureIconName;
   by?: string;
 };
 
@@ -49,7 +50,7 @@ export function buildUnifiedRecords(input: {
       category: entryCategory(entry),
       title: item.title,
       detail: item.detail,
-      emoji: item.emoji,
+      icon: item.icon,
       by: entry.by,
     };
   });
@@ -63,7 +64,7 @@ export function buildUnifiedRecords(input: {
       category: "health",
       title: appointment.doctor || "Doctor visit",
       detail: [appointment.hospital, appointment.reason].filter(Boolean).join(" · "),
-      emoji: "🩺",
+      icon: "doctor",
     });
   }
 
@@ -76,7 +77,7 @@ export function buildUnifiedRecords(input: {
       category: "health",
       title: vaccine.name,
       detail: vaccine.dose ? `${vaccine.dose} · vaccine given` : "Vaccine given",
-      emoji: "🛡️",
+      icon: "vaccine",
       ...(vaccine.completedBy ? { by: vaccine.completedBy } : {}),
     });
   }
@@ -90,7 +91,7 @@ export function buildUnifiedRecords(input: {
       category: "life_event",
       title: milestone.label,
       detail: "Milestone achieved",
-      emoji: milestone.emoji,
+      icon: "milestone",
     });
   }
 
@@ -103,14 +104,7 @@ export function buildUnifiedRecords(input: {
       category: lifetimeCategory(record.category),
       title: record.title,
       detail: record.description || record.notes || record.eventType.replaceAll("_", " "),
-      emoji:
-        record.category === "growth"
-          ? "📏"
-          : record.category === "health"
-            ? "🩺"
-            : record.category === "important_event"
-              ? "⭐"
-              : "🎈",
+      icon: featureIconForType(record.category),
       by: record.by,
     });
   }
@@ -124,7 +118,7 @@ export function buildUnifiedRecords(input: {
       category: "document",
       title: document.title,
       detail: document.category.replaceAll("_", " "),
-      emoji: document.mimeType === "application/pdf" ? "📄" : "🖼️",
+      icon: "memory",
       by: document.by,
     });
   }
