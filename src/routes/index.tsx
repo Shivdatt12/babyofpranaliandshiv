@@ -342,7 +342,7 @@ function Dashboard() {
                   key={p.id}
                   className="rounded-full bg-card/70 px-2 py-0.5 text-[11px] font-semibold"
                 >
-                  {p.emoji} {p.role} {p.online ? "· live" : ""}
+                  <FeatureIcon name="family" className="mr-1 inline size-3" /> {p.role} {p.online ? "· live" : ""}
                 </span>
               ))}
             </div>

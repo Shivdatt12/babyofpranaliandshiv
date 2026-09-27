@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, CalendarClock, FileBarChart2, User, Moon, Sun, ArrowLeft } from "lucide-react";
+import { Home, CalendarClock, FileBarChart2, User, Moon, Sun, ArrowLeft, Users } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { useBabyBond } from "@/lib/babybond-store";
@@ -101,7 +101,7 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
         {subtitle ? <p className="text-xs text-muted-foreground">{subtitle}</p> : null}
       </div>
       <span className="rounded-full bg-secondary px-3 py-1 text-[11px] font-semibold text-secondary-foreground">
-        {me.emoji} {me.role}
+        <Users className="mr-1 inline size-3" /> {me.role}
       </span>
     </header>
   );
