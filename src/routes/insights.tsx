@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
+import { FeatureIcon, featureIconForType } from "@/components/babybond/feature-icon";
 import {
   INSIGHTS_DISCLAIMER,
-  INSIGHT_CATEGORY_ICON,
   INSIGHT_CATEGORY_LABEL,
   type InsightBucket,
   type InsightCategory,
@@ -51,7 +51,7 @@ function InsightsPage() {
   return (
     <AppShell>
       <PageHeader
-        title="🧠 Smart Baby Insights"
+        title="Smart Baby Insights"
         subtitle="Simple observations from your baby's recorded data"
       />
 
@@ -65,7 +65,7 @@ function InsightsPage() {
               filter === c ? "bb-gradient text-primary-foreground" : "bg-card text-muted-foreground"
             }`}
           >
-            {c === "all" ? "All" : `${INSIGHT_CATEGORY_ICON[c]} ${INSIGHT_CATEGORY_LABEL[c]}`}
+            {c === "all" ? null : <FeatureIcon name={featureIconForType(c)} className="mr-1 inline size-3.5" />} {c === "all" ? "All" : INSIGHT_CATEGORY_LABEL[c]}
           </button>
         ))}
       </div>
@@ -87,7 +87,7 @@ function InsightsPage() {
                 <div className="space-y-2">
                   {list.map((i) => (
                     <div key={i.id} className="flex gap-3 rounded-2xl bg-card p-4 bb-shadow">
-                      <span className="bb-icon-well text-xl leading-none">{i.icon}</span>
+                      <span className="bb-icon-well"><FeatureIcon name={featureIconForType(i.category)} /></span>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold leading-snug">{i.text}</p>
                         {i.detail ? (

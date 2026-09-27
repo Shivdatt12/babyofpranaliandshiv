@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useRef, useState } from "react";
-import { Archive, FilePlus2, Loader2, Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { Archive, FileImage, FilePlus2, FileText, Loader2, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
+import { FeatureIcon } from "@/components/babybond/feature-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -213,7 +214,7 @@ function Records() {
             ) : (
               filtered.slice(0, visible).map((item) => (
                 <SoftCard key={item.id} className="flex gap-3 p-4">
-                  <span className="bb-icon-well text-lg">{item.emoji}</span>
+                  <span className="bb-icon-well"><FeatureIcon name={item.icon} /></span>
                   <div className="min-w-0 flex-1">
                     <p className="font-bold">{item.title}</p>
                     <p className="text-sm text-muted-foreground">{item.detail}</p>
@@ -368,7 +369,7 @@ function Records() {
               store.medicalDocuments.map((document) => (
                 <SoftCard key={document.id} className="flex items-center gap-3 p-4">
                   <span className="bb-icon-well">
-                    {document.mimeType === "application/pdf" ? "📄" : "🖼️"}
+                    {document.mimeType === "application/pdf" ? <FileText className="size-5" /> : <FileImage className="size-5" />}
                   </span>
                   <button
                     className="min-w-0 flex-1 text-left"

@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { FileDown, Share2 } from "lucide-react";
 import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
+import { FeatureIcon, type FeatureIconName } from "@/components/babybond/feature-icon";
 import { Button } from "@/components/ui/button";
 import { useBabyBond } from "@/lib/babybond-store";
 import { vaccineFullName, vaccineStatus } from "@/lib/babybond-vaccines";
@@ -130,25 +131,25 @@ function moduleLines(
   const first = t.weights[0];
   const last = t.weights[t.weights.length - 1];
   const lastBili = t.bili[t.bili.length - 1];
-  const lines: { emoji: string; label: string; value: string; sub: string }[] = [
+  const lines: { icon: FeatureIconName; label: string; value: string; sub: string }[] = [
     {
-      emoji: "🤱",
+      icon: "feeding",
       label: "Breastfeeding",
       value: `${t.breastCount} sessions`,
       sub: `${durationLabel(t.breastMinutes)} · Estimated Breastmilk ${t.breastMl} ml`,
     },
-    { emoji: "🍼", label: "Formula", value: `${t.formulaMl} ml`, sub: `${t.formulaCount} feeds` },
-    { emoji: "💛", label: "Pee", value: `${t.pee}`, sub: "nappy changes" },
-    { emoji: "💩", label: "Potty", value: `${t.potty}`, sub: "bowel movements" },
-    { emoji: "🌙", label: "Sleep", value: durationLabel(t.sleepMinutes), sub: "total" },
+    { icon: "feeding", label: "Formula", value: `${t.formulaMl} ml`, sub: `${t.formulaCount} feeds` },
+    { icon: "pee", label: "Pee", value: `${t.pee}`, sub: "nappy changes" },
+    { icon: "potty", label: "Potty", value: `${t.potty}`, sub: "bowel movements" },
+    { icon: "sleep", label: "Sleep", value: durationLabel(t.sleepMinutes), sub: "total" },
     {
-      emoji: "💊",
+      icon: "medicine",
       label: "Medicines",
       value: `${t.medDoses} doses`,
       sub: `${t.medGiven} given · ${t.medSkipped} skipped`,
     },
     {
-      emoji: "⚖️",
+      icon: "weight",
       label: "Weight",
       value: last ? `${(last.grams / 1000).toFixed(2)} kg` : "—",
       sub:
@@ -157,16 +158,16 @@ function moduleLines(
           : `${t.weights.length} reading${t.weights.length === 1 ? "" : "s"}`,
     },
     {
-      emoji: "🩸",
+      icon: "bilirubin",
       label: "Bilirubin",
       value: lastBili ? `${lastBili.value}` : "—",
       sub: `${t.bili.length} test${t.bili.length === 1 ? "" : "s"}`,
     },
-    { emoji: "🩺", label: "Doctor", value: `${t.visits}`, sub: "visits" },
+    { icon: "doctor", label: "Doctor", value: `${t.visits}`, sub: "visits" },
   ];
   if (extras) {
     lines.push({
-      emoji: "🛡️",
+      icon: "vaccine",
       label: "Vaccines",
       value: `${extras.vaccinesDone ?? 0} completed`,
       sub: `${extras.vaccinesPending ?? 0} pending · ${extras.vaccinesMissed ?? 0} missed`,
@@ -353,7 +354,7 @@ function Reports() {
           {summaryRows.map((r) => (
             <SoftCard key={r.label} className="flex items-center gap-3 py-3">
               <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">
-                {r.emoji}
+                 <FeatureIcon name={r.icon} />
               </span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold">{r.label}</p>
@@ -378,7 +379,7 @@ function Reports() {
               <p className="font-display text-base font-bold">{formatFullDate(g.at)}</p>
               {moduleLines(g.totals).map((r) => (
                 <div key={r.label} className="flex items-baseline gap-2 text-xs">
-                  <span>{r.emoji}</span>
+                  <FeatureIcon name={r.icon} className="size-3.5" />
                   <span className="font-semibold">{r.label}</span>
                   <span className="flex-1 truncate text-muted-foreground">{r.sub}</span>
                   <span className="font-bold">{r.value}</span>

@@ -193,12 +193,11 @@ export function BabyDayJourney() {
     .reduce((sum, entry) => sum + entry.minutes, 0);
   const peeCount = todayEntries.filter((entry) => entry.type === "pee").length;
   const pottyCount = todayEntries.filter((entry) => entry.type === "potty").length;
-  const summary = [
-    feedCount ? `🍼 ${feedCount} feed${feedCount === 1 ? "" : "s"}` : null,
-    sleepMinutes ? `😴 ${durationLabel(sleepMinutes)}` : null,
-    peeCount ? `💧 ${peeCount}` : null,
-    pottyCount ? `💩 ${pottyCount}` : null,
-  ].filter((item): item is string => Boolean(item));
+  const summary: Array<{ icon: FeatureIconName; text: string }> = [];
+  if (feedCount) summary.push({ icon: "feeding", text: `${feedCount} feed${feedCount === 1 ? "" : "s"}` });
+  if (sleepMinutes) summary.push({ icon: "sleep", text: durationLabel(sleepMinutes) });
+  if (peeCount) summary.push({ icon: "pee", text: `${peeCount}` });
+  if (pottyCount) summary.push({ icon: "potty", text: `${pottyCount}` });
 
   return (
     <section className="px-5 pt-4" aria-labelledby="baby-day-journey-title">
@@ -216,7 +215,7 @@ export function BabyDayJourney() {
           {summary.length ? (
             <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-semibold text-foreground/80">
               {summary.map((item) => (
-                <span key={item}>{item}</span>
+                <span key={item.icon} className="inline-flex items-center gap-1"><FeatureIcon name={item.icon} className="size-3.5" />{item.text}</span>
               ))}
             </div>
           ) : null}

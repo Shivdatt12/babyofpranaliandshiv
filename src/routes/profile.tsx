@@ -10,6 +10,8 @@ import {
   Settings as SettingsIcon,
   Sparkles,
   Archive,
+  Heart,
+  Users,
 } from "lucide-react";
 import {
   AppShell,
@@ -70,9 +72,7 @@ function Profile() {
           <div className="space-y-2">
             {parents.map((p) => (
               <SoftCard key={p.id} className="flex items-center gap-3 py-3">
-                <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">
-                  {p.emoji}
-                </span>
+                <span className="grid size-10 place-items-center rounded-2xl bg-secondary"><Users className="size-5" /></span>
                 <div className="flex-1">
                   <p className="text-sm font-bold">
                     {p.name}{" "}
@@ -146,9 +146,7 @@ function Profile() {
             Baby name
           </h2>
           <Link to="/names" className="flex items-center gap-3 rounded-3xl bg-card p-4 bb-shadow">
-            <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">
-              💕
-            </span>
+            <span className="grid size-10 place-items-center rounded-2xl bg-secondary"><Heart className="size-5" /></span>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold">
                 {baby.nameStatus === "final" ? "Final name selected" : "Temporary / Choosing"}

@@ -15,6 +15,7 @@ import {
   Copy,
   MapPin,
   Search,
+  Users,
 } from "lucide-react";
 import {
   AppShell,
@@ -349,9 +350,7 @@ function Settings() {
             {parents.map((p) => (
               <SoftCard key={p.id} className="space-y-3 py-3">
                 <div className="flex items-center gap-3">
-                  <span className="grid size-10 place-items-center rounded-2xl bg-secondary text-lg">
-                    {p.emoji}
-                  </span>
+                  <span className="grid size-10 place-items-center rounded-2xl bg-secondary"><Users className="size-5" /></span>
                   <Input
                     value={p.name}
                     onChange={(e) => updateParent(p.id, { name: e.target.value })}
@@ -373,7 +372,7 @@ function Settings() {
                           : "bg-secondary text-secondary-foreground"
                       }`}
                     >
-                      {roleEmoji(r)} {r}
+                      <Users className="mr-1 inline size-3.5" /> {r}
                     </button>
                   ))}
                 </div>

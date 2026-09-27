@@ -342,7 +342,7 @@ function Dashboard() {
                   key={p.id}
                   className="rounded-full bg-card/70 px-2 py-0.5 text-[11px] font-semibold"
                 >
-                  {p.emoji} {p.role} {p.online ? "· live" : ""}
+                  <FeatureIcon name="family" className="mr-1 inline size-3" /> {p.role} {p.online ? "· live" : ""}
                 </span>
               ))}
             </div>
@@ -410,7 +410,7 @@ function Dashboard() {
           />
           <StatTile
             tone="formula"
-            emoji="🍼"
+            emoji=""
             icon="feeding"
             label="Formula"
             value={`${s.formulaMl} ml`}
@@ -418,7 +418,7 @@ function Dashboard() {
           />
           <StatTile
             tone="milk"
-            emoji="🤱"
+            emoji=""
             icon="feeding"
             label="Estimated Breastmilk"
             value={`${s.breastMl} ml`}
@@ -426,7 +426,7 @@ function Dashboard() {
           />
           <StatTile
             tone="sleep"
-            emoji="🌙"
+            emoji=""
             icon="sleep"
             label="Sleep"
             value={durationLabel(s.sleepMinutes)}
@@ -435,7 +435,7 @@ function Dashboard() {
 
           <StatTile
             tone="health"
-            emoji="⚖️"
+            emoji=""
             icon="weight"
             label="Weight"
             value={s.weight ? `${(s.weight.grams / 1000).toFixed(2)} kg` : "—"}
@@ -447,7 +447,7 @@ function Dashboard() {
           />
           <StatTile
             tone="health"
-            emoji="🩸"
+            emoji=""
             icon="bilirubin"
             label="Bilirubin"
             value={s.bilirubin ? `${s.bilirubin.value}` : "—"}
