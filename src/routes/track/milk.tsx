@@ -84,7 +84,7 @@ function MilkTracker() {
           <StatTile tone="formula" emoji="" icon="feeding" label="Formula" value={`${s.formulaMl} ml`} hint="measured" />
           <StatTile
             tone="milk"
-            emoji="🤱"
+            emoji=""
             icon="feeding"
             label="Estimated Breastmilk"
             value={`${s.breastMl} ml`}

@@ -62,7 +62,7 @@ function WeightTracker() {
         <div className="grid grid-cols-2 gap-3">
           <StatTile
             tone="health"
-            emoji="⚖️"
+            emoji=""
             icon="weight"
             label="Current"
             value={latest ? `${(latest.grams / 1000).toFixed(2)} kg` : "—"}
@@ -70,7 +70,7 @@ function WeightTracker() {
           />
           <StatTile
             tone="health"
-            emoji="📈"
+            emoji=""
             icon="reports"
             label="Gained"
             value={latest && first ? `${latest.grams - first.grams} g` : "—"}

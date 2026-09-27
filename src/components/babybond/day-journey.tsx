@@ -193,12 +193,12 @@ export function BabyDayJourney() {
     .reduce((sum, entry) => sum + entry.minutes, 0);
   const peeCount = todayEntries.filter((entry) => entry.type === "pee").length;
   const pottyCount = todayEntries.filter((entry) => entry.type === "potty").length;
-  const summary = [
+  const summary: Array<{ icon: FeatureIconName; text: string }> = [
     feedCount ? { icon: "feeding" as const, text: `${feedCount} feed${feedCount === 1 ? "" : "s"}` } : null,
     sleepMinutes ? { icon: "sleep" as const, text: durationLabel(sleepMinutes) } : null,
     peeCount ? { icon: "pee" as const, text: `${peeCount}` } : null,
     pottyCount ? { icon: "potty" as const, text: `${pottyCount}` } : null,
-  ].filter((item): item is { icon: FeatureIconName; text: string } => Boolean(item));
+  ].filter((item): item is { icon: FeatureIconName; text: string } => item !== null);
 
   return (
     <section className="px-5 pt-4" aria-labelledby="baby-day-journey-title">

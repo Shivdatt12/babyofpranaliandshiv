@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { ListFilter } from "lucide-react";
 import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
 import { FeatureIcon, featureIconForType, type FeatureIconName } from "@/components/babybond/feature-icon";
 import { useBabyBond } from "@/lib/babybond-store";
