@@ -19,4 +19,4 @@
 - [x] Add large album photo viewing and private photo download, then verify mobile behavior
 - [x] Make every notification Snooze action stay quiet for one full hour
 - [x] Replace functional feature emojis with one consistent Lucide icon system across the app
-- [ ] Verify the icon system across requested screens, dark mode, and mobile layouts
+- [x] Verify the icon system across requested screens, dark mode, and mobile layouts
