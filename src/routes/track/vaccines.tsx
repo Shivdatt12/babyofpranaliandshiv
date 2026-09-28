@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, CalendarPlus, ChevronDown, CheckCircle2 } from "lucide-react";
+import { Plus, Trash2, CalendarPlus, ChevronDown, CheckCircle2, HelpCircle } from "lucide-react";
 import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
 import { FeatureIcon } from "@/components/babybond/feature-icon";
 import { Button } from "@/components/ui/button";
@@ -204,7 +204,7 @@ function Vaccines() {
                         ) : null}
                         {v.conditional ? (
                           <p className="mt-1 text-[11px] font-semibold text-muted-foreground">
-                            🤔 {VACCINE_PEDIATRICIAN_NOTE}
+                            <HelpCircle className="mr-1 inline size-3.5" /> {VACCINE_PEDIATRICIAN_NOTE}
                           </p>
                         ) : null}
                         {v.scheduleNote ? (

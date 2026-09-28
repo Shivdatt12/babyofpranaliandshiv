@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Render functional feature identifiers through the centralized Lucide `FeatureIcon` mapping; keep emojis only in user content or expressive copy so the UI stays consistent.
