@@ -463,7 +463,7 @@ function Settings() {
                     await pushPrefs(prefs);
                     const shown = await notifyNow(
                       "babybond-test",
-                      "🔔 Test notification",
+                      "Test notification",
                       `Sound: ${settings.soundMode} · Vibration: ${settings.vibrate ? "on" : "off"}`,
                       { prefs },
                     );

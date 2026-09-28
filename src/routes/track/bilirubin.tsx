@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { AlertTriangle, CheckCircle2, Eye, TrendingDown } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Eye } from "lucide-react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { AppShell, PageHeader, SoftCard, StatTile } from "@/components/babybond/shell";
 import { FeatureIcon } from "@/components/babybond/feature-icon";

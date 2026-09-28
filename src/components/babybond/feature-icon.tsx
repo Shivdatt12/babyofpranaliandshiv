@@ -85,13 +85,14 @@ export function featureIconForType(type: string): FeatureIconName {
   if (type === "pee") return "pee";
   if (type === "potty") return "potty";
   if (type === "sleep") return "sleep";
-  if (type === "weight") return "weight";
+  if (type === "weight" || type === "growth") return "weight";
   if (type === "height") return "height";
   if (type === "bilirubin") return "bilirubin";
   if (type === "medicine" || type === "medicines") return "medicine";
   if (type === "vaccine" || type === "vaccines") return "vaccine";
   if (type === "visit" || type === "doctor") return "doctor";
-  if (type === "photo" || type === "memory" || type === "memories") return "memory";
-  if (type === "milestone") return "milestone";
+  if (type === "photo" || type === "memory" || type === "memories" || type === "document") return "memory";
+  if (type === "milestone" || type === "life_event" || type === "important_event") return "milestone";
+  if (type === "health") return "doctor";
   return "timeline";
 }
