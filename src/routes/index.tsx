@@ -90,11 +90,11 @@ function RightNow() {
   const lastSleep = latest("sleep") as Extract<Entry, { type: "sleep" }> | undefined;
 
   return (
-    <section className="px-5 pt-4 pb-2">
-      <h2 className="mb-3 font-display text-base font-bold">Right now</h2>
-      <div className="grid grid-cols-2 gap-2">
+    <section className="px-4 pt-5 pb-2">
+      <h2 className="mb-3 bb-section-title">Right now</h2>
+      <div className="grid grid-cols-2 gap-3">
         {breast ? (
-          <div className="rounded-2xl bg-milk p-4 bb-shadow bb-live-card">
+          <div className="rounded-xl bg-milk p-4 bb-shadow bb-live-card">
             <div className="flex items-start justify-between">
               <FeatureIcon name="feeding" className="size-6" />
               <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-milk-foreground/80">
@@ -119,7 +119,7 @@ function RightNow() {
             </button>
           </div>
         ) : (
-          <div className="rounded-2xl bg-card/60 p-3 bb-shadow">
+          <div className="rounded-xl bg-card/60 p-3 bb-shadow">
             <span className="bb-icon-well"><FeatureIcon name="feeding" /></span>
             <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               Breastfeeding
@@ -136,7 +136,7 @@ function RightNow() {
         )}
 
         {sleep ? (
-          <div className="rounded-2xl bg-sleep p-4 bb-shadow bb-live-card">
+          <div className="rounded-xl bg-sleep p-4 bb-shadow bb-live-card">
             <div className="flex items-start justify-between">
               <FeatureIcon name="sleep" className="size-6" />
               <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-sleep-foreground/80">
@@ -161,7 +161,7 @@ function RightNow() {
             </button>
           </div>
         ) : (
-          <div className="rounded-2xl bg-card/60 p-3 bb-shadow">
+          <div className="rounded-xl bg-card/60 p-3 bb-shadow">
             <span className="bb-icon-well"><FeatureIcon name="sleep" /></span>
             <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               Sleep
@@ -177,7 +177,7 @@ function RightNow() {
           </div>
         )}
 
-        <div className="rounded-2xl bg-card p-3 bb-shadow">
+        <div className="rounded-xl bg-card p-3 bb-shadow">
           <span className="bb-icon-well"><FeatureIcon name="pee" /></span>
           <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
             Last pee
@@ -190,7 +190,7 @@ function RightNow() {
           </p>
         </div>
 
-        <div className="rounded-2xl bg-card p-3 bb-shadow">
+        <div className="rounded-xl bg-card p-3 bb-shadow">
           <span className="bb-icon-well"><FeatureIcon name="potty" /></span>
           <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
             Last potty
@@ -203,7 +203,7 @@ function RightNow() {
           </p>
         </div>
 
-        <div className="col-span-2 rounded-2xl bg-card p-3 bb-shadow">
+        <div className="col-span-2 rounded-xl bg-card p-3 bb-shadow">
           <div className="flex items-center gap-3">
             <span className="bb-icon-well"><FeatureIcon name="feeding" /></span>
             <div className="min-w-0 flex-1">
@@ -230,8 +230,8 @@ function SmartInsights() {
   const insights = useInsights();
   const top = insights.slice(0, 5);
   return (
-    <section className="px-5 pt-4">
-      <div className="rounded-2xl bg-card p-4 bb-shadow">
+    <section className="px-4 pt-5">
+      <div className="rounded-xl bg-card p-4 bb-shadow">
         <div className="flex items-start justify-between gap-2">
           <div>
             <h2 className="flex items-center gap-2 font-display text-base font-bold"><FeatureIcon name="insights" className="size-4" /> Smart Baby Insights</h2>
@@ -318,22 +318,20 @@ function Dashboard() {
 
   return (
     <AppShell>
-      <div className="bb-hero rounded-b-[2.5rem] px-5 pb-8 pt-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground/60">
-              BabyBond
-            </p>
-            <p className="text-sm text-foreground/70">Hi {me.name}, here's today 💗</p>
+      <div className="bb-hero border-b border-border/50 px-4 pb-5 pt-3">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+          <div className="min-w-0">
+            <p className="truncate font-display text-xl font-bold">BabyBond</p>
+            <p className="truncate text-xs font-medium text-muted-foreground">Hi {me.name}, here&apos;s today</p>
           </div>
           <ThemeToggle />
         </div>
 
-        <div className="mt-5 flex items-center gap-4">
-          <BabyAvatar className="size-20 rounded-3xl text-3xl ring-4 ring-card/70 bb-shadow-float" />
+        <div className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
+          <BabyAvatar className="size-16 shrink-0 rounded-2xl text-2xl ring-2 ring-card bb-shadow" />
           <div className="min-w-0">
-            <h1 className="truncate font-display text-2xl font-bold">{baby.name}</h1>
-            <p className="text-sm text-foreground/70">
+            <h1 className="truncate font-display text-xl font-bold">{baby.name}</h1>
+            <p className="truncate text-sm text-foreground/70">
               {s.ageDays} days old · {baby.gender === "girl" ? "Girl" : "Boy"} · {baby.bloodGroup}
             </p>
             <div className="mt-1 flex gap-1">
@@ -349,7 +347,7 @@ function Dashboard() {
           </div>
         </div>
 
-        <SoftCard className="mt-5 flex items-center justify-between bg-card/85">
+        <SoftCard className="mt-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 bg-card/90">
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
               Next feed in · {s.feedGapHours}h gap
@@ -374,7 +372,7 @@ function Dashboard() {
 
       <NameJourneyCard />
 
-      <section className="px-5 py-5">
+      <section className="px-4 py-5">
         <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
@@ -398,7 +396,7 @@ function Dashboard() {
           </Link>
         </div>
 
-        <h2 className="mt-6 mb-3 font-display text-base font-bold">Today</h2>
+        <h2 className="mt-6 mb-3 bb-section-title">Today</h2>
         <div className="grid grid-cols-2 gap-3">
           <StatTile
             tone="milk"
@@ -455,7 +453,7 @@ function Dashboard() {
           />
         </div>
 
-        <h2 className="mt-6 mb-3 font-display text-base font-bold">Care</h2>
+        <h2 className="mt-6 mb-3 bb-section-title">Care</h2>
         <div className="space-y-2">
           <Link
             to="/track/medicines"
@@ -516,7 +514,7 @@ function Dashboard() {
           </Link>
         </div>
 
-        <h2 className="mt-6 mb-3 font-display text-base font-bold">Trackers</h2>
+        <h2 className="mt-6 mb-3 bb-section-title">Trackers</h2>
         <div className="grid grid-cols-2 gap-3">
           {TRACKERS.map((t) => (
             <Link

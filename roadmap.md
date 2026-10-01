@@ -20,3 +20,6 @@
 - [x] Make every notification Snooze action stay quiet for one full hour
 - [x] Replace functional feature emojis with one consistent Lucide icon system across the app
 - [x] Verify the icon system across requested screens, dark mode, and mobile layouts
+
+- [ ] Apply the selected Material You premium Android-native UI across all existing screens
+- [ ] Verify Android mobile spacing, navigation, sheets, dialogs, dark mode, and existing flows
