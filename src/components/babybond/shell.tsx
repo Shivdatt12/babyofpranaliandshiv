@@ -30,7 +30,7 @@ export function ThemeToggle() {
         setDark(next);
         document.documentElement.classList.toggle("dark", next);
       }}
-      className="grid size-10 place-items-center rounded-full bg-card/80 text-foreground bb-shadow transition-transform active:scale-90"
+      className="grid size-12 shrink-0 place-items-center rounded-2xl bg-secondary text-secondary-foreground transition-transform active:scale-90"
     >
       {dark ? <Sun className="size-5" /> : <Moon className="size-5" />}
     </button>
@@ -40,8 +40,8 @@ export function ThemeToggle() {
 export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-md px-3 pb-3">
-      <div className="flex items-center justify-between rounded-2xl bg-card/90 p-1.5 bb-shadow-float">
+    <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-md border-t border-border/70 bg-card/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
+      <div className="grid grid-cols-4 items-center">
         {NAV.map(({ to, label, icon: Icon }) => {
           const active = pathname === to;
           return (
@@ -49,13 +49,15 @@ export function BottomNav() {
               key={to}
               to={to}
               className={cn(
-                "flex flex-1 flex-col items-center gap-0.5 rounded-xl py-2 text-[11px] font-semibold transition-all duration-300",
+                "flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1.5 text-[11px] font-semibold transition-all duration-200",
                 active
-                  ? "bb-gradient text-primary-foreground scale-[1.02]"
+                  ? "text-primary"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <Icon className="size-5" />
+              <span className={cn("grid h-8 min-w-16 place-items-center rounded-full transition-colors", active && "bg-secondary")}>
+                <Icon className="size-5" strokeWidth={active ? 2.5 : 2} />
+              </span>
               {label}
             </Link>
           );
@@ -76,7 +78,7 @@ export function AppShell({ children, nav = true }: { children: ReactNode; nav?: 
   ) : null;
   const showNav = nav && !gate;
   return (
-    <div className="mx-auto min-h-screen w-full max-w-md bg-background pb-28">
+    <div className="bb-app mx-auto min-h-dvh w-full max-w-md bg-background pb-28">
       {gate ?? children}
       <MedicineReminders />
       {showNav ? <QuickAdd /> : null}
@@ -88,19 +90,19 @@ export function AppShell({ children, nav = true }: { children: ReactNode; nav?: 
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   const { me } = useBabyBond();
   return (
-    <header className="sticky top-0 z-30 flex items-center gap-3 bg-background/85 px-5 py-4 backdrop-blur">
+    <header className="sticky top-0 z-30 grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-border/45 bg-background/92 px-4 py-2 backdrop-blur-xl">
       <Link
         to="/"
-        className="grid size-10 place-items-center rounded-full bg-card/90 text-foreground bb-shadow transition-transform active:scale-90"
+        className="grid size-12 shrink-0 place-items-center rounded-full text-foreground transition-colors active:bg-secondary"
         aria-label="Back home"
       >
         <ArrowLeft className="size-5" />
       </Link>
-      <div className="flex-1">
-        <h1 className="text-lg font-bold leading-tight">{title}</h1>
+      <div className="min-w-0">
+        <h1 className="truncate text-lg font-bold leading-tight">{title}</h1>
         {subtitle ? <p className="text-xs text-muted-foreground">{subtitle}</p> : null}
       </div>
-      <span className="rounded-full bg-secondary px-3 py-1 text-[11px] font-semibold text-secondary-foreground">
+      <span className="shrink-0 rounded-full bg-secondary px-3 py-1.5 text-[11px] font-semibold text-secondary-foreground">
         <Users className="mr-1 inline size-3" /> {me.role}
       </span>
     </header>
@@ -126,7 +128,7 @@ export function SoftCard({
     card: "bg-card text-card-foreground",
   };
   return (
-    <div className={cn("rounded-2xl p-4 bb-shadow", tones[tone ?? "card"], className)}>
+    <div className={cn("rounded-xl p-4 bb-shadow", tones[tone ?? "card"], className)}>
       {children}
     </div>
   );
