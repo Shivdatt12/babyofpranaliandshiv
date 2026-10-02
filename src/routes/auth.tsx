@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Baby, Users } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -75,21 +76,21 @@ function AuthPage() {
   };
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-md flex-col bb-hero px-6 pb-10 pt-16">
+    <div className="bb-app mx-auto flex min-h-dvh w-full max-w-md flex-col bb-hero px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-10">
       <div className="text-center">
-        <span className="text-5xl">🍼</span>
-        <h1 className="mt-3 font-display text-3xl font-bold">माझी चिमणी</h1>
+        <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-primary text-primary-foreground bb-shadow-float"><Baby className="size-8" /></span>
+        <h1 className="mt-4 font-display text-2xl font-bold">माझी चिमणी</h1>
         <p className="mt-1 text-sm text-foreground/70">One gentle journal for mother and father.</p>
       </div>
 
-      <div className="mt-10 rounded-[2rem] bg-card p-6 bb-shadow-float">
-        <div className="mb-5 flex rounded-2xl bg-secondary p-1">
+      <div className="mt-8 rounded-2xl bg-card p-5 bb-shadow-float">
+        <div className="mb-5 flex rounded-xl bg-secondary p-1">
           {(["in", "up"] as const).map((m) => (
             <button
               key={m}
               type="button"
               onClick={() => setMode(m)}
-              className={`flex-1 rounded-xl py-2 text-sm font-semibold ${
+              className={`min-h-11 flex-1 rounded-lg py-2 text-sm font-semibold ${
                 mode === m ? "bb-gradient text-primary-foreground" : "text-secondary-foreground"
               }`}
             >
@@ -112,11 +113,11 @@ function AuthPage() {
                   key={r}
                   type="button"
                   onClick={() => setRole(r)}
-                  className={`flex-1 rounded-2xl py-2 text-sm font-semibold ${
+                  className={`flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl py-2 text-sm font-semibold ${
                     role === r ? "bb-gradient text-primary-foreground" : "bg-secondary text-secondary-foreground"
                   }`}
                 >
-                  {r === "Mother" ? "👩 Mother" : "👨 Father"}
+                  <Users className="size-4" /> {r}
                 </button>
               ))}
             </div>
@@ -162,7 +163,7 @@ function AuthPage() {
         </Button>
       </div>
 
-      <div className="mt-6 rounded-3xl bg-card/70 p-4 text-center text-xs text-muted-foreground">
+      <div className="mt-6 rounded-xl bg-card/70 p-4 text-center text-xs text-muted-foreground bb-shadow">
         Family account · after signing in, share your invite code from Settings so your partner joins the same baby.
       </div>
 
