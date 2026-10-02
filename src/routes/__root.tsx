@@ -87,7 +87,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "BabyBond is a gentle newborn care journal for both parents: feeds, sleep, nappies, weight and health in one soft, shared timeline.",
       },
       { name: "author", content: "BabyBond" },
-      { name: "theme-color", content: "#397A68" },
+      { name: "theme-color", content: "#B85C38" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-title", content: "चिमणी" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
