@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { Baby, Camera, Heart, LogIn } from "lucide-react";
+import { Baby as BabyIcon, Camera, Heart, LogIn } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SoftCard } from "@/components/babybond/shell";
@@ -28,7 +28,7 @@ export function LoadingScreen() {
 export function SignInPrompt() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-8 text-center">
-      <span className="grid size-16 place-items-center rounded-2xl bg-secondary text-secondary-foreground"><Baby className="size-8" /></span>
+      <span className="grid size-16 place-items-center rounded-2xl bg-secondary text-secondary-foreground"><BabyIcon className="size-8" /></span>
       <h1 className="font-display text-2xl font-bold">Welcome to माझी चिमणी ❤️</h1>
       <p className="text-sm text-muted-foreground">Sign in to open your family&apos;s baby journal.</p>
       <Link
@@ -99,7 +99,7 @@ export function CreateBabyProfile() {
   return (
     <div className="space-y-4 px-5 py-8">
       <div className="text-center">
-        <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-secondary text-secondary-foreground"><Baby className="size-8" /></span>
+        <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-secondary text-secondary-foreground"><BabyIcon className="size-8" /></span>
         <h1 className="mt-2 font-display text-2xl font-bold">Welcome to माझी चिमणी ❤️</h1>
         <p className="text-sm text-muted-foreground">Create your baby&apos;s profile to get started.</p>
       </div>
