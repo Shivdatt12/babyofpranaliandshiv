@@ -237,6 +237,25 @@ export function rowToName(r: Row & { votes?: unknown }): NameIdea {
   } as NameIdea;
 }
 
+/** The server caps each response at 1000 rows, so page through every entry. */
+async function loadAllEntries(familyId: string): Promise<{ data: unknown[] }> {
+  const PAGE = 1000;
+  const all: unknown[] = [];
+  for (let from = 0; from < 100_000; from += PAGE) {
+    const { data, error } = await supabase
+      .from("entries")
+      .select("*")
+      .eq("family_id", familyId)
+      .order("at", { ascending: false })
+      .order("id", { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) throw error;
+    all.push(...(data ?? []));
+    if (!data || data.length < PAGE) break;
+  }
+  return { data: all };
+}
+
 export async function loadFamilyData(familyId: string): Promise<CloudSnapshot> {
   const [
     baby,
@@ -253,12 +272,7 @@ export async function loadFamilyData(familyId: string): Promise<CloudSnapshot> {
   ] = await Promise.all([
     supabase.from("babies").select("id,data").eq("family_id", familyId).maybeSingle(),
     supabase.from("family_settings").select("data").eq("family_id", familyId).maybeSingle(),
-    supabase
-      .from("entries")
-      .select("*")
-      .eq("family_id", familyId)
-      .order("at", { ascending: false })
-      .limit(5000),
+    loadAllEntries(familyId),
     supabase.from("medicines").select("*").eq("family_id", familyId),
     supabase.from("appointments").select("*").eq("family_id", familyId),
     supabase.from("vaccines").select("*").eq("family_id", familyId),
