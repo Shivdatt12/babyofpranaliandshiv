@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Check, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
-import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
+import { Check, Loader2, Pencil, Plus, Trash2, Trophy } from "lucide-react";
+import { AppShell, EmptyState, PageHeader, SoftCard } from "@/components/babybond/shell";
 import { FeatureIcon } from "@/components/babybond/feature-icon";
 import { useBabyBond } from "@/lib/babybond-store";
 import { dayKey, formatDate, formatTime, type Milestone } from "@/lib/babybond-data";
@@ -116,9 +116,16 @@ function Milestones() {
           <Plus /> Add Milestone
         </Button>
         {milestones.length === 0 ? (
-          <SoftCard className="text-center text-sm text-muted-foreground">
-            No milestones yet. Add a special moment from your baby's journey.
-          </SoftCard>
+          <EmptyState
+            icon={Trophy}
+            title="No milestones yet"
+            description="Your little moments will appear here."
+            action={
+              <Button size="sm" onClick={() => openForm()}>
+                <Plus /> Add Milestone
+              </Button>
+            }
+          />
         ) : null}
         {milestones.map((m) => (
           <SoftCard

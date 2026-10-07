@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Plus, Trash2, CalendarPlus, ChevronDown, CheckCircle2, HelpCircle } from "lucide-react";
-import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
+import { AppShell, PageHeader, SoftCard, StatusChip } from "@/components/babybond/shell";
 import { FeatureIcon } from "@/components/babybond/feature-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,6 +57,15 @@ const STATUS_CLASS: Record<VaccineStatus, string> = {
   "due-today": "bb-gradient text-primary-foreground",
   "due-soon": "bg-secondary text-secondary-foreground",
   upcoming: "bg-muted text-muted-foreground",
+};
+
+const STATUS_TONE: Record<VaccineStatus, "success" | "neutral" | "danger" | "warning"> = {
+  given: "success",
+  "not-applicable": "neutral",
+  overdue: "danger",
+  "due-today": "warning",
+  "due-soon": "warning",
+  upcoming: "neutral",
 };
 
 function dueLabel(v: Vaccine) {
@@ -179,11 +188,10 @@ function Vaccines() {
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="truncate text-sm font-bold">{vaccineFullName(v)}</p>
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${STATUS_CLASS[status]}`}
-                          >
-                            {VACCINE_STATUS_DOT[status]} {VACCINE_STATUS_LABEL[status]}
-                          </span>
+                          <StatusChip
+                            label={`${VACCINE_STATUS_DOT[status]} ${VACCINE_STATUS_LABEL[status]}`}
+                            tone={STATUS_TONE[status]}
+                          />
                         </div>
                         <p className="text-xs text-muted-foreground">
                           {v.stage ? `${v.stage} · ` : ""}

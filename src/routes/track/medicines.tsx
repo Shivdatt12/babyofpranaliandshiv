@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Bell, Clock3, Pencil, Plus, Trash2, X } from "lucide-react";
-import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
+import { AppShell, PageHeader, SoftCard, StatusChip } from "@/components/babybond/shell";
 import { FeatureIcon } from "@/components/babybond/feature-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -78,17 +78,15 @@ function Chip({
   onClick: () => void;
 }) {
   return (
-    <button
+    <Button
       type="button"
       onClick={onClick}
-      className={
-        active
-          ? "rounded-full bb-gradient px-3 py-1.5 text-[11px] font-bold text-primary-foreground"
-          : "rounded-full bg-card/80 px-3 py-1.5 text-[11px] font-semibold text-muted-foreground"
-      }
+      size="sm"
+      variant={active ? "default" : "secondary"}
+      className="min-h-8 rounded-full px-3 text-[11px]"
     >
       {children}
-    </button>
+    </Button>
   );
 }
 
@@ -171,15 +169,10 @@ function Medicines() {
                   </p>
                 </div>
                 {d.status === "given" || d.status === "skipped" ? (
-                  <span
-                    className={
-                      d.status === "given"
-                        ? "rounded-full bg-health px-3 py-1 text-[11px] font-bold text-health-foreground"
-                        : "rounded-full bg-secondary px-3 py-1 text-[11px] font-bold text-secondary-foreground"
-                    }
-                  >
-                    {d.status === "given" ? "Given" : "Skipped"}
-                  </span>
+                  <StatusChip
+                    label={d.status === "given" ? "Completed" : "Skipped"}
+                    tone={d.status === "given" ? "success" : "neutral"}
+                  />
                 ) : (
                   <div className="flex gap-1">
                     <button
@@ -402,15 +395,10 @@ function Medicines() {
                     {formatDate(d.at)} · {formatTime(d.at)} · {d.by} · {timeAgo(d.at, now)}
                   </p>
                 </div>
-                <span
-                  className={
-                    (d.status ?? "given") === "given"
-                      ? "rounded-full bg-health px-3 py-1 text-[11px] font-bold text-health-foreground"
-                      : "rounded-full bg-secondary px-3 py-1 text-[11px] font-bold text-secondary-foreground"
-                  }
-                >
-                  {(d.status ?? "given") === "given" ? "Given" : "Skipped"}
-                </span>
+                <StatusChip
+                  label={(d.status ?? "given") === "given" ? "Completed" : "Skipped"}
+                  tone={(d.status ?? "given") === "given" ? "success" : "neutral"}
+                />
               </SoftCard>
             ))}
           </div>
