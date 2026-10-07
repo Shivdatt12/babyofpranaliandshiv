@@ -50,15 +50,6 @@ export const Route = createFileRoute("/track/vaccines")({
   component: Vaccines,
 });
 
-const STATUS_CLASS: Record<VaccineStatus, string> = {
-  given: "bg-secondary text-secondary-foreground",
-  "not-applicable": "bg-muted text-muted-foreground",
-  overdue: "bg-destructive/15 text-destructive",
-  "due-today": "bb-gradient text-primary-foreground",
-  "due-soon": "bg-secondary text-secondary-foreground",
-  upcoming: "bg-muted text-muted-foreground",
-};
-
 const STATUS_TONE: Record<VaccineStatus, "success" | "neutral" | "danger" | "warning"> = {
   given: "success",
   "not-applicable": "neutral",
