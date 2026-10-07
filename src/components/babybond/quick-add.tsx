@@ -27,12 +27,12 @@ export function QuickAdd() {
         <button
           type="button"
           aria-label="Quick add"
-          className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-[max(1rem,calc(50%-13rem))] z-50 grid size-14 place-items-center rounded-2xl bb-gradient text-primary-foreground bb-shadow-float transition-transform active:scale-90"
+          className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-[max(1rem,calc(50%-13rem))] z-50 grid size-14 place-items-center rounded-lg bb-gradient text-primary-foreground bb-shadow-float transition-transform duration-150 active:scale-[0.94]"
         >
           <Plus className="size-7" />
         </button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="mx-auto max-h-[85dvh] max-w-md overflow-y-auto rounded-t-2xl border-border/60 bg-card px-5 pb-[max(2rem,env(safe-area-inset-bottom))]">
+      <SheetContent side="bottom" className="mx-auto max-h-[85dvh] max-w-md overflow-y-auto border-border/60 bg-card px-5 pb-[max(2rem,env(safe-area-inset-bottom))]">
         <SheetHeader className="px-0">
           <SheetTitle className="font-display text-lg">Quick log</SheetTitle>
         </SheetHeader>
@@ -44,7 +44,7 @@ export function QuickAdd() {
               setOpen(false);
               toast.success("Pee logged 💛", { description: formatTime(Date.now()) });
             }}
-            className="flex min-h-20 flex-col items-center justify-center gap-1 rounded-xl bg-pee p-3 text-pee-foreground bb-shadow transition-transform active:scale-95"
+            className="flex min-h-24 flex-col items-center justify-center gap-2 rounded-lg bg-pee p-3 text-pee-foreground bb-shadow transition-transform duration-150 active:scale-[0.97]"
           >
             <Droplet className="size-6" />
             <span className="text-xs font-semibold">Pee</span>
@@ -54,7 +54,7 @@ export function QuickAdd() {
               key={l.label}
               to={l.to}
               onClick={() => setOpen(false)}
-              className="flex min-h-20 flex-col items-center justify-center gap-1 rounded-xl bg-secondary p-3 text-secondary-foreground bb-shadow transition-transform active:scale-95"
+              className="flex min-h-24 flex-col items-center justify-center gap-2 rounded-lg bg-secondary p-3 text-secondary-foreground bb-shadow transition-transform duration-150 active:scale-[0.97]"
             >
               <l.icon className="size-6" />
               <span className="text-center text-xs font-semibold">{l.label}</span>

@@ -201,7 +201,7 @@ export function BabyDayJourney() {
 
   return (
     <section className="px-5 pt-4" aria-labelledby="baby-day-journey-title">
-      <div className="overflow-hidden rounded-2xl bg-card bb-shadow">
+      <div className="overflow-hidden rounded-lg bg-card bb-shadow">
         <div className="border-b border-border/60 px-4 py-4">
           <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
             Today
@@ -226,7 +226,7 @@ export function BabyDayJourney() {
             {timers.map((timer) => (
               <div
                 key={timer.kind}
-                className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-2xl bg-card p-3 bb-shadow bb-live-card animate-fade-in"
+                className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-lg bg-card p-3 bb-shadow bb-live-card animate-fade-in"
               >
                 <span className="bb-icon-well"><FeatureIcon name={timer.kind === "breast" ? "feeding" : "sleep"} /></span>
                 <Link
@@ -289,7 +289,7 @@ export function BabyDayJourney() {
                       </div>
                       <Link
                         to={item.to}
-                        className="mb-1.5 grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-xl border border-border/50 bg-muted/45 px-3 py-2 transition-all active:scale-[0.98]"
+                        className="mb-1.5 grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg border border-border/50 bg-muted/45 px-3 py-2 transition-all duration-150 active:scale-[0.98]"
                       >
                         <div className="min-w-0">
                           <p className="truncate text-xs font-bold">{item.title}</p>
@@ -307,10 +307,10 @@ export function BabyDayJourney() {
             ))}
           </div>
         ) : !timers.length ? (
-          <div className="px-5 py-8 text-center">
-            <Sprout className="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
-            <p className="mt-2 text-sm font-bold">No moments recorded yet</p>
-            <p className="text-xs text-muted-foreground">Start tracking your baby’s day</p>
+          <div className="bb-empty m-4">
+            <span className="bb-icon-well"><Sprout className="size-5" aria-hidden="true" /></span>
+            <p className="mt-3 text-sm font-bold">No moments recorded yet</p>
+            <p className="mt-1 text-xs text-muted-foreground">Start tracking your baby’s day with Central Add.</p>
           </div>
         ) : null}
 

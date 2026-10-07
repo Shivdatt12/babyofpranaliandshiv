@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Baby as BabyIcon, Camera, Heart, LogIn } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SoftCard } from "@/components/babybond/shell";
 import { useBabyBond } from "@/lib/babybond-store";
 import type { Baby } from "@/lib/babybond-data";
@@ -13,14 +14,14 @@ import { ACCEPTED_IMAGE_TYPES, MediaError, uploadMedia, useMediaUrl } from "@/li
 export function LoadingScreen() {
   return (
     <div className="space-y-4 px-5 py-8">
-      <div className="h-6 w-32 animate-pulse rounded-full bg-secondary" />
-      <div className="h-28 animate-pulse rounded-3xl bg-secondary" />
+      <Skeleton className="h-6 w-32 rounded-full" />
+      <Skeleton className="h-28" />
       <div className="grid grid-cols-2 gap-3">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="h-24 animate-pulse rounded-3xl bg-secondary" />
+          <Skeleton key={i} className="h-24" />
         ))}
       </div>
-      <div className="h-40 animate-pulse rounded-3xl bg-secondary" />
+      <Skeleton className="h-40" />
     </div>
   );
 }
