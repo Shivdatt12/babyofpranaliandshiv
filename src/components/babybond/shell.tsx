@@ -1,5 +1,16 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, CalendarClock, FileBarChart2, User, Moon, Sun, ArrowLeft, Users, WifiOff, type LucideIcon } from "lucide-react";
+import {
+  Home,
+  CalendarClock,
+  FileBarChart2,
+  User,
+  Moon,
+  Sun,
+  ArrowLeft,
+  Users,
+  WifiOff,
+  type LucideIcon,
+} from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { useBabyBond } from "@/lib/babybond-store";
@@ -50,12 +61,15 @@ export function BottomNav() {
               to={to}
               className={cn(
                 "flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1.5 text-[11px] font-semibold transition-all duration-150 active:scale-[0.97]",
-                active
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground",
+                active ? "text-primary" : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <span className={cn("grid h-8 min-w-16 place-items-center rounded-full transition-colors", active && "bg-secondary text-primary")}>
+              <span
+                className={cn(
+                  "grid h-8 min-w-16 place-items-center rounded-full transition-colors",
+                  active && "bg-secondary text-primary",
+                )}
+              >
                 <Icon className="size-5" strokeWidth={active ? 2.5 : 2} />
               </span>
               {label}
@@ -174,7 +188,9 @@ export function EmptyState({
 }) {
   return (
     <div className="bb-empty">
-      <span className="bb-icon-well"><Icon className="size-5" /></span>
+      <span className="bb-icon-well">
+        <Icon className="size-5" />
+      </span>
       <p className="mt-3 text-sm font-bold">{title}</p>
       <p className="mt-1 max-w-64 text-xs text-muted-foreground">{description}</p>
       {action ? <div className="mt-4">{action}</div> : null}

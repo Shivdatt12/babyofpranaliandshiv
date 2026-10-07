@@ -126,7 +126,13 @@ function Vaccines() {
       <div className="space-y-4 px-5 pb-6">
         <SoftCard tone="health">
           <p className="text-sm font-bold">
-            {pending.length ? `${pending.length} doses pending` : <span className="inline-flex items-center gap-1"><CheckCircle2 className="size-4" /> Vaccines up to date</span>}
+            {pending.length ? (
+              `${pending.length} doses pending`
+            ) : (
+              <span className="inline-flex items-center gap-1">
+                <CheckCircle2 className="size-4" /> Vaccines up to date
+              </span>
+            )}
             {overdueCount ? ` · ${overdueCount} overdue` : ""}
           </p>
           <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
@@ -212,7 +218,8 @@ function Vaccines() {
                         ) : null}
                         {v.conditional ? (
                           <p className="mt-1 text-[11px] font-semibold text-muted-foreground">
-                            <HelpCircle className="mr-1 inline size-3.5" /> {VACCINE_PEDIATRICIAN_NOTE}
+                            <HelpCircle className="mr-1 inline size-3.5" />{" "}
+                            {VACCINE_PEDIATRICIAN_NOTE}
                           </p>
                         ) : null}
                         {v.scheduleNote ? (

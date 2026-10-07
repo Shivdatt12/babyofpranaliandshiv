@@ -68,7 +68,13 @@ function entryToJourney(e: Entry, mlPerMinute: number): JourneyItem {
         to: "/track/milk",
       };
     case "formula":
-      return { ...common, icon: "feeding", title: "Formula", detail: `${e.ml} ml`, to: "/track/milk" };
+      return {
+        ...common,
+        icon: "feeding",
+        title: "Formula",
+        detail: `${e.ml} ml`,
+        to: "/track/milk",
+      };
     case "pee":
       return {
         ...common,
@@ -194,7 +200,8 @@ export function BabyDayJourney() {
   const peeCount = todayEntries.filter((entry) => entry.type === "pee").length;
   const pottyCount = todayEntries.filter((entry) => entry.type === "potty").length;
   const summary: Array<{ icon: FeatureIconName; text: string }> = [];
-  if (feedCount) summary.push({ icon: "feeding", text: `${feedCount} feed${feedCount === 1 ? "" : "s"}` });
+  if (feedCount)
+    summary.push({ icon: "feeding", text: `${feedCount} feed${feedCount === 1 ? "" : "s"}` });
   if (sleepMinutes) summary.push({ icon: "sleep", text: durationLabel(sleepMinutes) });
   if (peeCount) summary.push({ icon: "pee", text: `${peeCount}` });
   if (pottyCount) summary.push({ icon: "potty", text: `${pottyCount}` });
@@ -215,7 +222,10 @@ export function BabyDayJourney() {
           {summary.length ? (
             <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-semibold text-foreground/80">
               {summary.map((item) => (
-                <span key={item.icon} className="inline-flex items-center gap-1"><FeatureIcon name={item.icon} className="size-3.5" />{item.text}</span>
+                <span key={item.icon} className="inline-flex items-center gap-1">
+                  <FeatureIcon name={item.icon} className="size-3.5" />
+                  {item.text}
+                </span>
               ))}
             </div>
           ) : null}
@@ -228,7 +238,9 @@ export function BabyDayJourney() {
                 key={timer.kind}
                 className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-lg bg-card p-3 bb-shadow bb-live-card animate-fade-in"
               >
-                <span className="bb-icon-well"><FeatureIcon name={timer.kind === "breast" ? "feeding" : "sleep"} /></span>
+                <span className="bb-icon-well">
+                  <FeatureIcon name={timer.kind === "breast" ? "feeding" : "sleep"} />
+                </span>
                 <Link
                   to={timer.kind === "breast" ? "/track/milk" : "/track/sleep"}
                   className="min-w-0 active:opacity-70"
@@ -268,7 +280,11 @@ export function BabyDayJourney() {
             {groups.map(({ period, items }) => (
               <div key={period} className="mb-3 last:mb-0">
                 <h3 className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                  {(() => { const PeriodIcon = PERIODS[period].icon; return <PeriodIcon className="mr-1 inline size-3.5" />; })()} {PERIODS[period].label}
+                  {(() => {
+                    const PeriodIcon = PERIODS[period].icon;
+                    return <PeriodIcon className="mr-1 inline size-3.5" />;
+                  })()}{" "}
+                  {PERIODS[period].label}
                 </h3>
                 <div>
                   {items.map((item, index) => (
@@ -284,7 +300,10 @@ export function BabyDayJourney() {
                           <span className="absolute bottom-0 top-7 w-px bg-border" />
                         ) : null}
                         <span className="relative z-10 mt-1 grid size-7 place-items-center rounded-lg border border-border/70 bg-secondary text-sm ring-4 ring-card">
-                          <FeatureIcon name={item.icon ?? featureIconForType(item.title.toLowerCase())} className="size-4" />
+                          <FeatureIcon
+                            name={item.icon ?? featureIconForType(item.title.toLowerCase())}
+                            className="size-4"
+                          />
                         </span>
                       </div>
                       <Link
@@ -308,9 +327,13 @@ export function BabyDayJourney() {
           </div>
         ) : !timers.length ? (
           <div className="bb-empty m-4">
-            <span className="bb-icon-well"><Sprout className="size-5" aria-hidden="true" /></span>
+            <span className="bb-icon-well">
+              <Sprout className="size-5" aria-hidden="true" />
+            </span>
             <p className="mt-3 text-sm font-bold">No moments recorded yet</p>
-            <p className="mt-1 text-xs text-muted-foreground">Start tracking your baby’s day with Central Add.</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Start tracking your baby’s day with Central Add.
+            </p>
           </div>
         ) : null}
 

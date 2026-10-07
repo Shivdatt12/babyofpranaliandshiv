@@ -1,6 +1,16 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Baby, Droplet, Moon, Pill, Plus, Scale, Stethoscope, Toilet, Activity } from "lucide-react";
+import {
+  Baby,
+  Droplet,
+  Moon,
+  Pill,
+  Plus,
+  Scale,
+  Stethoscope,
+  Toilet,
+  Activity,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useBabyBond } from "@/lib/babybond-store";
@@ -32,7 +42,10 @@ export function QuickAdd() {
           <Plus className="size-7" />
         </button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="mx-auto max-h-[85dvh] max-w-md overflow-y-auto border-border/60 bg-card px-5 pb-[max(2rem,env(safe-area-inset-bottom))]">
+      <SheetContent
+        side="bottom"
+        className="mx-auto max-h-[85dvh] max-w-md overflow-y-auto border-border/60 bg-card px-5 pb-[max(2rem,env(safe-area-inset-bottom))]"
+      >
         <SheetHeader className="px-0">
           <SheetTitle className="font-display text-lg">Quick log</SheetTitle>
         </SheetHeader>

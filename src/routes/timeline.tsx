@@ -2,7 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { CalendarClock } from "lucide-react";
 import { AppShell, EmptyState, PageHeader } from "@/components/babybond/shell";
-import { FeatureIcon, featureIconForType, type FeatureIconName } from "@/components/babybond/feature-icon";
+import {
+  FeatureIcon,
+  featureIconForType,
+  type FeatureIconName,
+} from "@/components/babybond/feature-icon";
 import { useBabyBond } from "@/lib/babybond-store";
 import {
   dayKey,
@@ -67,7 +71,11 @@ export function describe(
     case "bilirubin":
       return { icon: "bilirubin", title: "Bilirubin", detail: `${e.value} · ${e.method} test` };
     case "medicine":
-      return { icon: "medicine", title: e.name, detail: `${e.dose}${e.status ? ` · ${e.status}` : ""}` };
+      return {
+        icon: "medicine",
+        title: e.name,
+        detail: `${e.dose}${e.status ? ` · ${e.status}` : ""}`,
+      };
     case "visit":
       return {
         icon: "doctor",
@@ -180,9 +188,7 @@ function Timeline() {
               type="button"
               onClick={() => setDays(r.key)}
               className={`flex min-h-10 flex-1 items-center justify-center rounded-lg px-3 py-2 text-xs font-semibold transition-all duration-150 active:scale-[0.97] ${
-                days === r.key
-                  ? "bb-chip-active"
-                  : "bb-tonal text-muted-foreground"
+                days === r.key ? "bb-chip-active" : "bb-tonal text-muted-foreground"
               }`}
             >
               {r.label}
@@ -197,9 +203,7 @@ function Timeline() {
               type="button"
               onClick={() => setType(f.key)}
               className={`bb-chip shrink-0 transition-all duration-150 active:scale-[0.97] ${
-                type === f.key
-                  ? "bb-chip-active"
-                  : "text-secondary-foreground"
+                type === f.key ? "bb-chip-active" : "text-secondary-foreground"
               }`}
             >
               <FeatureIcon name={f.icon} className="mr-1 inline size-3.5" /> {f.label}
@@ -225,8 +229,13 @@ function Timeline() {
             <div className="divide-y divide-border/55">
               {list.map((e) => {
                 return (
-                  <div key={e.id} className="grid grid-cols-[3.2rem_2.5rem_minmax(0,1fr)] items-center gap-2 py-3">
-                    <time className="text-right text-[11px] font-semibold tabular-nums text-muted-foreground">{formatTime(e.at)}</time>
+                  <div
+                    key={e.id}
+                    className="grid grid-cols-[3.2rem_2.5rem_minmax(0,1fr)] items-center gap-2 py-3"
+                  >
+                    <time className="text-right text-[11px] font-semibold tabular-nums text-muted-foreground">
+                      {formatTime(e.at)}
+                    </time>
                     <span className="bb-icon-well size-9 text-lg">
                       <FeatureIcon name={e.icon ?? featureIconForType(e.type)} />
                     </span>
@@ -235,7 +244,9 @@ function Timeline() {
                       <p className="truncate text-xs capitalize text-muted-foreground">
                         {e.detail}
                       </p>
-                      {e.by ? <p className="mt-0.5 text-[11px] text-muted-foreground">by {e.by}</p> : null}
+                      {e.by ? (
+                        <p className="mt-0.5 text-[11px] text-muted-foreground">by {e.by}</p>
+                      ) : null}
                     </div>
                   </div>
                 );
