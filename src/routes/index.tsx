@@ -71,6 +71,28 @@ function Countdown({ target, now }: { target: number; now: number }) {
   );
 }
 
+function formatBabyAge(bornAt: number, now: number) {
+  if (!bornAt) return "Age not set";
+  const born = new Date(bornAt);
+  const current = new Date(now);
+  let months = (current.getFullYear() - born.getFullYear()) * 12 + current.getMonth() - born.getMonth();
+  let anchor = new Date(born);
+  anchor.setMonth(anchor.getMonth() + months);
+  if (anchor > current) {
+    months -= 1;
+    anchor = new Date(born);
+    anchor.setMonth(anchor.getMonth() + months);
+  }
+  const days = Math.max(0, Math.floor((current.getTime() - anchor.getTime()) / 86_400_000));
+  if (months < 1) return `${days} day${days === 1 ? "" : "s"}`;
+  const years = Math.floor(months / 12);
+  const restMonths = months % 12;
+  if (years) {
+    return `${years} year${years === 1 ? "" : "s"}${restMonths ? ` · ${restMonths} month${restMonths === 1 ? "" : "s"}` : ""}`;
+  }
+  return `${months} month${months === 1 ? "" : "s"} · ${days} day${days === 1 ? "" : "s"}`;
+}
+
 function RightNow() {
   const { timers, entries, now, stopTimer } = useBabyBond();
   const breast = timers.find((t) => t.kind === "breast");
@@ -90,11 +112,11 @@ function RightNow() {
   const lastSleep = latest("sleep") as Extract<Entry, { type: "sleep" }> | undefined;
 
   return (
-    <section className="px-4 pt-5 pb-2">
+    <section className="px-4 pb-2 pt-5">
       <h2 className="mb-3 bb-section-title">Right now</h2>
       <div className="grid grid-cols-2 gap-3">
         {breast ? (
-          <div className="rounded-xl bg-milk p-4 bb-shadow bb-live-card">
+           <div className="rounded-lg bg-milk p-4 bb-shadow bb-live-card">
             <div className="flex items-start justify-between">
               <FeatureIcon name="feeding" className="size-6" />
               <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-milk-foreground/80">
@@ -119,7 +141,7 @@ function RightNow() {
             </button>
           </div>
         ) : (
-          <div className="rounded-xl bg-card/60 p-3 bb-shadow">
+           <div className="rounded-lg bg-card/60 p-3 bb-shadow">
             <span className="bb-icon-well"><FeatureIcon name="feeding" /></span>
             <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               Breastfeeding
@@ -136,7 +158,7 @@ function RightNow() {
         )}
 
         {sleep ? (
-          <div className="rounded-xl bg-sleep p-4 bb-shadow bb-live-card">
+           <div className="rounded-lg bg-sleep p-4 bb-shadow bb-live-card">
             <div className="flex items-start justify-between">
               <FeatureIcon name="sleep" className="size-6" />
               <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-sleep-foreground/80">
@@ -161,7 +183,7 @@ function RightNow() {
             </button>
           </div>
         ) : (
-          <div className="rounded-xl bg-card/60 p-3 bb-shadow">
+           <div className="rounded-lg bg-card/60 p-3 bb-shadow">
             <span className="bb-icon-well"><FeatureIcon name="sleep" /></span>
             <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               Sleep
@@ -177,7 +199,7 @@ function RightNow() {
           </div>
         )}
 
-        <div className="rounded-xl bg-card p-3 bb-shadow">
+         <div className="rounded-lg bg-card p-3 bb-shadow">
           <span className="bb-icon-well"><FeatureIcon name="pee" /></span>
           <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
             Last pee
@@ -190,7 +212,7 @@ function RightNow() {
           </p>
         </div>
 
-        <div className="rounded-xl bg-card p-3 bb-shadow">
+         <div className="rounded-lg bg-card p-3 bb-shadow">
           <span className="bb-icon-well"><FeatureIcon name="potty" /></span>
           <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
             Last potty
@@ -203,7 +225,7 @@ function RightNow() {
           </p>
         </div>
 
-        <div className="col-span-2 rounded-xl bg-card p-3 bb-shadow">
+         <div className="col-span-2 rounded-lg bg-card p-3 bb-shadow">
           <div className="flex items-center gap-3">
             <span className="bb-icon-well"><FeatureIcon name="feeding" /></span>
             <div className="min-w-0 flex-1">
@@ -231,7 +253,7 @@ function SmartInsights() {
   const top = insights.slice(0, 5);
   return (
     <section className="px-4 pt-5">
-      <div className="rounded-xl bg-card p-4 bb-shadow">
+       <div className="rounded-lg bg-card p-4 bb-shadow">
         <div className="flex items-start justify-between gap-2">
           <div>
             <h2 className="flex items-center gap-2 font-display text-base font-bold"><FeatureIcon name="insights" className="size-4" /> Smart Baby Insights</h2>
@@ -321,24 +343,24 @@ function Dashboard() {
       <div className="bb-hero border-b border-border/50 px-4 pb-5 pt-3">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
           <div className="min-w-0">
-            <p className="truncate font-display text-xl font-bold">BabyBond</p>
+            <p className="truncate font-display text-xl font-semibold">माझी चिमणी</p>
             <p className="truncate text-xs font-medium text-muted-foreground">Hi {me.name}, here&apos;s today</p>
           </div>
           <ThemeToggle />
         </div>
 
-        <div className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
-          <BabyAvatar className="size-16 shrink-0 rounded-2xl text-2xl ring-2 ring-card bb-shadow" />
+        <div className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-lg border border-border/60 bg-card/75 p-3">
+          <BabyAvatar className="size-14 shrink-0 rounded-full text-2xl ring-2 ring-card" />
           <div className="min-w-0">
-            <h1 className="truncate font-display text-xl font-bold">{baby.name}</h1>
-            <p className="truncate text-sm text-foreground/70">
-              {s.ageDays} days old · {baby.gender === "girl" ? "Girl" : "Boy"} · {baby.bloodGroup}
+            <h1 className="truncate font-display text-lg font-semibold">{baby.name}</h1>
+            <p className="truncate text-sm font-medium text-foreground/75">
+              {formatBabyAge(baby.bornAt, now)}
             </p>
             <div className="mt-1 flex gap-1">
               {parents.map((p) => (
                 <span
                   key={p.id}
-                  className="rounded-full bg-card/70 px-2 py-0.5 text-[11px] font-semibold"
+                  className="bb-chip min-h-5 border-transparent bg-secondary/70 px-2 py-0 text-[10px]"
                 >
                   <FeatureIcon name="family" className="mr-1 inline size-3" /> {p.role} {p.online ? "· live" : ""}
                 </span>
@@ -366,12 +388,6 @@ function Dashboard() {
 
       <RightNow />
 
-      <BabyDayJourney />
-
-      <SmartInsights />
-
-      <NameJourneyCard />
-
       <section className="px-4 py-5">
         <div className="grid grid-cols-2 gap-3">
           <button
@@ -380,7 +396,7 @@ function Dashboard() {
               addEntry({ type: "pee" } as never);
               toast.success("Pee logged 💛", { description: formatTime(Date.now()) });
             }}
-            className="rounded-2xl bg-pee p-5 text-left text-pee-foreground bb-shadow transition-transform active:scale-95"
+            className="rounded-lg bg-pee p-4 text-left text-pee-foreground bb-shadow transition-transform duration-150 active:scale-[0.97]"
           >
             <FeatureIcon name="pee" className="size-7" />
             <p className="mt-2 font-display text-xl font-bold">+ Pee</p>
@@ -388,7 +404,7 @@ function Dashboard() {
           </button>
           <Link
             to="/track/potty"
-            className="rounded-2xl bg-potty p-5 text-left text-potty-foreground bb-shadow transition-transform active:scale-95"
+            className="rounded-lg bg-potty p-4 text-left text-potty-foreground bb-shadow transition-transform duration-150 active:scale-[0.97]"
           >
             <FeatureIcon name="potty" className="size-7" />
             <p className="mt-2 font-display text-xl font-bold">+ Potty</p>
@@ -457,7 +473,7 @@ function Dashboard() {
         <div className="space-y-2">
           <Link
             to="/track/medicines"
-            className="flex items-center gap-3 rounded-2xl bg-card p-4 bb-shadow"
+            className="flex items-center gap-3 rounded-lg bg-card p-4 bb-shadow"
           >
             <span className="bb-icon-well"><FeatureIcon name="medicine" /></span>
             <div className="min-w-0 flex-1">
@@ -474,7 +490,7 @@ function Dashboard() {
           </Link>
           <Link
             to="/track/vaccines"
-            className="flex items-center gap-3 rounded-2xl bg-card p-4 bb-shadow"
+            className="flex items-center gap-3 rounded-lg bg-card p-4 bb-shadow"
           >
             <span className="bb-icon-well"><FeatureIcon name="vaccine" /></span>
             <div className="min-w-0 flex-1">
@@ -497,7 +513,7 @@ function Dashboard() {
           </Link>
           <Link
             to="/track/doctor"
-            className="flex items-center gap-3 rounded-2xl bg-card p-4 bb-shadow"
+            className="flex items-center gap-3 rounded-lg bg-card p-4 bb-shadow"
           >
             <span className="bb-icon-well"><FeatureIcon name="doctor" /></span>
             <div className="min-w-0 flex-1">
@@ -520,7 +536,7 @@ function Dashboard() {
             <Link
               key={t.to}
               to={t.to}
-              className="flex items-center gap-3 rounded-2xl bg-card p-4 bb-shadow transition-transform active:scale-95"
+              className="flex items-center gap-3 rounded-lg bg-card p-4 bb-shadow transition-transform duration-150 active:scale-[0.97]"
             >
               <span className="bb-icon-well"><t.icon className="size-5" /></span>
               <span className="flex-1 text-sm font-semibold">{t.label}</span>
@@ -532,13 +548,19 @@ function Dashboard() {
         <Link
           to="/timeline"
           search={{ days: 7, type: "all" }}
-          className="mt-4 flex items-center gap-3 rounded-2xl bg-secondary p-4 text-secondary-foreground bb-shadow"
+          className="mt-4 flex items-center gap-3 rounded-lg bg-secondary p-4 text-secondary-foreground bb-shadow"
         >
           <BabyIcon className="size-5" />
           <span className="flex-1 text-sm font-semibold">See the full day timeline</span>
           <ChevronRight className="size-4" />
         </Link>
       </section>
+
+      <BabyDayJourney />
+
+      <SmartInsights />
+
+      <NameJourneyCard />
     </AppShell>
   );
 }

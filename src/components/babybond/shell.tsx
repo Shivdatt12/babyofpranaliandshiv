@@ -30,7 +30,7 @@ export function ThemeToggle() {
         setDark(next);
         document.documentElement.classList.toggle("dark", next);
       }}
-      className="grid size-12 shrink-0 place-items-center rounded-2xl bg-secondary text-secondary-foreground transition-transform active:scale-90"
+      className="grid size-12 shrink-0 place-items-center rounded-lg bg-secondary text-secondary-foreground transition-transform duration-150 active:scale-[0.96]"
     >
       {dark ? <Sun className="size-5" /> : <Moon className="size-5" />}
     </button>

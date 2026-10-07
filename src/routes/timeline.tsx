@@ -235,7 +235,6 @@ function Timeline() {
                       <p className="truncate text-xs capitalize text-muted-foreground">
                         {e.detail}
                       </p>
-                    </div>
                       {e.by ? <p className="mt-0.5 text-[11px] text-muted-foreground">by {e.by}</p> : null}
                     </div>
                   </div>
