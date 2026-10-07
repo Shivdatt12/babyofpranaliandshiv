@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Plus, Trash2, CalendarPlus, ChevronDown, CheckCircle2, HelpCircle } from "lucide-react";
-import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
+import { AppShell, PageHeader, SoftCard, StatusChip } from "@/components/babybond/shell";
 import { FeatureIcon } from "@/components/babybond/feature-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,13 +50,13 @@ export const Route = createFileRoute("/track/vaccines")({
   component: Vaccines,
 });
 
-const STATUS_CLASS: Record<VaccineStatus, string> = {
-  given: "bg-secondary text-secondary-foreground",
-  "not-applicable": "bg-muted text-muted-foreground",
-  overdue: "bg-destructive/15 text-destructive",
-  "due-today": "bb-gradient text-primary-foreground",
-  "due-soon": "bg-secondary text-secondary-foreground",
-  upcoming: "bg-muted text-muted-foreground",
+const STATUS_TONE: Record<VaccineStatus, "success" | "neutral" | "danger" | "warning"> = {
+  given: "success",
+  "not-applicable": "neutral",
+  overdue: "danger",
+  "due-today": "warning",
+  "due-soon": "warning",
+  upcoming: "neutral",
 };
 
 function dueLabel(v: Vaccine) {
@@ -117,7 +117,13 @@ function Vaccines() {
       <div className="space-y-4 px-5 pb-6">
         <SoftCard tone="health">
           <p className="text-sm font-bold">
-            {pending.length ? `${pending.length} doses pending` : <span className="inline-flex items-center gap-1"><CheckCircle2 className="size-4" /> Vaccines up to date</span>}
+            {pending.length ? (
+              `${pending.length} doses pending`
+            ) : (
+              <span className="inline-flex items-center gap-1">
+                <CheckCircle2 className="size-4" /> Vaccines up to date
+              </span>
+            )}
             {overdueCount ? ` · ${overdueCount} overdue` : ""}
           </p>
           <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground">
@@ -179,11 +185,10 @@ function Vaccines() {
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="truncate text-sm font-bold">{vaccineFullName(v)}</p>
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${STATUS_CLASS[status]}`}
-                          >
-                            {VACCINE_STATUS_DOT[status]} {VACCINE_STATUS_LABEL[status]}
-                          </span>
+                          <StatusChip
+                            label={`${VACCINE_STATUS_DOT[status]} ${VACCINE_STATUS_LABEL[status]}`}
+                            tone={STATUS_TONE[status]}
+                          />
                         </div>
                         <p className="text-xs text-muted-foreground">
                           {v.stage ? `${v.stage} · ` : ""}
@@ -204,7 +209,8 @@ function Vaccines() {
                         ) : null}
                         {v.conditional ? (
                           <p className="mt-1 text-[11px] font-semibold text-muted-foreground">
-                            <HelpCircle className="mr-1 inline size-3.5" /> {VACCINE_PEDIATRICIAN_NOTE}
+                            <HelpCircle className="mr-1 inline size-3.5" />{" "}
+                            {VACCINE_PEDIATRICIAN_NOTE}
                           </p>
                         ) : null}
                         {v.scheduleNote ? (

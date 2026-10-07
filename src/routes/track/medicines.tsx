@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Bell, Clock3, Pencil, Plus, Trash2, X } from "lucide-react";
-import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
+import { AppShell, PageHeader, SoftCard, StatusChip } from "@/components/babybond/shell";
 import { FeatureIcon } from "@/components/babybond/feature-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,9 +27,16 @@ export const Route = createFileRoute("/track/medicines")({
   head: () => ({
     meta: [
       { title: "Medicines & reminders — BabyBond" },
-      { name: "description", content: "Add, edit and schedule every medicine with multiple daily reminders and a full dose history." },
+      {
+        name: "description",
+        content:
+          "Add, edit and schedule every medicine with multiple daily reminders and a full dose history.",
+      },
       { property: "og:title", content: "Medicines & reminders — BabyBond" },
-      { property: "og:description", content: "Medicine schedule, reminders and dose history for your newborn." },
+      {
+        property: "og:description",
+        content: "Medicine schedule, reminders and dose history for your newborn.",
+      },
     ],
   }),
   component: Medicines,
@@ -78,29 +85,37 @@ function Chip({
   onClick: () => void;
 }) {
   return (
-    <button
+    <Button
       type="button"
       onClick={onClick}
-      className={
-        active
-          ? "rounded-full bb-gradient px-3 py-1.5 text-[11px] font-bold text-primary-foreground"
-          : "rounded-full bg-card/80 px-3 py-1.5 text-[11px] font-semibold text-muted-foreground"
-      }
+      size="sm"
+      variant={active ? "default" : "secondary"}
+      className="min-h-8 rounded-full px-3 text-[11px]"
     >
       {children}
-    </button>
+    </Button>
   );
 }
 
 function Medicines() {
-  const { medicines, toggleMedicine, addMedicine, updateMedicine, deleteMedicine, logMedicine, entries, now } =
-    useBabyBond();
+  const {
+    medicines,
+    toggleMedicine,
+    addMedicine,
+    updateMedicine,
+    deleteMedicine,
+    logMedicine,
+    entries,
+    now,
+  } = useBabyBond();
   const doses = useTodayDoses();
   const [editing, setEditing] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<Draft>(emptyDraft);
 
-  const history = (entries.filter((e) => e.type === "medicine") as Extract<Entry, { type: "medicine" }>[]).slice(0, 20);
+  const history = (
+    entries.filter((e) => e.type === "medicine") as Extract<Entry, { type: "medicine" }>[]
+  ).slice(0, 20);
   const nextDose = doses.find((d) => d.status === "upcoming");
 
   const save = () => {
@@ -138,22 +153,31 @@ function Medicines() {
       <PageHeader title="Medicines" subtitle="Schedule, reminders & history" />
       <div className="space-y-4 px-5 pb-6">
         <SoftCard tone="health" className="flex items-center gap-3">
-          <span className="grid size-11 place-items-center rounded-2xl bg-card/70"><Clock3 className="size-5" /></span>
+          <span className="grid size-11 place-items-center rounded-2xl bg-card/70">
+            <Clock3 className="size-5" />
+          </span>
           <div className="flex-1">
-            <p className="text-[11px] font-semibold uppercase tracking-wide opacity-70">Next medicine</p>
+            <p className="text-[11px] font-semibold uppercase tracking-wide opacity-70">
+              Next medicine
+            </p>
             <p className="font-display text-lg font-bold">
-              {nextDose ? `${nextDose.medicine.name} · ${formatTime(nextDose.at)}` : "Nothing left today"}
+              {nextDose
+                ? `${nextDose.medicine.name} · ${formatTime(nextDose.at)}`
+                : "Nothing left today"}
             </p>
             {nextDose ? (
               <p className="text-[11px] opacity-70">
-                in {Math.max(0, Math.round((nextDose.at - now) / 60000))} min · {nextDose.medicine.dose}
+                in {Math.max(0, Math.round((nextDose.at - now) / 60000))} min ·{" "}
+                {nextDose.medicine.dose}
               </p>
             ) : null}
           </div>
         </SoftCard>
 
         <div>
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Today's medicines</h2>
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Today's medicines
+          </h2>
           <div className="space-y-2">
             {doses.length === 0 ? (
               <SoftCard>
@@ -162,31 +186,32 @@ function Medicines() {
             ) : null}
             {doses.map((d) => (
               <SoftCard key={d.key} className="flex items-center gap-3 py-3">
-                <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-secondary"><FeatureIcon name="medicine" /></span>
+                <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-secondary">
+                  <FeatureIcon name="medicine" />
+                </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-bold">{d.medicine.name}</p>
                   <p className="truncate text-xs text-muted-foreground">
                     {d.medicine.dose} · {formatTime(d.at)}
-                    {d.loggedBy ? ` · ${d.status === "skipped" ? "skipped" : "given"} by ${d.loggedBy}` : ""}
+                    {d.loggedBy
+                      ? ` · ${d.status === "skipped" ? "skipped" : "given"} by ${d.loggedBy}`
+                      : ""}
                   </p>
                 </div>
                 {d.status === "given" || d.status === "skipped" ? (
-                  <span
-                    className={
-                      d.status === "given"
-                        ? "rounded-full bg-health px-3 py-1 text-[11px] font-bold text-health-foreground"
-                        : "rounded-full bg-secondary px-3 py-1 text-[11px] font-bold text-secondary-foreground"
-                    }
-                  >
-                    {d.status === "given" ? "Given" : "Skipped"}
-                  </span>
+                  <StatusChip
+                    label={d.status === "given" ? "Completed" : "Skipped"}
+                    tone={d.status === "given" ? "success" : "neutral"}
+                  />
                 ) : (
                   <div className="flex gap-1">
                     <button
                       type="button"
                       onClick={() => {
                         logMedicine(d.medicine.id, "given");
-                        toast.success(`${d.medicine.name} given`, { description: "Synced with your partner" });
+                        toast.success(`${d.medicine.name} given`, {
+                          description: "Synced with your partner",
+                        });
                       }}
                       className="rounded-full bb-gradient px-3 py-1 text-[11px] font-bold text-primary-foreground"
                     >
@@ -211,7 +236,9 @@ function Medicines() {
 
         <div>
           <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">All medicines</h2>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              All medicines
+            </h2>
             <button
               type="button"
               onClick={() => {
@@ -227,19 +254,24 @@ function Medicines() {
           <div className="space-y-2">
             {medicines.map((m) => (
               <SoftCard key={m.id} className="flex items-start gap-3">
-                <span className="grid size-10 place-items-center rounded-2xl bg-secondary"><FeatureIcon name="medicine" /></span>
+                <span className="grid size-10 place-items-center rounded-2xl bg-secondary">
+                  <FeatureIcon name="medicine" />
+                </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-bold">{m.name}</p>
                   <p className="text-xs text-muted-foreground">
                     {m.type} · {m.dose} · {m.frequency}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    <Clock3 className="mr-1 inline size-3" /> {(m.times.length ? m.times : [m.time]).join(", ")}
+                    <Clock3 className="mr-1 inline size-3" />{" "}
+                    {(m.times.length ? m.times : [m.time]).join(", ")}
                   </p>
                   <p className="text-[11px] text-muted-foreground">
                     {formatDate(m.startAt)} → {m.endAt ? formatDate(m.endAt) : "ongoing"}
                   </p>
-                  {m.notes ? <p className="mt-1 text-[11px] text-muted-foreground">{m.notes}</p> : null}
+                  {m.notes ? (
+                    <p className="mt-1 text-[11px] text-muted-foreground">{m.notes}</p>
+                  ) : null}
                 </div>
                 <div className="flex flex-col items-end gap-2">
                   <Switch checked={m.active} onCheckedChange={() => toggleMedicine(m.id)} />
@@ -290,10 +322,16 @@ function Medicines() {
                 className="h-11 rounded-2xl bg-card/80"
               />
               <div>
-                <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide opacity-70">Type</p>
+                <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide opacity-70">
+                  Type
+                </p>
                 <div className="flex flex-wrap gap-1.5">
                   {MEDICINE_TYPES.map((t) => (
-                    <Chip key={t} active={draft.type === t} onClick={() => setDraft({ ...draft, type: t })}>
+                    <Chip
+                      key={t}
+                      active={draft.type === t}
+                      onClick={() => setDraft({ ...draft, type: t })}
+                    >
                       {t}
                     </Chip>
                   ))}
@@ -306,17 +344,25 @@ function Medicines() {
                 className="h-11 rounded-2xl bg-card/80"
               />
               <div>
-                <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide opacity-70">Frequency</p>
+                <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide opacity-70">
+                  Frequency
+                </p>
                 <div className="flex flex-wrap gap-1.5">
                   {MEDICINE_FREQUENCIES.map((f) => (
-                    <Chip key={f} active={draft.frequency === f} onClick={() => setDraft({ ...draft, frequency: f })}>
+                    <Chip
+                      key={f}
+                      active={draft.frequency === f}
+                      onClick={() => setDraft({ ...draft, frequency: f })}
+                    >
                       {f}
                     </Chip>
                   ))}
                 </div>
               </div>
               <div>
-                <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide opacity-70">Reminder times</p>
+                <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide opacity-70">
+                  Reminder times
+                </p>
                 <div className="space-y-2">
                   {draft.times.map((t, i) => (
                     <div key={i} className="flex gap-2">
@@ -333,7 +379,9 @@ function Medicines() {
                       <button
                         type="button"
                         aria-label="Remove reminder"
-                        onClick={() => setDraft({ ...draft, times: draft.times.filter((_, j) => j !== i) })}
+                        onClick={() =>
+                          setDraft({ ...draft, times: draft.times.filter((_, j) => j !== i) })
+                        }
                         className="grid size-11 place-items-center rounded-2xl bg-card/80"
                       >
                         <Trash2 className="size-4" />
@@ -351,7 +399,9 @@ function Medicines() {
               </div>
               <div className="flex gap-2">
                 <div className="flex-1">
-                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide opacity-70">Start</p>
+                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide opacity-70">
+                    Start
+                  </p>
                   <Input
                     type="date"
                     value={draft.start}
@@ -360,7 +410,9 @@ function Medicines() {
                   />
                 </div>
                 <div className="flex-1">
-                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide opacity-70">End</p>
+                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide opacity-70">
+                    End
+                  </p>
                   <Input
                     type="date"
                     value={draft.end}
@@ -375,7 +427,10 @@ function Medicines() {
                 onChange={(e) => setDraft({ ...draft, notes: e.target.value })}
                 className="rounded-2xl bg-card/80"
               />
-              <Button className="h-11 w-full rounded-2xl bb-gradient text-primary-foreground" onClick={save}>
+              <Button
+                className="h-11 w-full rounded-2xl bb-gradient text-primary-foreground"
+                onClick={save}
+              >
                 {editing ? "Save changes" : "Add medicine"}
               </Button>
             </div>
@@ -385,32 +440,31 @@ function Medicines() {
         <SoftCard className="flex items-center gap-3">
           <Bell className="size-5 text-muted-foreground" />
           <p className="flex-1 text-xs text-muted-foreground">
-            Both parents get the reminder — tap Given, Snooze 1 hour or Skip. Whoever acts first, the other sees it
-            instantly.
+            Both parents get the reminder — tap Given, Snooze 1 hour or Skip. Whoever acts first,
+            the other sees it instantly.
           </p>
         </SoftCard>
 
         <div>
-          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Medicine history</h2>
+          <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Medicine history
+          </h2>
           <div className="space-y-2">
             {history.map((d) => (
               <SoftCard key={d.id} className="flex items-center gap-3 py-3">
-                <span className="grid size-10 place-items-center rounded-2xl bg-secondary"><FeatureIcon name="medicine" /></span>
+                <span className="grid size-10 place-items-center rounded-2xl bg-secondary">
+                  <FeatureIcon name="medicine" />
+                </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-bold">{d.name}</p>
                   <p className="truncate text-xs text-muted-foreground">
                     {formatDate(d.at)} · {formatTime(d.at)} · {d.by} · {timeAgo(d.at, now)}
                   </p>
                 </div>
-                <span
-                  className={
-                    (d.status ?? "given") === "given"
-                      ? "rounded-full bg-health px-3 py-1 text-[11px] font-bold text-health-foreground"
-                      : "rounded-full bg-secondary px-3 py-1 text-[11px] font-bold text-secondary-foreground"
-                  }
-                >
-                  {(d.status ?? "given") === "given" ? "Given" : "Skipped"}
-                </span>
+                <StatusChip
+                  label={(d.status ?? "given") === "given" ? "Completed" : "Skipped"}
+                  tone={(d.status ?? "given") === "given" ? "success" : "neutral"}
+                />
               </SoftCard>
             ))}
           </div>

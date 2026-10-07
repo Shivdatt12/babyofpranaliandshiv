@@ -1,5 +1,16 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, CalendarClock, FileBarChart2, User, Moon, Sun, ArrowLeft, Users } from "lucide-react";
+import {
+  Home,
+  CalendarClock,
+  FileBarChart2,
+  User,
+  Moon,
+  Sun,
+  ArrowLeft,
+  Users,
+  WifiOff,
+  type LucideIcon,
+} from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { useBabyBond } from "@/lib/babybond-store";
@@ -30,7 +41,7 @@ export function ThemeToggle() {
         setDark(next);
         document.documentElement.classList.toggle("dark", next);
       }}
-      className="grid size-12 shrink-0 place-items-center rounded-2xl bg-secondary text-secondary-foreground transition-transform active:scale-90"
+      className="grid size-12 shrink-0 place-items-center rounded-lg bg-secondary text-secondary-foreground transition-transform duration-150 active:scale-[0.96]"
     >
       {dark ? <Sun className="size-5" /> : <Moon className="size-5" />}
     </button>
@@ -49,13 +60,16 @@ export function BottomNav() {
               key={to}
               to={to}
               className={cn(
-                "flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-xl px-1 py-1.5 text-[11px] font-semibold transition-all duration-200",
-                active
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-foreground",
+                "flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1.5 text-[11px] font-semibold transition-all duration-150 active:scale-[0.97]",
+                active ? "text-primary" : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <span className={cn("grid h-8 min-w-16 place-items-center rounded-full transition-colors", active && "bg-secondary")}>
+              <span
+                className={cn(
+                  "grid h-8 min-w-16 place-items-center rounded-full transition-colors",
+                  active && "bg-secondary text-primary",
+                )}
+              >
                 <Icon className="size-5" strokeWidth={active ? 2.5 : 2} />
               </span>
               {label}
@@ -68,7 +82,7 @@ export function BottomNav() {
 }
 
 export function AppShell({ children, nav = true }: { children: ReactNode; nav?: boolean }) {
-  const { loading, authed, hasBaby } = useBabyBond();
+  const { loading, authed, hasBaby, online } = useBabyBond();
   const gate = loading ? (
     <LoadingScreen />
   ) : !authed ? (
@@ -79,7 +93,12 @@ export function AppShell({ children, nav = true }: { children: ReactNode; nav?: 
   const showNav = nav && !gate;
   return (
     <div className="bb-app mx-auto min-h-dvh w-full max-w-md bg-background pb-28">
-      {gate ?? children}
+      {!gate && !online ? (
+        <div className="sticky top-0 z-50 flex min-h-8 items-center justify-center gap-1.5 bg-secondary px-4 text-[11px] font-bold text-secondary-foreground">
+          <WifiOff className="size-3.5" /> Offline · changes will sync automatically
+        </div>
+      ) : null}
+      <div className="bb-page-enter">{gate ?? children}</div>
       <MedicineReminders />
       {showNav ? <QuickAdd /> : null}
       {showNav ? <BottomNav /> : null}
@@ -90,19 +109,19 @@ export function AppShell({ children, nav = true }: { children: ReactNode; nav?: 
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   const { me } = useBabyBond();
   return (
-    <header className="sticky top-0 z-30 grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-border/45 bg-background/92 px-4 py-2 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-b border-border/55 bg-background/95 px-3 py-2 backdrop-blur-xl">
       <Link
         to="/"
-        className="grid size-12 shrink-0 place-items-center rounded-full text-foreground transition-colors active:bg-secondary"
+        className="grid size-12 shrink-0 place-items-center rounded-full text-foreground transition-colors duration-150 active:scale-[0.96] active:bg-secondary"
         aria-label="Back home"
       >
         <ArrowLeft className="size-5" />
       </Link>
       <div className="min-w-0">
-        <h1 className="truncate text-lg font-bold leading-tight">{title}</h1>
+        <h1 className="truncate text-lg font-semibold leading-tight">{title}</h1>
         {subtitle ? <p className="text-xs text-muted-foreground">{subtitle}</p> : null}
       </div>
-      <span className="shrink-0 rounded-full bg-secondary px-3 py-1.5 text-[11px] font-semibold text-secondary-foreground">
+      <span className="bb-chip shrink-0 text-secondary-foreground">
         <Users className="mr-1 inline size-3" /> {me.role}
       </span>
     </header>
@@ -128,8 +147,53 @@ export function SoftCard({
     card: "bg-card text-card-foreground",
   };
   return (
-    <div className={cn("rounded-xl p-4 bb-shadow", tones[tone ?? "card"], className)}>
+    <div className={cn("rounded-lg p-4 bb-shadow", tones[tone ?? "card"], className)}>
       {children}
+    </div>
+  );
+}
+
+export function StatusChip({
+  label,
+  tone = "neutral",
+}: {
+  label: string;
+  tone?: "live" | "success" | "warning" | "danger" | "neutral";
+}) {
+  const tones = {
+    live: "border-primary/25 bg-primary/10 text-primary",
+    success: "border-health-foreground/15 bg-health text-health-foreground",
+    warning: "border-potty-foreground/15 bg-potty text-potty-foreground",
+    danger: "border-destructive/20 bg-destructive/10 text-destructive",
+    neutral: "border-border bg-secondary text-secondary-foreground",
+  };
+  return (
+    <span className={cn("bb-chip uppercase tracking-wide", tones[tone])}>
+      {tone === "live" ? <span className="size-1.5 animate-pulse rounded-full bg-current" /> : null}
+      {label}
+    </span>
+  );
+}
+
+export function EmptyState({
+  icon: Icon,
+  title,
+  description,
+  action,
+}: {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="bb-empty">
+      <span className="bb-icon-well">
+        <Icon className="size-5" />
+      </span>
+      <p className="mt-3 text-sm font-bold">{title}</p>
+      <p className="mt-1 max-w-64 text-xs text-muted-foreground">{description}</p>
+      {action ? <div className="mt-4">{action}</div> : null}
     </div>
   );
 }

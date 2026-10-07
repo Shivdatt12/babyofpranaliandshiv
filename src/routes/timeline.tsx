@@ -1,7 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { AppShell, PageHeader, SoftCard } from "@/components/babybond/shell";
-import { FeatureIcon, featureIconForType, type FeatureIconName } from "@/components/babybond/feature-icon";
+import { CalendarClock } from "lucide-react";
+import { AppShell, EmptyState, PageHeader } from "@/components/babybond/shell";
+import {
+  FeatureIcon,
+  featureIconForType,
+  type FeatureIconName,
+} from "@/components/babybond/feature-icon";
 import { useBabyBond } from "@/lib/babybond-store";
 import {
   dayKey,
@@ -66,7 +71,11 @@ export function describe(
     case "bilirubin":
       return { icon: "bilirubin", title: "Bilirubin", detail: `${e.value} · ${e.method} test` };
     case "medicine":
-      return { icon: "medicine", title: e.name, detail: `${e.dose}${e.status ? ` · ${e.status}` : ""}` };
+      return {
+        icon: "medicine",
+        title: e.name,
+        detail: `${e.dose}${e.status ? ` · ${e.status}` : ""}`,
+      };
     case "visit":
       return {
         icon: "doctor",
@@ -178,10 +187,8 @@ function Timeline() {
               key={r.key}
               type="button"
               onClick={() => setDays(r.key)}
-              className={`flex-1 rounded-2xl px-3 py-2 text-xs font-semibold transition-colors ${
-                days === r.key
-                  ? "bb-gradient text-primary-foreground"
-                  : "bg-card text-muted-foreground bb-shadow"
+              className={`flex min-h-10 flex-1 items-center justify-center rounded-lg px-3 py-2 text-xs font-semibold transition-all duration-150 active:scale-[0.97] ${
+                days === r.key ? "bb-chip-active" : "bb-tonal text-muted-foreground"
               }`}
             >
               {r.label}
@@ -195,10 +202,8 @@ function Timeline() {
               key={f.key}
               type="button"
               onClick={() => setType(f.key)}
-              className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
-                type === f.key
-                  ? "bb-gradient text-primary-foreground"
-                  : "bg-secondary text-secondary-foreground"
+              className={`bb-chip shrink-0 transition-all duration-150 active:scale-[0.97] ${
+                type === f.key ? "bb-chip-active" : "text-secondary-foreground"
               }`}
             >
               <FeatureIcon name={f.icon} className="mr-1 inline size-3.5" /> {f.label}
@@ -207,23 +212,31 @@ function Timeline() {
         </div>
 
         {groups.length === 0 ? (
-          <SoftCard className="text-center text-sm text-muted-foreground">
-            Nothing logged for this filter yet.
-          </SoftCard>
+          <EmptyState
+            icon={CalendarClock}
+            title="No moments here yet"
+            description="Recorded care and memories matching this filter will appear here."
+          />
         ) : null}
 
         {groups.map(([day, list]) => (
           <section key={day}>
-            <h2 className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <h2 className="sticky top-16 z-10 mb-1 border-b border-border/60 bg-background/95 py-2 text-xs font-bold uppercase tracking-wide text-foreground backdrop-blur-xl">
               {day === dayKey(now)
                 ? `Today · ${formatFullDate(list[0]!.at)}`
                 : formatFullDate(list[0]!.at)}
             </h2>
-            <div className="space-y-2">
+            <div className="divide-y divide-border/55">
               {list.map((e) => {
                 return (
-                  <SoftCard key={e.id} className="flex items-center gap-3 py-3">
-                    <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-secondary text-lg">
+                  <div
+                    key={e.id}
+                    className="grid grid-cols-[3.2rem_2.5rem_minmax(0,1fr)] items-center gap-2 py-3"
+                  >
+                    <time className="text-right text-[11px] font-semibold tabular-nums text-muted-foreground">
+                      {formatTime(e.at)}
+                    </time>
+                    <span className="bb-icon-well size-9 text-lg">
                       <FeatureIcon name={e.icon ?? featureIconForType(e.type)} />
                     </span>
                     <div className="min-w-0 flex-1">
@@ -231,12 +244,11 @@ function Timeline() {
                       <p className="truncate text-xs capitalize text-muted-foreground">
                         {e.detail}
                       </p>
+                      {e.by ? (
+                        <p className="mt-0.5 text-[11px] text-muted-foreground">by {e.by}</p>
+                      ) : null}
                     </div>
-                    <div className="text-right">
-                      <p className="text-xs font-semibold">{formatTime(e.at)}</p>
-                      <p className="text-[11px] text-muted-foreground">{e.by}</p>
-                    </div>
-                  </SoftCard>
+                  </div>
                 );
               })}
             </div>

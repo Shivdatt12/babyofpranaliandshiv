@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Baby as BabyIcon, Camera, Heart, LogIn } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SoftCard } from "@/components/babybond/shell";
 import { useBabyBond } from "@/lib/babybond-store";
 import type { Baby } from "@/lib/babybond-data";
@@ -13,14 +14,14 @@ import { ACCEPTED_IMAGE_TYPES, MediaError, uploadMedia, useMediaUrl } from "@/li
 export function LoadingScreen() {
   return (
     <div className="space-y-4 px-5 py-8">
-      <div className="h-6 w-32 animate-pulse rounded-full bg-secondary" />
-      <div className="h-28 animate-pulse rounded-3xl bg-secondary" />
+      <Skeleton className="h-6 w-32 rounded-full" />
+      <Skeleton className="h-28" />
       <div className="grid grid-cols-2 gap-3">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="h-24 animate-pulse rounded-3xl bg-secondary" />
+          <Skeleton key={i} className="h-24" />
         ))}
       </div>
-      <div className="h-40 animate-pulse rounded-3xl bg-secondary" />
+      <Skeleton className="h-40" />
     </div>
   );
 }
@@ -28,9 +29,13 @@ export function LoadingScreen() {
 export function SignInPrompt() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-8 text-center">
-      <span className="grid size-16 place-items-center rounded-2xl bg-secondary text-secondary-foreground"><BabyIcon className="size-8" /></span>
+      <span className="grid size-16 place-items-center rounded-2xl bg-secondary text-secondary-foreground">
+        <BabyIcon className="size-8" />
+      </span>
       <h1 className="font-display text-2xl font-bold">Welcome to माझी चिमणी ❤️</h1>
-      <p className="text-sm text-muted-foreground">Sign in to open your family&apos;s baby journal.</p>
+      <p className="text-sm text-muted-foreground">
+        Sign in to open your family&apos;s baby journal.
+      </p>
       <Link
         to="/auth"
         className="mt-2 flex min-h-12 items-center gap-2 rounded-xl bb-gradient px-6 py-3 text-sm font-bold text-primary-foreground"
@@ -65,7 +70,9 @@ export function CreateBabyProfile() {
       setPhoto(await uploadMedia(familyId, "baby", file));
       toast.success("Photo added");
     } catch (err) {
-      toast.error(err instanceof MediaError ? err.message : "Photo upload failed — please try again.");
+      toast.error(
+        err instanceof MediaError ? err.message : "Photo upload failed — please try again.",
+      );
     } finally {
       setUploading(false);
     }
@@ -99,9 +106,13 @@ export function CreateBabyProfile() {
   return (
     <div className="space-y-4 px-5 py-8">
       <div className="text-center">
-        <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-secondary text-secondary-foreground"><BabyIcon className="size-8" /></span>
+        <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-secondary text-secondary-foreground">
+          <BabyIcon className="size-8" />
+        </span>
         <h1 className="mt-2 font-display text-2xl font-bold">Welcome to माझी चिमणी ❤️</h1>
-        <p className="text-sm text-muted-foreground">Create your baby&apos;s profile to get started.</p>
+        <p className="text-sm text-muted-foreground">
+          Create your baby&apos;s profile to get started.
+        </p>
       </div>
 
       <SoftCard className="space-y-3">
@@ -140,7 +151,9 @@ export function CreateBabyProfile() {
               type="button"
               onClick={() => setGender(g)}
               className={`flex-1 rounded-2xl py-2 text-sm font-semibold capitalize ${
-                gender === g ? "bb-gradient text-primary-foreground" : "bg-secondary text-secondary-foreground"
+                gender === g
+                  ? "bb-gradient text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground"
               }`}
             >
               {g}
@@ -148,8 +161,18 @@ export function CreateBabyProfile() {
           ))}
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="h-11 rounded-2xl" />
-          <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="h-11 rounded-2xl" />
+          <Input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="h-11 rounded-2xl"
+          />
+          <Input
+            type="time"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            className="h-11 rounded-2xl"
+          />
         </div>
         <div className="flex flex-wrap gap-2">
           {BLOOD_GROUPS.map((b) => (
@@ -158,7 +181,9 @@ export function CreateBabyProfile() {
               type="button"
               onClick={() => setBloodGroup(b)}
               className={`rounded-2xl px-3 py-1.5 text-xs font-semibold ${
-                bloodGroup === b ? "bb-gradient text-primary-foreground" : "bg-secondary text-secondary-foreground"
+                bloodGroup === b
+                  ? "bb-gradient text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground"
               }`}
             >
               {b}
@@ -173,7 +198,11 @@ export function CreateBabyProfile() {
           onChange={(e) => setWeight(e.target.value)}
           className="h-11 rounded-2xl"
         />
-        <Button onClick={submit} disabled={busy} className="h-12 w-full rounded-2xl bb-gradient text-primary-foreground">
+        <Button
+          onClick={submit}
+          disabled={busy}
+          className="h-12 w-full rounded-2xl bb-gradient text-primary-foreground"
+        >
           {busy ? "Creating…" : "Create Baby Profile"}
         </Button>
       </SoftCard>
