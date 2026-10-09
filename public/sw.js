@@ -113,13 +113,19 @@ self.addEventListener("message", (event) => {
               resolved: old.resolved ?? false,
             };
           });
-        // keep resolved/snoozed occurrences the client no longer sends, so they
-        // cannot be re-created as a fresh reminder
+        // keep only resolved tombstones the client no longer sends; anything
+        // turned off (e.g. reminders disabled) must never fire again
         for (const old of existing) {
-          if (!merged.some((m) => m.id === old.id) && (old.resolved || old.overrideAt))
-            merged.push(old);
+          if (!merged.some((m) => m.id === old.id) && old.resolved)
+            merged.push({ ...old, at: Number.MAX_SAFE_INTEGER });
         }
         await writeSchedule(merged);
+        const live = new Set(merged.filter((m) => !m.resolved).map((m) => m.id));
+        const shown = await self.registration.getNotifications();
+        for (const n of shown) {
+          const nid = n.data && n.data.id;
+          if (nid && !live.has(nid)) n.close();
+        }
         await fireDue();
       })(),
     );
