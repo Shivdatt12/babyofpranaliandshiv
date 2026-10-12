@@ -21,6 +21,7 @@ import { useBabyBond, useTodayDoses, useTodayStats } from "@/lib/babybond-store"
 import { durationLabel, formatTime, timeAgo, type Entry } from "@/lib/babybond-data";
 import { useInsights } from "@/lib/use-insights";
 import { FeatureIcon, featureIconForType } from "@/components/babybond/feature-icon";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
   ssr: false,
@@ -133,13 +134,14 @@ function RightNow() {
             <p className="text-[11px] text-milk-foreground/80 tabular-nums">
               {elapsed(breast.startedAt)} · by {breast.by}
             </p>
-            <button
+            <Button
+              variant="outline"
               type="button"
               onClick={() => stopTimer("breast")}
-              className="mt-2 w-full rounded-2xl bg-card px-3 py-1.5 text-[11px] font-bold text-card-foreground transition-transform active:scale-95"
+              className="mt-2 w-full px-3 text-xs"
             >
               Stop
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="rounded-lg bg-card/60 p-3 bb-shadow">
@@ -177,13 +179,14 @@ function RightNow() {
             <p className="text-[11px] text-sleep-foreground/80 tabular-nums">
               {elapsed(sleep.startedAt)} · by {sleep.by}
             </p>
-            <button
+            <Button
+              variant="outline"
               type="button"
               onClick={() => stopTimer("sleep")}
-              className="mt-2 w-full rounded-2xl bg-card px-3 py-1.5 text-[11px] font-bold text-card-foreground transition-transform active:scale-95"
+              className="mt-2 w-full px-3 text-xs"
             >
               Stop
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="rounded-lg bg-card/60 p-3 bb-shadow">
@@ -284,7 +287,7 @@ function SmartInsights() {
             top.map((i) => (
               <div
                 key={i.id}
-                className="flex gap-2.5 rounded-xl border border-border/50 bg-secondary/45 p-3"
+                className="flex gap-2.5 border-t border-border py-3"
               >
                 <span className="bb-icon-well size-8">
                   <FeatureIcon name={featureIconForType(i.category)} className="size-4" />
@@ -299,12 +302,14 @@ function SmartInsights() {
             ))
           )}
         </div>
+        <Button asChild>
         <Link
           to="/insights"
-          className="mt-3 flex items-center justify-center gap-1 rounded-2xl bb-gradient px-3 py-2 text-xs font-bold text-primary-foreground active:scale-95"
+          className="mt-3 flex w-full items-center justify-center gap-1 px-3 text-xs"
         >
           View all insights <ChevronRight className="size-3.5" />
         </Link>
+        </Button>
       </div>
     </section>
   );
@@ -357,10 +362,10 @@ function Dashboard() {
 
   return (
     <AppShell>
-      <div className="bb-hero border-b border-border/50 px-4 pb-5 pt-3">
+      <div className="bb-hero border-b-2 border-border px-4 pb-5 pt-3">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
           <div className="min-w-0">
-            <p className="truncate font-display text-xl font-semibold">माझी चिमणी</p>
+            <p className="truncate font-display text-xl font-bold">माझी चिमणी</p>
             <p className="truncate text-xs font-medium text-muted-foreground">
               Hi {me.name}, here&apos;s today
             </p>
@@ -368,18 +373,18 @@ function Dashboard() {
           <ThemeToggle />
         </div>
 
-        <div className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 rounded-lg border border-border/60 bg-card/75 p-3">
-          <BabyAvatar className="size-14 shrink-0 rounded-full text-2xl ring-2 ring-card" />
+        <div className="mt-4 grid grid-cols-[auto_minmax(0,1fr)] items-center gap-4 border-y-2 border-border py-4">
+          <BabyAvatar className="size-16 shrink-0 rounded-lg border-2 border-border text-2xl shadow-[var(--shadow-control)]" />
           <div className="min-w-0">
-            <h1 className="truncate font-display text-lg font-semibold">{baby.name}</h1>
+            <h1 className="truncate font-display text-2xl font-bold">{baby.name}</h1>
             <p className="truncate text-sm font-medium text-foreground/75">
               {formatBabyAge(baby.bornAt, now)}
             </p>
-            <div className="mt-1 flex gap-1">
+            <div className="mt-2 flex flex-wrap gap-1">
               {parents.map((p) => (
                 <span
                   key={p.id}
-                  className="bb-chip min-h-5 border-transparent bg-secondary/70 px-2 py-0 text-[10px]"
+                  className="bb-chip min-h-5 bg-secondary px-2 py-0 text-[10px]"
                 >
                   <FeatureIcon name="family" className="mr-1 inline size-3" /> {p.role}{" "}
                   {p.online ? "· live" : ""}
@@ -390,7 +395,7 @@ function Dashboard() {
         </div>
 
         <SoftCard className="mt-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 bg-card/90">
-          <div>
+          <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
               Next feed in · {s.feedGapHours}h gap
             </p>
@@ -410,18 +415,19 @@ function Dashboard() {
 
       <section className="px-4 py-5">
         <div className="grid grid-cols-2 gap-3">
-          <button
+          <Button
+            variant="outline"
             type="button"
             onClick={() => {
               addEntry({ type: "pee" } as never);
               toast.success("Pee logged 💛", { description: formatTime(Date.now()) });
             }}
-            className="rounded-lg bg-pee p-4 text-left text-pee-foreground bb-shadow transition-transform duration-150 active:scale-[0.97]"
+            className="h-auto flex-col items-start gap-0 whitespace-normal bg-card p-4 text-left text-foreground shadow-[var(--shadow-soft)]"
           >
             <FeatureIcon name="pee" className="size-7" />
             <p className="mt-2 font-display text-xl font-bold">+ Pee</p>
             <p className="text-xs opacity-70">{s.peeCount} today · one tap</p>
-          </button>
+          </Button>
           <Link
             to="/track/potty"
             className="rounded-lg bg-potty p-4 text-left text-potty-foreground bb-shadow transition-transform duration-150 active:scale-[0.97]"
@@ -567,8 +573,7 @@ function Dashboard() {
               <span className="bb-icon-well">
                 <t.icon className="size-5" />
               </span>
-              <span className="flex-1 text-sm font-semibold">{t.label}</span>
-              <ChevronRight className="size-4 text-muted-foreground" />
+              <span className="min-w-0 flex-1 break-words text-sm font-bold">{t.label}</span>
             </Link>
           ))}
         </div>

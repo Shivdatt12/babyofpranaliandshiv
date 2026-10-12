@@ -208,8 +208,8 @@ export function BabyDayJourney() {
 
   return (
     <section className="px-5 pt-4" aria-labelledby="baby-day-journey-title">
-      <div className="overflow-hidden rounded-lg bg-card bb-shadow">
-        <div className="border-b border-border/60 px-4 py-4">
+      <div className="overflow-hidden border-y-2 border-border bg-card">
+        <div className="border-b-2 border-border px-4 py-4">
           <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
             Today
           </p>
@@ -279,7 +279,7 @@ export function BabyDayJourney() {
           <div className="px-4 py-3">
             {groups.map(({ period, items }) => (
               <div key={period} className="mb-3 last:mb-0">
-                <h3 className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                 <h3 className="mb-2 border-b border-border pb-2 text-sm font-bold uppercase tracking-normal text-foreground">
                   {(() => {
                     const PeriodIcon = PERIODS[period].icon;
                     return <PeriodIcon className="mr-1 inline size-3.5" />;
@@ -308,7 +308,7 @@ export function BabyDayJourney() {
                       </div>
                       <Link
                         to={item.to}
-                        className="mb-1.5 grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-lg border border-border/50 bg-muted/45 px-3 py-2 transition-all duration-150 active:scale-[0.98]"
+                        className={`mb-1.5 grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 border-b border-border px-2 py-3 transition-all duration-150 active:bg-secondary ${item.icon === "milestone" ? "text-primary" : "text-foreground"}`}
                       >
                         <div className="min-w-0">
                           <p className="truncate text-xs font-bold">{item.title}</p>
