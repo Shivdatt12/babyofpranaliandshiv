@@ -70,7 +70,7 @@ const ICONS: Record<FeatureIconName, LucideIcon> = {
 export function FeatureIcon({
   name,
   className,
-  strokeWidth = 2,
+  strokeWidth = 2.2,
 }: {
   name: FeatureIconName;
   className?: string;
