@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { useBabyBond } from "@/lib/babybond-store";
 import { useMediaUrl } from "@/lib/babybond-media";
 import { FeatureIcon, type FeatureIconName } from "./feature-icon";
@@ -33,7 +34,9 @@ export function ThemeToggle() {
     setDark(document.documentElement.classList.contains("dark"));
   }, []);
   return (
-    <button
+    <Button
+      variant="outline"
+      size="icon"
       type="button"
       aria-label="Toggle dark mode"
       onClick={() => {
@@ -41,17 +44,17 @@ export function ThemeToggle() {
         setDark(next);
         document.documentElement.classList.toggle("dark", next);
       }}
-      className="grid size-12 shrink-0 place-items-center rounded-lg bg-secondary text-secondary-foreground transition-transform duration-150 active:scale-[0.96]"
+      className="grid size-12 shrink-0 place-items-center"
     >
       {dark ? <Sun className="size-5" /> : <Moon className="size-5" />}
-    </button>
+    </Button>
   );
 }
 
 export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-md border-t border-border/70 bg-card/95 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
+    <nav aria-label="Main navigation" className="fixed inset-x-0 bottom-0 z-40 mx-auto w-full max-w-md border-t-2 border-border bg-card px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2">
       <div className="grid grid-cols-4 items-center">
         {NAV.map(({ to, label, icon: Icon }) => {
           const active = pathname === to;
@@ -59,18 +62,19 @@ export function BottomNav() {
             <Link
               key={to}
               to={to}
+               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1.5 text-[11px] font-semibold transition-all duration-150 active:scale-[0.97]",
-                active ? "text-primary" : "text-muted-foreground hover:text-foreground",
+                "flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg px-1 py-1.5 text-[11px] font-bold transition-all duration-150 active:scale-[0.97]",
+                active ? "text-primary" : "text-foreground hover:text-primary",
               )}
             >
               <span
                 className={cn(
-                  "grid h-8 min-w-16 place-items-center rounded-full transition-colors",
-                  active && "bg-secondary text-primary",
+                  "grid h-8 min-w-16 place-items-center rounded-lg border-2 transition-colors",
+                  active ? "border-border bg-primary text-primary-foreground shadow-[var(--shadow-control)]" : "border-transparent",
                 )}
               >
-                <Icon className="size-5" strokeWidth={active ? 2.5 : 2} />
+                <Icon className="size-5" strokeWidth={2.2} />
               </span>
               {label}
             </Link>
@@ -92,7 +96,7 @@ export function AppShell({ children, nav = true }: { children: ReactNode; nav?: 
   ) : null;
   const showNav = nav && !gate;
   return (
-    <div className="bb-app mx-auto min-h-dvh w-full max-w-md bg-background pb-28">
+    <div className="bb-app mx-auto min-h-dvh w-full max-w-md bg-background pb-32">
       {!gate && !online ? (
         <div className="sticky top-0 z-50 flex min-h-8 items-center justify-center gap-1.5 bg-secondary px-4 text-[11px] font-bold text-secondary-foreground">
           <WifiOff className="size-3.5" /> Offline · changes will sync automatically
@@ -109,16 +113,16 @@ export function AppShell({ children, nav = true }: { children: ReactNode; nav?: 
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   const { me } = useBabyBond();
   return (
-    <header className="sticky top-0 z-30 grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-b border-border/55 bg-background/95 px-3 py-2 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-b-2 border-border bg-card px-3 py-2">
       <Link
         to="/"
-        className="grid size-12 shrink-0 place-items-center rounded-full text-foreground transition-colors duration-150 active:scale-[0.96] active:bg-secondary"
+        className="grid size-12 shrink-0 place-items-center rounded-lg border-2 border-border bg-card text-foreground shadow-[var(--shadow-control)] transition-colors duration-150 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
         aria-label="Back home"
       >
         <ArrowLeft className="size-5" />
       </Link>
       <div className="min-w-0">
-        <h1 className="truncate text-lg font-semibold leading-tight">{title}</h1>
+        <h1 className="truncate text-xl font-bold leading-tight">{title}</h1>
         {subtitle ? <p className="text-xs text-muted-foreground">{subtitle}</p> : null}
       </div>
       <span className="bb-chip shrink-0 text-secondary-foreground">
@@ -169,7 +173,7 @@ export function StatusChip({
   };
   return (
     <span className={cn("bb-chip uppercase tracking-wide", tones[tone])}>
-      {tone === "live" ? <span className="size-1.5 animate-pulse rounded-full bg-current" /> : null}
+      {tone === "live" ? <span className="size-1.5 animate-pulse rounded-full bg-current motion-reduce:animate-none" /> : null}
       {label}
     </span>
   );

@@ -12,4 +12,4 @@
 <!-- LOVABLE:END -->
 
 - Render functional feature identifiers through the centralized Lucide `FeatureIcon` mapping; keep emojis only in user content or expressive copy so the UI stays consistent.
-- Use the shared Material tonal mobile system, semantic warm-citrus tokens, Outfit/Figtree typography, restrained elevation, and Android-safe touch sizing so every screen stays visually consistent.
+- Use the shared editorial mobile system through semantic CSS tokens and shared UI primitives; keep typography fallbacks, hard-shadow interactions and Android-safe touch sizing consistent so all existing screens inherit one visual language without changing their logic.

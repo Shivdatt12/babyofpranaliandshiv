@@ -27,3 +27,6 @@
 - [x] Apply the selected Material tonal refinement as the final premium UI system
 - [x] Polish dashboard hierarchy, age identity, motion, forms, statuses, loading, empty states, timeline, and journey
 - [x] Verify all existing screens and core flows on Android mobile in light and dark mode
+
+- [x] Apply the requested ivory, black-outline and deep-red editorial design system across existing screens
+- [ ] Verify signed-in major screens, forms, Central Add and light/dark mobile layouts without changing data

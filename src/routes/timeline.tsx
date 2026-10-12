@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { CalendarClock } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { AppShell, EmptyState, PageHeader } from "@/components/babybond/shell";
 import {
   FeatureIcon,
@@ -183,22 +184,22 @@ function Timeline() {
       <div className="space-y-4 px-5 pb-6">
         <div className="flex gap-2">
           {RANGES.map((r) => (
-            <button
+            <Button
+              variant={days === r.key ? "default" : "outline"}
               key={r.key}
               type="button"
               onClick={() => setDays(r.key)}
-              className={`flex min-h-10 flex-1 items-center justify-center rounded-lg px-3 py-2 text-xs font-semibold transition-all duration-150 active:scale-[0.97] ${
-                days === r.key ? "bb-chip-active" : "bb-tonal text-muted-foreground"
-              }`}
+              className="min-w-0 flex-1 px-2 text-xs"
             >
               {r.label}
-            </button>
+            </Button>
           ))}
         </div>
 
         <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-1">
           {FILTERS.map((f) => (
-            <button
+            <Button
+              variant={type === f.key ? "default" : "outline"}
               key={f.key}
               type="button"
               onClick={() => setType(f.key)}
@@ -207,7 +208,7 @@ function Timeline() {
               }`}
             >
               <FeatureIcon name={f.icon} className="mr-1 inline size-3.5" /> {f.label}
-            </button>
+            </Button>
           ))}
         </div>
 
@@ -219,12 +220,15 @@ function Timeline() {
           />
         ) : null}
 
-        {groups.map(([day, list]) => (
+        {groups.map(([day, list]) => {
+          const first = list[0];
+          if (!first) return null;
+          return (
           <section key={day}>
-            <h2 className="sticky top-16 z-10 mb-1 border-b border-border/60 bg-background/95 py-2 text-xs font-bold uppercase tracking-wide text-foreground backdrop-blur-xl">
+            <h2 className="sticky top-16 z-10 mb-1 border-y-2 border-border bg-background py-3 font-display text-lg font-bold uppercase tracking-normal text-foreground">
               {day === dayKey(now)
-                ? `Today · ${formatFullDate(list[0]!.at)}`
-                : formatFullDate(list[0]!.at)}
+                ? `Today · ${formatFullDate(first.at)}`
+                : formatFullDate(first.at)}
             </h2>
             <div className="divide-y divide-border/55">
               {list.map((e) => {
@@ -240,7 +244,7 @@ function Timeline() {
                       <FeatureIcon name={e.icon ?? featureIconForType(e.type)} />
                     </span>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold">{e.title}</p>
+                       <p className={`truncate text-sm font-bold ${e.type === "milestone" ? "text-primary" : "text-foreground"}`}>{e.title}</p>
                       <p className="truncate text-xs capitalize text-muted-foreground">
                         {e.detail}
                       </p>
@@ -253,7 +257,8 @@ function Timeline() {
               })}
             </div>
           </section>
-        ))}
+        );
+        })}
       </div>
     </AppShell>
   );
